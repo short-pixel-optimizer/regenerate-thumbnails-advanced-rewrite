@@ -1,42 +1,44 @@
 <?php
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
 /**
  * Class that will hold functionality for admin side
  *
  * PHP version 5
  *
  * @category   Admin Side Code
- * @package    Regenerate Thumbnails ID SCOUT
- * @author     Muhammad Atiq
- * @version    1.0.0
- * @since      File available since Release 1.0.0
+ * @package    Regenerate Thumbnails Advanced
+ * @author     ShortPixel
 */
 
 class RTA_Admin extends RTA
 {
     //Admin side starting point. Will call appropriate admin side hooks
     public function __construct() {
-        
+        $this->customThumbSuffixes = array('_c', '_tl', '_tr', '_br', '_bl');
+
         do_action('rta_before_admin', $this );
         //All admin side code will go here
         
         add_action( 'admin_menu', array( $this, 'rta_admin_menus' ) );    
         add_action( 'wp_ajax_rta_regenerate_thumbnails', array( $this, 'rta_regenerate_thumbnails') );
-        //add_action( 'wp_ajax_rta_del_thumbnails', array( $this, 'rta_del_thumbnails') );
         add_action( 'wp_ajax_rta_save_image_sizes', array( $this, 'rta_save_image_sizes' ) );
         add_filter( 'image_size_names_choose', array( $this, 'rta_image_custom_sizes' ), 10, 1 );
-        
+
+        add_filter( 'plugin_action_links_' . plugin_basename(RTA_PLUGIN_FILE), array(&$this, 'generate_plugin_links'));//for plugin settings page
+
         do_action('rta_after_admin', $this );            
     }
 
     public function rta_admin_menus(){
-        
-        add_management_page(RTA_PLUGIN_NAME, RTA_PLUGIN_NAME, 'manage_options', 'rta_generate_thumbnails', array( $this, 'rta_generate_thumbnails' ));
-        //add_menu_page( RTA_PLUGIN_NAME, RTA_PLUGIN_NAME, 'manage_options', 'rta_generate_thumbnails', array( $this, 'rta_generate_thumbnails' ) );
-        //add_submenu_page( 'rta_generate_thumbnails', RTA_PLUGIN_NAME, RTA_PLUGIN_NAME, 'manage_options', 'rta_generate_thumbnails', array( $this, 'rta_generate_thumbnails' ) );
-        //add_submenu_page( 'rta_generate_thumbnails', 'Image Sizes', 'Image Sizes', 'manage_options', 'rta_image_sizes', array( $this, 'rta_image_sizes' ) );
-    }    
+        $title = __('Regenerate Thumbnails', 'regenerate-thumbnails-advanced');
+        add_management_page($title, $title, 'manage_options', 'rta_generate_thumbnails', array( $this, 'rta_generate_thumbnails' ));
+    }
+
+    public function generate_plugin_links($links) {
+        $in = '<a href="tools.php?page=rta_generate_thumbnails">Settings</a>';
+        array_unshift($links, $in);
+        return $links;
+
+    }
     
     public function rta_save_image_sizes() {
         $error = false;
@@ -90,186 +92,71 @@ class RTA_Admin extends RTA
         
         echo $html;
     }
-    /*
-    public function rta_del_thumbnails() {
-        
-        global $rta_lang;
-        
-        $period = $_POST['period'];
-        $error = false;
-        $message = '';
-        if(isset($period)) {
-            $args = array(
-                    'post_type' => 'attachment',
-                    'post_mime_type' => 'image',
-                    'posts_per_page' => -1,
-                    'post_status' => 'any',
-                    'offset' => 0,
-                );
-            switch ($period) {
-                case '0':
-                    break;
-                case '1':
-                  $date = '-1 day';
-                  $startDate = date("d/m/Y",strtotime($date));  
-                  $endDate = date("d/m/Y",strtotime('-'.$date));  
-                  $args['date_query'] = array('after' => '1 day ago', 'before' => 'tomorrow');
-            break;
-                case '2':
-                  $date = '-1 week';
-                  $startDate = date("d/m/Y",strtotime($date));  
-                  $endDate = date("d/m/Y",strtotime('-'.$date));  
-                  $args['date_query'] = array('after' => '1 week ago', 'before' => 'tomorrow');
-                  break;
-                case '3':
-                  $date = '-1 month';
-                  $startDate = date("d/m/Y",strtotime($date));  
-                  $endDate = date("d/m/Y",strtotime('-'.$date));  
-                  $args['date_query'] = array('after' => '1 month ago', 'before' => 'tomorrow');
-                  break;
-              case '4':
-                  $date = '-3 month';
-                  $startDate = date("d/m/Y",strtotime($date));  
-                  $endDate = date("d/m/Y",strtotime('-'.$date));  
-                  $args['date_query'] = array('after' => '3 months ago', 'before' => 'tomorrow');
-              break;
-              case '5':
-                  $date = '-6 month';
-                  $startDate = date("d/m/Y",strtotime($date));  
-                  $endDate = date("d/m/Y",strtotime('-'.$date));  
-                  $args['date_query'] = array('after' => '6 months ago', 'before' => 'tomorrow');
-                  break;
-              case '6':
-                  $date = '-1 year';
-                  $startDate = date("d/m/Y",strtotime($date));  
-                  $endDate = date("d/m/Y",strtotime('-'.$date));  
-                  $args['date_query'] = array('after' => '1 year ago', 'before' => 'tomorrow');
-              break;
-            }
-            
-            $dir = wp_upload_dir();
-            $basedir = $dir['basedir'];
-            $the_query = new WP_Query($args);
-            
-            if ($the_query->have_posts()) {
-                while ($the_query->have_posts()) {
-                    $the_query->the_post();
-                    $image_id = $the_query->post->ID;
-                    $library[] = $this->rta_fixslash(wp_get_attachment_url($image_id));
+
+    function rta_del_associated_thumbs($mainFile='') {
+        //See ShortPixel Image Optimiser's findThumbs method
+        $ext = pathinfo($mainFile, PATHINFO_EXTENSION);
+        $base = substr($mainFile, 0, strlen($mainFile) - strlen($ext) - 1);
+        $pattern = '/' . preg_quote($base, '/') . '-\d+x\d+\.'. $ext .'/';
+        $thumbsCandidates = @glob($base . "-*." . $ext);
+        $thumbs = array();
+        if(is_array($thumbsCandidates)) {
+            foreach($thumbsCandidates as $th) {
+                if(preg_match($pattern, $th)) {
+                    $thumbs[]= $th;
                 }
             }
-            $files = $this->rta_get_files_from_folder(array(),$basedir);
-            $id = 0;
-            $deleted = $notDeleted = array();
-            foreach ($files as $afile) {
-                $isThumb = $this->rta_is_thumbnail($afile);
-                if ($isThumb) {
-                    $id++;
-                    if(unlink($afile)){
-                        $deleted[] = $afile;
-                    }else{
-                        $notDeleted[] = $afile;
+            if(   count($this->customThumbSuffixes)
+               && !(   is_plugin_active('envira-gallery/envira-gallery.php')
+                    || is_plugin_active('soliloquy/soliloquy.php')
+                    || is_plugin_active('soliloquy-lite/soliloquy-lite.php'))){
+                foreach ($this->customThumbSuffixes as $suffix){
+                    $pattern = '/' . preg_quote($base, '/') . '-\d+x\d+'. $suffix . '\.'. $ext .'/';
+                    foreach($thumbsCandidates as $th) {
+                        if(preg_match($pattern, $th)) {
+                            $thumbs[]= $th;
+                        }
                     }
                 }
             }
-            if($id==0) {
-                $error = true;
-                $message = $rta_lang['not_thumb_to_del'];
-            }elseif(sizeof($notDeleted)>0) {
-                $error = true;
-                $message = $rta_lang['some_thumb_not_del'].'<br>'. implode('<br>', $notDeleted);
-            }elseif(sizeof($deleted)>0) {
-                $message = $rta_lang['thumb_del_success'];
-            }
-        }else{
-            $error = true;
-            $message = $rta_lang['not_authorize_error'];
         }
-        
-        $return = array( 'error' => $error, 'message'=> $message );
-            
-        header('Content-Type: application/json');
-        echo json_encode($return);
-        exit();
-    }
-    */
-    function rta_del_associated_thumbs($file_name='') {
-        global $rta_lang;
-        if(empty($file_name)) {
-            return false;
-        }
-        $error = false;
-        $dir = wp_upload_dir();
-        $basedir = $dir['basedir'];
-        $year_directories = glob($basedir . '/*' , GLOB_ONLYDIR);
-        $dirs = array();
-        foreach($year_directories as $year_dir) {
-            $dirs = array_merge_recursive($dirs, glob($year_dir . '/*' , GLOB_ONLYDIR));            
-        }
-        $file_name_no_ext = preg_replace('/\\.[^.\\s]{3,4}$/', '', $file_name);
-        foreach($dirs as $dir) {
-            foreach (glob($dir."/".$file_name_no_ext."-*.*") as $filename) {
-                @unlink($filename);
+        foreach($thumbs as $thumb) {
+            if($thumb !== $mainFile) {
+                @unlink($thumb);
             }
         }
-    }
-    /*
-    function rta_is_thumbnail($file,$library) {
-        // if it's in the media library as a main file, it's defnitantly not a thumbnail
-        // it could of been mistaken as one if it's source was a downloaded thumbnail from 
-        // another Wordpress blog
-        if (in_array(str_replace(get_home_path(),'',$file), $library)) {
-                return false;
-        }
-
-        // if it has the thumbnail suffix, lets concider it
-        preg_match('"-([0-9]*x[0-9]*)."', $file, $matches);
-        if (count($matches) > 0) {
-            return true;            
-        }
-
-        // not sure what it is, just send it back as not a thumbnail
-        return false;
+        return $thumbs;
     }
 
-    function rta_check_if_dir($filename) {
-        $pos = strpos($filename, '.');
-        if ($pos === false) {
-            return true;
-        } else {
-            return false;
+    /**
+     * schedules the image's attachment post to be deleted if all the thumbnails are missing or just removes the missing thumbnails from the sizes array if some still are present.
+     * @param $image_id
+     * @param $image_posts_to_delete
+     */
+    function rta_del_leftover_metadata($image_id, $fullsizepath, &$image_posts_to_delete) {
+        $original_meta = wp_get_attachment_metadata($image_id);
+        $allSizesMissing = true;
+        $someSizesMissing = false;
+        if(isset($original_meta['sizes']) && is_array($original_meta['sizes'])) {
+            foreach ($original_meta['sizes'] as $key => $size) {
+                if(isset($size['file'])) {
+                    $thumb = (is_array($size['file'])) ? $size['file'][0] : $size['file'];
+                    if(file_exists(trailingslashit(dirname($fullsizepath)) . $thumb)) {
+                        $allSizesMissing = false;
+                    } else {
+                        unset($original_meta['sizes'][$key]);
+                        $someSizesMissing = true;
+                    }
+                }
+            }
+        }
+        if($allSizesMissing) {
+            $image_posts_to_delete[] = $image_id;
+        } elseif($someSizesMissing) {
+            wp_update_attachment_metadata($image_id, $original_meta);
         }
     }
     
-    public function rta_fixslash($str) {
-        return str_replace('//','/',$str);
-    }
-        
-    public function rta_get_files_from_folder($files = '',$folder,$godeep = true) {		
-        if (empty($files)) $files = array();
-        
-        // start read
-        if (is_dir($folder)) {
-            $dh  = opendir($folder);
-            while (false !== ($filename = readdir($dh))) {
-                if (!in_array($filename, array('.DS_Store','.','..',''))) {
-                    // it's a dir, index contents w/ current function
-                    if ($this->rta_check_if_dir($filename)) {
-                        // repeat same function, find files within folders,
-                        $subfiles = $this->rta_get_files_from_folder(array(),$this->rta_fixslash($folder.'/'.$filename.'/'),false);
-                        foreach ($subfiles as $subfile)
-                            $files[] = $subfile;
-
-                    // it's a file
-                    } else {
-                        $files[] = $this->rta_fixslash($folder.'/'.$filename);
-                    }
-                }
-            }
-        }
-        return $files;
-    }
-    */    
     public function rta_regenerate_thumbnails() {
         
         $data = $_POST;
@@ -365,6 +252,7 @@ class RTA_Admin extends RTA
                 $logstatus = '';
                 $error = array();
                 $del_thumbs = $data['del_thumbs'];
+                $del_leftover_metadata = $data['del_leftover_metadata'];
                 if (isset($data['offset'])) {
                     $offset = $data['offset'];
                 }
@@ -463,11 +351,24 @@ class RTA_Admin extends RTA
                     }                    
                 }
                 $the_query = new WP_Query($args);
+                $debug = '';
                 if ($the_query->have_posts()) {
+                    $image_posts_to_delete = array();
                     while ($the_query->have_posts()) {
                         $the_query->the_post();
                         $image_id = $the_query->post->ID;
-                        
+
+                        $fullsizepath = get_attached_file($image_id);
+
+                        $debug .= "ID $image_id FULLSIZEPATH: $fullsizepath";
+
+                        if($del_leftover_metadata == 'true' && !file_exists($fullsizepath)) {
+                            $debug .= ' missing, continue ';
+                            $this->rta_del_leftover_metadata($image_id, $fullsizepath, $image_posts_to_delete);
+                            continue; //the main image is missing, nothing to regenerate.
+                        }
+                        $debug .= ' exists ';
+
                         if(!empty($featured_img_w) || !empty($no_featured_img_w)) {
                             $is_featured = false;
                             if(in_array($image_id, $featured_images_ids)) {
@@ -495,19 +396,16 @@ class RTA_Admin extends RTA
                         if (isset($data['mediaID'])){
                             $image_id = $data['mediaID'];
                         }
-                        $fullsizepath = get_attached_file($image_id);
-                        
                         //is image:
                         if (!is_array(getimagesize($fullsizepath))) {
                             $is_image = false;
                         }
                         $filename_only = wp_get_attachment_thumb_url($image_id);
                         
-                        if($del_thumbs) {
-                            $image_name = basename(wp_get_attachment_url($image_id));
-                            $result = $this->rta_del_associated_thumbs($image_name);                            
+                        if($del_thumbs=='true') {
+                            $result = $this->rta_del_associated_thumbs($fullsizepath);
                         }
-                        
+
                         if ($is_image) {
                             if (false === $fullsizepath || !file_exists($fullsizepath)) {
                                 $error[] = array('offset' => ($offset + 1), 'error' => $error, 'logstatus' => $logstatus, 'imgUrl' => $fullsizepath, 'startTime' => $data['startTime'], 'fromTo' => $data['fromTo'], 'type' => $data['type'], 'period' => $period);
@@ -524,7 +422,6 @@ class RTA_Admin extends RTA
                                 copy($backup, $fullsizepath);
                             }
 
-                            // TODO $original_meta is passed to the action shortpixel-thumbnails-regenerated
                             $original_meta = wp_get_attachment_metadata($image_id);
                             // TODO also make sure only the regenerated thumbnails are passed to the action
 
@@ -546,20 +443,23 @@ class RTA_Admin extends RTA
                                 $error[] = array('offset' => ($offset + 1), 'error' => $error, 'logstatus' => $logstatus, 'imgUrl' => $filename_only, 'startTime' => $data['startTime'], 'fromTo' => $data['fromTo'], 'type' => $data['type'], 'period' => $period);
                             } else {
                                 wp_update_attachment_metadata($image_id, $metadata);
-                                do_action('shortpixel-thumbnails-regenerated', $image_id, $metadata, $metadata['sizes'], $bulk);
+                                do_action('shortpixel-thumbnails-regenerated', $image_id, $original_meta, $metadata['sizes'], $bulk);
                             }
                             $imageUrl = $filename_only;
                             $logstatus = 'Processed';
                             $filename_only = wp_get_attachment_thumb_url($image_id); 
-			} else {
+                        } else {
                             $filename_only = wp_get_attachment_url($image_id);
-                            $logstatus = '<b>'.basename($filename_only).'</b> is missing';                            
+                            $logstatus = '<b>'.basename($filename_only).'</b> is missing';
                             $error[] = array('offset' => ($offset + 1), 'error' => $error, 'logstatus' => $logstatus, 'imgUrl' => $filename_only, 'startTime' => $data['startTime'], 'fromTo' => $data['fromTo'], 'type' => $data['type'], 'period' => $period);
                         }
-                        
+
                     }
                     update_option('thumbnail_size_w',$default_thumb_w);
                     update_option('thumbnail_size_h',$default_thumb_h);
+                    foreach($image_posts_to_delete as $to_delete) {
+                        wp_delete_post($to_delete, true);
+                    }
                 } else {
                     $logstatus = 'No pictures uploaded';
                     $error[] = array('offset' => 0, 'error' => $error, 'logstatus' => $logstatus, 'imgUrl' => '');
@@ -574,7 +474,7 @@ class RTA_Admin extends RTA
                 if(!isset($filename_only)){
                     $filename_only = 'No files';
                 }
-                $finalResult = array('offset' => ($offset + 1), 'error' => $error, 'logstatus' => $logstatus, 'imgUrl' => $filename_only, 'startTime' => $data['startTime'], 'fromTo' => $data['fromTo'], 'type' => $data['type'], 'period' => $period);
+                $finalResult = array(/*'debug' => $debug,*/ 'offset' => ($offset + 1), 'error' => $error, 'logstatus' => $logstatus, 'imgUrl' => $filename_only, 'startTime' => $data['startTime'], 'fromTo' => $data['fromTo'], 'type' => $data['type'], 'period' => $period);
                 break;
         }
         header('Content-Type: application/json');

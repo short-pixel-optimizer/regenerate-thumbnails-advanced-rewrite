@@ -48,8 +48,8 @@ class RTA
         do_action('rta_before_enqueue_scripts');
         
         wp_enqueue_script( 'jquery' );
-        wp_enqueue_script( 'rta_js', RTA_PLUGIN_URL.'js/rta.js', array( 'jquery' ), time() );
-        wp_enqueue_style( 'rta_css', RTA_PLUGIN_URL.'css/rta.css', array(), time() );
+        wp_enqueue_script( 'rta_js', RTA_PLUGIN_URL.'js/rta.js', array( 'jquery' ), RTA_PLUGIN_VERSION );
+        wp_enqueue_style( 'rta_css', RTA_PLUGIN_URL.'css/rta.css', array(), RTA_PLUGIN_VERSION );
         
         wp_localize_script( 'rta_js', 'rta_data', array(
                             'ajaxurl' => admin_url( 'admin-ajax.php' )

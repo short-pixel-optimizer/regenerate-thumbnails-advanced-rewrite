@@ -63,7 +63,7 @@
                                         <input type="text" readonly name="image_sizes[name][]" class="image_sizes_name" value="<?php echo $image_sizes['name'][$i];?>" placeholder="Image Size name" />
                                     </td>
                                     <td>
-                                        <input type="button" name="btn_remove_image_size_row" value="Remove" class="btn_remove_row" onclick="javascript:rta_remove_image_size_row('<?php echo $rowid;?>');" />
+                                        <input type="button" name="btn_remove_image_size_row" value="<?php _e('','regenerate-thumbnails-advanced'); ?>Remove" class="btn_remove_row" onclick="javascript:rta_remove_image_size_row('<?php echo $rowid;?>');" />
                                     </td>
                                 </tr>
                                 <?php }}?>

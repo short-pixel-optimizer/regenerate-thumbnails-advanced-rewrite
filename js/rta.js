@@ -1,9 +1,9 @@
 jQuery(document).ready(function($){
     
     if( $("#rta_regenerate_thumbs_main_container").length ) {
-        if( rta_offset!="" && rta_total!="" ) {
-            var rta_offset = rta_get_cookie("rta_offset");
-            var rta_total = rta_get_cookie("rta_total");
+        var rta_offset = rta_get_cookie("rta_offset");
+        var rta_total = rta_get_cookie("rta_total");
+        if( rta_offset!="" && rta_total!="" ) {            
             rta_hide_buttons();
             rta_set_default_values();
             rta_regenerate_thumbnails((1*rta_offset),(1*rta_total));
@@ -30,7 +30,8 @@ jQuery(document).ready(function($){
                     no_featured_img_h:$("#no_featured_img_h").val(),
                     default_img_w:$("#default_img_w").val(),
                     default_img_h:$("#default_img_h").val(),
-                    del_thumbs:$("#del_associated_thumbs").is(":checked")
+                    del_thumbs:$("#del_associated_thumbs").is(":checked"),
+                    del_leftover_metadata:$("#del_leftover_metadata").is(":checked")
             },
             success: function (response) {
                 if( response.pCount > 0 ) {                        
@@ -182,7 +183,8 @@ function rta_regenerate_thumbnails(offset,total) {
                     no_featured_img_h:$("#no_featured_img_h").val(),
                     default_img_w:$("#default_img_w").val(),
                     default_img_h:$("#default_img_h").val(),
-                    del_thumbs:$("#del_associated_thumbs").is(":checked")
+                    del_thumbs:$("#del_associated_thumbs").is(":checked"),
+                    del_leftover_metadata:$("#del_leftover_metadata").is(":checked")
             },
             success: function (response) {
                 if( response.offset <= total ) { 
@@ -219,6 +221,7 @@ function rta_unset_all_cookies() {
     rta_set_cookie("default_img_w","");
     rta_set_cookie("default_img_h","");
     rta_set_cookie("del_associated_thumbs","");
+    rta_set_cookie("del_leftover_metadata","");
     rta_set_cookie("rta_image_processed","");
     rta_set_cookie("rta_error_box_ul","");
 }
@@ -238,6 +241,11 @@ function rta_set_default_values() {
     }else{
         $("#del_associated_thumbs").prop("checked",false);
     }
+    if(rta_get_cookie("del_leftover_metadata")=="true") {
+        $("#del_leftover_metadata").prop("checked",true);
+    }else{
+        $("#del_leftover_metadata").prop("checked",false);
+    }
 }
 
 function rta_set_values_in_cookie(offset,total) {
@@ -251,6 +259,7 @@ function rta_set_values_in_cookie(offset,total) {
     rta_set_cookie("default_img_w",$("#default_img_w").val());
     rta_set_cookie("default_img_h",$("#default_img_h").val());
     rta_set_cookie("del_associated_thumbs",$("#del_associated_thumbs").is(":checked"));
+    rta_set_cookie("del_leftover_metadata",$("#del_leftover_metadata").is(":checked"));
 }
 
 function rta_set_cookie(cname, cvalue, exdays) {
