@@ -184,38 +184,26 @@ class RTA_Admin extends RTA
                             break;
                         case '1':
                           $date = '-1 day';
-                          $startDate = date("d/m/Y",strtotime($date));  
-                          $endDate = date("d/m/Y",strtotime('-'.$date));  
                           $args['date_query'] = array('after' => '1 day ago', 'before' => 'tomorrow');
                     break;
                         case '2':
                           $date = '-1 week';
-                          $startDate = date("d/m/Y",strtotime($date));  
-                          $endDate = date("d/m/Y",strtotime('-'.$date));  
                           $args['date_query'] = array('after' => '1 week ago', 'before' => 'tomorrow');
                           break;
                         case '3':
                           $date = '-1 month';
-                          $startDate = date("d/m/Y",strtotime($date));  
-                          $endDate = date("d/m/Y",strtotime('-'.$date));  
                           $args['date_query'] = array('after' => '1 month ago', 'before' => 'tomorrow');
                           break;
                       case '4':
                           $date = '-3 month';
-                          $startDate = date("d/m/Y",strtotime($date));  
-                          $endDate = date("d/m/Y",strtotime('-'.$date));  
                           $args['date_query'] = array('after' => '3 months ago', 'before' => 'tomorrow');
                       break;
                       case '5':
                           $date = '-6 month';
-                          $startDate = date("d/m/Y",strtotime($date));  
-                          $endDate = date("d/m/Y",strtotime('-'.$date));  
                           $args['date_query'] = array('after' => '6 months ago', 'before' => 'tomorrow');
                           break;
                       case '6':
                           $date = '-1 year';
-                          $startDate = date("d/m/Y",strtotime($date));  
-                          $endDate = date("d/m/Y",strtotime('-'.$date));  
                           $args['date_query'] = array('after' => '1 year ago', 'before' => 'tomorrow');
                       break;
                     }
@@ -275,38 +263,26 @@ class RTA_Admin extends RTA
                             break;
                         case '1':
                             $date = '-1 day';
-                            $startDate = date("d/m/Y",strtotime($date));  
-                            $endDate = date("d/m/Y",strtotime('-'.$date));  
                             $args['date_query'] = array('after' => '1 day ago', 'before' => 'tomorrow');
                             break;
                         case '2':
                             $date = '-1 week';
-                            $startDate = date("d/m/Y",strtotime($date));  
-                            $endDate = date("d/m/Y",strtotime('-'.$date));  
                             $args['date_query'] = array('after' => '1 week ago', 'before' => 'tomorrow');
                             break;
                         case '3':
                             $date = '-1 month';
-                            $startDate = date("d/m/Y",strtotime($date));  
-                            $endDate = date("d/m/Y",strtotime('-'.$date));  
                             $args['date_query'] = array('after' => '1 month ago', 'before' => 'tomorrow');
                             break;
                         case '4':
                             $date = '-3 month';
-                            $startDate = date("d/m/Y",strtotime($date));  
-                            $endDate = date("d/m/Y",strtotime('-'.$date));  
                             $args['date_query'] = array('after' => '3 months ago', 'before' => 'tomorrow');
                             break;
                         case '5':
                             $date = '-6 month';
-                            $startDate = date("d/m/Y",strtotime($date));  
-                            $endDate = date("d/m/Y",strtotime('-'.$date));  
                             $args['date_query'] = array('after' => '6 months ago', 'before' => 'tomorrow');
                             break;
                         case '6':
                             $date = '-1 year';
-                            $startDate = date("d/m/Y",strtotime($date));  
-                            $endDate = date("d/m/Y",strtotime('-'.$date));  
                             $args['date_query'] = array('after' => '1 year ago', 'before' => 'tomorrow');
                             break;
                     }
