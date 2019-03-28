@@ -1,0 +1,97 @@
+.rta-admin button, .rta-admin .btn_add_more {
+  color: white;
+  background: #00bcd4;
+  position: relative;
+  box-shadow: none;
+  cursor: pointer;
+  border: 0;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  box-shadow: 0px 0px 4px #aaa; }
+.rta-admin .container {
+  max-width: 90%;
+  background: #fff;
+  padding: 20px; }
+.rta-admin .option {
+  padding: 10px; }
+  .rta-admin .option > label {
+    width: 150px;
+    display: inline-block;
+    margin-right: 15px;
+    padding: 0 15px;
+    font-weight: bold;
+    vertical-align: top;
+    line-height: 15px; }
+  .rta-admin .option .note {
+    font-size: 12px;
+    margin-left: 15px; }
+.rta-admin input.tiny {
+  width: 75px; }
+.rta-admin h4 {
+  font-size: 20px;
+  margin-left: 15px; }
+.rta-admin button {
+  font-size: 14px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin: 0px;
+  padding: 16px;
+  border-radius: 4px; }
+  .rta-admin button.disabled {
+    background: #ccc;
+    cursor: default;
+    color: #eee; }
+.rta-admin .btn_add_more {
+  font-size: 13px;
+  padding: 5px 6px;
+  margin-left: 25px; }
+.rta-admin .table {
+  flex-wrap: wrap;
+  display: table;
+  border-spacing: 10px 0;
+  border: 1px solid #eee; }
+  .rta-admin .table .header, .rta-admin .table .row {
+    width: 100%;
+    display: table-row; }
+    .rta-admin .table .header span, .rta-admin .table .row span {
+      display: table-cell;
+      padding: 5px;
+      min-width: 100px; }
+  .rta-admin .table .row.proto {
+    display: none; }
+.rta-admin .flex {
+  display: flex; }
+.rta-admin .checkbox-list {
+  display: inline-block; }
+  .rta-admin .checkbox-list .item {
+    display: inline-block;
+    margin: 5px 0px;
+    float: left;
+    clear: both; }
+  .rta-admin .checkbox-list input {
+    margin-right: 8px; }
+.rta-admin .select-options {
+  margin-left: 200px;
+  margin-top: 15px; }
+  .rta-admin .select-options > span {
+    cursor: pointer;
+    color: #222;
+    margin-right: 12px;
+    display: inline-block; }
+.rta-admin section.regenerate .CircularProgressbar {
+  display: inline-block;
+  width: 200px;
+  padding: 25px 0; }
+.rta-admin section.regenerate .rta_progress {
+  display: inline-block; }
+.rta-admin section.regenerate .images {
+  margin-left: 225px;
+  float: left;
+  padding: 5px;
+  border: 1px solid #cecece;
+  margin-right: 50px; }
+  .rta-admin section.regenerate .images h5 {
+    text-align: center; }
+  .rta-admin section.regenerate .images img {
+    max-width: 500px;
+    max-height: 500px; }

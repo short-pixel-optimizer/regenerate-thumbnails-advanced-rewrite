@@ -20,7 +20,9 @@ define( 'RTA_SITE_BASE_URL',  rtrim(get_bloginfo('url'),"/")."/");
 define( 'RTA_PLUGIN_FILE', __FILE__);
 define( 'RTA_LANG_DIR', dirname( plugin_basename(__FILE__) ).'/language/' );
 
-require_once RTA_PLUGIN_PATH.'includes/rta_class.php';
+// define ('RTA_DEBUG', true);
+
+require_once (RTA_PLUGIN_PATH . 'includes/rta_class.php');
 
 register_activation_hook( __FILE__, array( 'RTA', 'rta_install' ) );
 register_deactivation_hook( __FILE__, array( 'RTA', 'rta_uninstall' ) );

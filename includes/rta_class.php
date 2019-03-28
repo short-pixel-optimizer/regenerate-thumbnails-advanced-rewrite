@@ -15,7 +15,7 @@
 
 class RTA
 {
-     
+
     //Plugin starting point. Will call appropriate actions
     public function __construct() {
 
@@ -30,36 +30,39 @@ class RTA
         do_action('rta_before_init');
         global $rta_options,$rta_lang;
         $rta_options = get_option( 'rta_settings' );
-        load_plugin_textdomain( 'rta', FALSE, RTA_LANG_DIR );        
+        load_plugin_textdomain( 'rta', FALSE, RTA_LANG_DIR );
         require_once RTA_PLUGIN_PATH.'language/rta_general.php';
-        
-        if(is_admin()){            
-            require_once RTA_PLUGIN_PATH.'rta_admin.php';            
+
+        if(is_admin()){
+            require_once RTA_PLUGIN_PATH.'rta_admin.php';
         }
 
-        require_once RTA_PLUGIN_PATH.'rta_front.php';
-        
+        require_once (RTA_PLUGIN_PATH.'rta_front.php');
+        require_once(RTA_PLUGIN_PATH . 'classes/rta_admin_controller.php');
+
         do_action('rta_after_init');
     }
-    
+
     //Function will add CSS and JS files
     public function rta_enqueue_scripts() {
-        
+
         do_action('rta_before_enqueue_scripts');
-        
-        wp_enqueue_script( 'jquery' );
+
+        //wp_enqueue_script( 'jquery' );
         wp_enqueue_script( 'rta_js', RTA_PLUGIN_URL.'js/rta.js', array( 'jquery' ), RTA_PLUGIN_VERSION );
         wp_enqueue_style( 'rta_css', RTA_PLUGIN_URL.'css/rta.css', array(), RTA_PLUGIN_VERSION );
-        
+
         wp_localize_script( 'rta_js', 'rta_data', array(
-                            'ajaxurl' => admin_url( 'admin-ajax.php' )
+                            'ajaxurl' => admin_url( 'admin-ajax.php' ),
+                            'nonce_savesizes' => wp_create_nonce('rta_save_image_sizes'),
+                            'nonce_generate' => wp_create_nonce('rta_regenerate_thumbnails'),
                             ));
-        
+
         do_action('rta_after_enqueue_scripts');
     }
-    
+
     public function rta_format_size($bytes) {
-        
+
         if ($bytes >= 1073741824) {
             $bytes = number_format($bytes / 1073741824, 2) . ' GB';
         }elseif ($bytes >= 1048576) {
@@ -75,13 +78,14 @@ class RTA
         }
         return $bytes;
     }
-    
+
     public function rta_load_template( $template='', $for='front', $attr=array() ) {
         global $rta_options,$rta_lang;
+
         do_action( 'rta_before_load_template', $template, $for, $attr );
         $template = apply_filters( 'rta_template_to_load', $template, $for, $attr );
         $attr = apply_filters( 'rta_template_variables', $attr, $template, $for );
-        
+
         if( empty($template) ) {
             return '';
         }
@@ -91,47 +95,68 @@ class RTA
         $html = '';
         $html = apply_filters( 'rta_before_template_html', $html, $template, $for, $attr );
         ob_start();
-        require RTA_PLUGIN_PATH.'templates/'.$for.'/'.$template.'.php';
+        require (RTA_PLUGIN_PATH.'templates/'.$for.'/'.$template.'.php');
         $html = ob_get_contents();
-        ob_end_clean();  
-        
+        ob_end_clean();
+
         do_action( 'rta_after_load_template', $template, $for, $attr, $html );
         $html = apply_filters( 'rta_after_template_html', $html, $template, $for, $attr );
-        
+
         return $html;
     }
-    
+
     public function rta_get_message_html( $message, $type = 'message' ) {
         global $rta_options,$rta_lang;
         do_action( 'rta_before_get_message_html', $message, $type );
         $message = apply_filters( 'rta_message_text', $message, $type );
         $type = apply_filters( 'rta_message_type', $type, $message );
-        
+
         $html = '';
-        
+
         $html = apply_filters( 'rta_before_message_html', $html, $message, $type );
-        
+
         $attr = array( 'message' => $message, 'type' => $type );
-        
+
         $html = $this->rta_load_template( $type, 'common', $attr );
-        
+
         do_action( 'rta_after_get_message_html', $message, $type );
         $html = apply_filters( 'rta_after_message_html', $html, $message, $type );
-        
+
         return $html;
     }
-    
+
+    public function debug($message)
+    {
+        if (defined('RTA_DEBUG'))
+        {
+          if (is_array($message) || is_object($message)) {
+              $message = print_r($message, true);
+          }
+          file_put_contents(WP_CONTENT_DIR . '/rta.log' , '[' . date('Y-m-d H:i:s') . "] $message\n", FILE_APPEND);
+          //file_put_contents(SHORTPIXEL_BACKUP_FOLDER . "/shortpixel_log", '[' . date('Y-m-d H:i:s') . "] $message\n", FILE_APPEND);
+        }
+    }
+
+    /** Central function for JSON responses. Can be extended whenever needed */
+    protected function jsonResponse($response)
+    {
+      wp_send_json($response);
+    }
+
+
+    /* [BS] Seems not in use */
+    /*
     public function rta_add_record( $table = '', $data = array() ) {
-        
+
         if( empty($data) || empty($table) ) {
             return false;
         }
-        
+
         global $wpdb;
         $exclude = array( 'btnsave' );
         $attr = "";
         $attr_val = "";
-        foreach( $data as $k=>$val ) {            
+        foreach( $data as $k=>$val ) {
             if(is_array($val)) {
                 $val = maybe_serialize($val);
             }else{
@@ -144,15 +169,17 @@ class RTA
                 }else{
                     $attr.=", `".$k."`";
                     $attr_val.=", '".$val."'";
-                }                
+                }
             }
         }
         $sql = "INSERT INTO `".$wpdb->prefix.$table."` (".$attr.") VALUES (".$attr_val.")";
         $wpdb->query($sql);
         $lastid = $wpdb->insert_id;
-        return $lastid;        
-    }
-    
+        return $lastid;
+    } */
+
+    /* [BS] Seems not in use  - All these function don't use Prepare SQL statement, which might be dangerous */
+    /*
     public function rta_add_multiple_records( $table = '', $attr = array(), $data = array() ) {
         if( empty($data) || empty($table) || empty($attr) ) {
             return false;
@@ -165,10 +192,10 @@ class RTA
                 $attr_str.="`".$v."`";
             }else{
                 $attr_str.=", `".$v."`";
-            }                
+            }
         }
         $attr_val = "";
-        foreach( $data as $row ) { 
+        foreach( $data as $row ) {
             if( $attr_val == '' ) {
                 $attr_val.='(';
             }else{
@@ -186,7 +213,7 @@ class RTA
                         $attr_val_row.="'".$val."'";
                     }else{
                         $attr_val_row.=", '".$val."'";
-                    }                
+                    }
                 }
             }
             $attr_val.= $attr_val_row.')';
@@ -194,15 +221,17 @@ class RTA
         $sql = "INSERT INTO `".$wpdb->prefix.$table."` (".$attr_str.") VALUES ".$attr_val;
         $wpdb->query($sql);
         $lastid = $wpdb->insert_id;
-        return $lastid;    
-    }
-    
+        return $lastid;
+    } */
+
+    /* [BS] Seems not in use */
+    /*
     public function rta_update_record( $table = '', $data = array(), $where = '' ) {
-        
+
         if( empty($where) || empty($data) || empty($table) ) {
             return false;
         }
-        
+
         global $wpdb;
         $exclude = array( 'id','btnsave' );
         $attr = "";
@@ -214,69 +243,79 @@ class RTA
             }
             if( !in_array( $k, $exclude )) {
                 if( $attr == "" ) {
-                    $attr.="`".$k."` = '".$val."'";                    
+                    $attr.="`".$k."` = '".$val."'";
                 }else{
                     $attr.=", `".$k."` = '".$val."'";
-                }                
+                }
             }
         }
         $sql = "UPDATE `".$wpdb->prefix.$table."` SET ".$attr." WHERE ".$where;
         $wpdb->query($sql);
-        
+
         return true;
-    }
-    
+    } */
+
+    /* [BS] Seems not in use */
+    /*
     public function rta_del_record( $table = '', $where = '' ) {
-        
+
         if( empty($where) || empty($table) ) {
             return false;
         }
-        
+
         global $wpdb;
         $sql = "DELETE FROM `".$wpdb->prefix.$table."` WHERE ".$where;
         $wpdb->query($sql);
         return true;
-    }
-    
+    } */
+
+    /* [BS] Get data from postmeta table. */
     public function rta_get_data( $table = '', $where = "1", $get_row = false, $attr = "*" ) {
-        
+
         if( empty($table) ) {
             return false;
         }
-        
+
         global $wpdb;
-        
+        // [BS] TODO - Query not prepared by default here. 
         $sql = "SELECT ".$attr." FROM `".$wpdb->prefix.$table."` WHERE ".$where;
         if( $get_row ) {
             $data = $wpdb->get_row($sql);
         }else{
             $data = $wpdb->get_results($sql);
         }
-        
+
         return $data;
     }
-    
+
+    /* [BS] Seems not in use. Also using a hardcoded key doesn't sound like a very strong function */
+    /*
     public function rta_number_encrypt($data, $key = 'geyktksYMZNQU8lRTRSAIMFWSF2csvsq2we', $base64_safe=true, $shrink=true) {
         if ($shrink) $data = base_convert($data, 10, 36);
         $data = @mcrypt_encrypt(MCRYPT_ARCFOUR, $key, $data, MCRYPT_MODE_STREAM);
         if ($base64_safe) $data = str_replace('=', '', base64_encode($data));
         return $data;
-    }
+    } */
 
+    /* [BS] Seems not in use */
+    /*
     public function rta_number_decrypt($data, $key = 'geyktksYMZNQU8lRTRSAIMFWSF2csvsq2we', $base64_safe=true, $expand=true) {
         if ($base64_safe) $data = base64_decode($data.'==');
         $data = @mcrypt_encrypt(MCRYPT_ARCFOUR, $key, $data, MCRYPT_MODE_STREAM);
         if ($expand) $data = base_convert($data, 36, 10);
         return $data;
-    }
-    
+    } */
+
+
+    /* [BS] Replace this usages by sanitize_text_field which is made for this */
+
     public function make_safe( $variable ) {
 
-        $variable = $this->strip_html_tags($variable);
+    /*    $variable = $this->strip_html_tags($variable);
         $bad = array("<", ">");
-        $variable = str_replace($bad, "", $variable);
-        
-        return $variable;
+        $variable = str_replace($bad, "", $variable); */
+
+        return sanitize_text_field($variable);
     }
 
     public function strip_html_tags( $text ) {
@@ -298,7 +337,7 @@ class RTA
 
         return strip_tags( $text);
     }
-    
+
     public function array_sort($array, $on, $order='ASC'){
 
         $new_array = array();
@@ -333,15 +372,17 @@ class RTA
 
         return $new_array;
     }
-    
+
     // Function to safe redirect the page without warnings
+    /* [BS] Seems not in use. Also wp_safe_redirect should be used for something like this */
+    /*
     public function redirect( $url ) {
         echo '<script language="javascript">window.location.href="'.$url.'";</script>';
         exit();
-    }
-    
+    } */
+
     //Function will get called on plugin activation
-    static function rta_install() {
+    public static function rta_install() {
 
         do_action('rta_before_install');
 
@@ -351,7 +392,7 @@ class RTA
     }
 
     // Function will get called on plugin de activation
-    static function rta_uninstall() {
+    public static function rta_uninstall() {
 
         do_action('rta_before_uninstall');
 
