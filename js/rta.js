@@ -15,7 +15,7 @@ rtaJS.prototype.init = function()
   this.checkSubmitReady();
 
   $('.select, .deselect').on('click', $.proxy(this.selectAll, this));
-  $('input, select').on('change', $.proxy(this.checkSubmitReady, this));
+  $(document).on('change','input, select', $.proxy(this.checkSubmitReady, this));
 
   // the start of it all.
   $(document).on("click", '.rta_regenerate', $.proxy(this.processInit, this));
@@ -24,7 +24,9 @@ rtaJS.prototype.init = function()
   // save image sizes when updated
   $(document).on('change', '.table.imagesizes input, .table.imagesizes select', $.proxy(this.image_size_changed, this));
   $(document).on('click', '.table.imagesizes .btn_remove_row', $.proxy(this.remove_image_size_row, this));
+  $(document).on('click', '#btn_add_image_size', $.proxy(this.add_image_size_row));
 
+  $(document).on('click', '.rta_error_link', $.proxy(function () { this.show_errorbox(true); }, this) ) ;
   this.formcookie = this.get_form_cookie();
 
   // [TODO] check offset, total cookie. If there. resume processing
@@ -41,9 +43,6 @@ rtaJS.prototype.init = function()
       this.process();
     }
   }
-  //console.log( offset);
-  //console.log(total);
-
 }
 
 rtaJS.prototype.checkSubmitReady = function()
@@ -81,6 +80,7 @@ rtaJS.prototype.selectAll = function(e)
    }
 
    $('input[name^="' + target + '"]').attr('checked', checked).trigger('change');
+
 }
 
 rtaJS.prototype.processInit = function (e)
@@ -89,7 +89,7 @@ rtaJS.prototype.processInit = function (e)
 
   this.unset_all_cookies();
   this.show_errorbox(false);
-  this.show_progress(0);
+//  this.show_progress(0);
   this.show_wait(true);
 
   this.in_process = true;
@@ -97,13 +97,7 @@ rtaJS.prototype.processInit = function (e)
   this.set_form_cookie();
 
   var self = this;
-
-  // to be consistent. Interuppted process should directly fly to process
-  if (this.is_interrupted_process)
-    var form = this.formcookie;
-  else {
-    var form = $('#frm_rta_image_sizes').serialize();
-  }
+  var form = this.get_form_cookie();
 
   $.ajax({
       type: 'POST',
@@ -113,15 +107,16 @@ rtaJS.prototype.processInit = function (e)
               nonce: rta_data.nonce_generate,
               action: 'rta_regenerate_thumbnails',
               type: 'general',
-              form: $('#frm_rta_image_sizes').serialize(),
+              form: JSON.stringify(form),
       },
       success: function (response) {
           if( response.pCount > 0 ) {
             self.offset = 0;
             self.total = response.pCount;
-            self.set_process_cookie(this.offset, this.total);
+            self.set_process_cookie(self.offset, self.total);
             self.process();
           }else{
+              self.finishProcess();
               self.add_error(response.logstatus);
               self.show_errorlink(true);
           }
@@ -134,15 +129,14 @@ rtaJS.prototype.process = function()
     offset = this.offset;
     total = this.total;
 
+    this.in_process = true;
+    this.checkSubmitReady();
+
     var percentage_done = Math.round((offset/total)*100);
     this.show_progress(percentage_done);
     var self = this;
 
-    if (this.is_interrupted_process)
-      var form = this.formcookie;
-    else {
-      var form = $('#frm_rta_image_sizes').serialize();
-    }
+    var form = this.get_form_cookie();
 
     if(offset < total) {
         $.ajax({
@@ -154,7 +148,7 @@ rtaJS.prototype.process = function()
                     action: 'rta_regenerate_thumbnails',
                     type: 'submit',
                     offset:offset,
-                    form: $('#frm_rta_image_sizes').serialize(),
+                    form: JSON.stringify(form),
             },
             success: function (response) {
                 if( response.offset <= total ) {
@@ -202,9 +196,9 @@ rtaJS.prototype.process = function()
     rtaJS.prototype.show_progress = function(percentage_done) {
         //var $ = jQuery;
         if($(".rta_progress .images img").attr("src").indexOf("http") != -1 ) {
-            $(".rta_progress .images").show();
+            $(".rta_progress .images").css('opacity', 100);
         }else{
-            $(".rta_progress .images").hide();
+            $(".rta_progress .images").css('opacity', 0);
         }
         var total_circle = 289.027;
         if(percentage_done>0) {
@@ -213,8 +207,9 @@ rtaJS.prototype.process = function()
         $(".CircularProgressbar-path").css("stroke-dashoffset",total_circle+"px");
         $(".CircularProgressbar-text").html(percentage_done+"%");
         if(!$(".rta_progress").is(":visible")) {
-            rta_hide_wait();
+            this.show_wait(false);
             $(".rta_progress").slideDown();
+            $(".rta_progress").css('display', 'inline-block');
         }
     }
 
@@ -237,7 +232,7 @@ rtaJS.prototype.process = function()
                 html = '<li class="list-group-item headLi">'+log+'</li>';
             }
             $(".rta_error_box ul").append(html);
-            rta_set_cookie("rta_error_box_ul",$(".rta_error_box ul").html());
+            this.set_cookie("rta_error_box_ul",$(".rta_error_box ul").html());
         }
     }
 
@@ -271,7 +266,7 @@ rtaJS.prototype.process = function()
         var total_circle = 289.027;
         $(".rta_progress .images img").attr("src","");
         $(".CircularProgressbar-path").css("stroke-dashoffset",total_circle+"px");
-        $(".rta_progress .images").hide();
+        $(".rta_progress .images").css('opacity', 0);
         $(".rta_progress").slideUp();
         $(".CircularProgressbar-text").html("0%");
     }
@@ -286,10 +281,20 @@ rtaJS.prototype.process = function()
     rtaJS.prototype.set_default_values = function() {
     }
 
+    rtaJS.prototype.set_process_cookie = function(offset, total)
+    {
+      offset = parseInt(offset);
+      total = parseInt(total);
+
+      if (! isNaN(offset))
+        this.set_cookie('rta_offset', offset);
+      if (! isNaN(total))
+        this.set_cookie('rta_total', total);
+    }
+
     rtaJS.prototype.get_form_cookie = function()
     {
       var cook = this.get_cookie('rta_last_settings');
-      //console.log(cook.length);
       formcookie = {};
       if (cook.length > 0)
         formcookie = JSON.parse(cook);
@@ -297,25 +302,35 @@ rtaJS.prototype.process = function()
       return formcookie;
     }
 
-    rtaJS.prototype.set_process_cookie = function(offset, total)
-    {
-      this.set_cookie('rta_offset', offset);
-      this.set_cookie('rta_total', total);
-    }
-
     rtaJS.prototype.set_form_cookie = function() {
         var formcookie = {};
         $('#frm_rta_image_sizes').find('input, select').each(function()
         {
-            var value = $(this).attr('value');
+            var value = $(this).val();
             var name = $(this).attr('name');
 
-            if ( $(this).attr('type') == 'checkbox' && ! $(this).attr('checked') )
+            if (name.indexOf('image_sizes[') >= 0)
+            {
+              return true;
+            }
+
+            if ( $(this).attr('type') == 'checkbox' && ! $(this).prop('checked') )
             {
               return true; // continue if not checked..
             }
 
-            formcookie[name] = value;
+            // Restore array of inputs with array. Needlessly complicated.
+            // 1 = name of input without [] , 2 is index of input.
+              matches = name.match(/(.*?)\[(.*)\]/);
+              if (matches !== null)
+              {
+                if (!formcookie[matches[1]]) {
+                    formcookie[matches[1]] = [];
+                }
+                  formcookie[matches[1]][matches[2]] = value;
+              }
+              else
+                formcookie[name] = value;
          });
 
          this.set_cookie('rta_last_settings',  JSON.stringify(formcookie), 10);
@@ -359,8 +374,8 @@ rtaJS.prototype.process = function()
 
     rtaJS.prototype.image_size_changed = function(e) {
         var rowid = $(e.target).parents('.row').attr('id');
-        rta_update_thumb_name(rowid);
-        rta_save_image_sizes();
+        this.update_thumb_name(rowid);
+        this.save_image_sizes();
     }
 
     rtaJS.prototype.update_thumb_name = function(rowid) {
@@ -381,7 +396,7 @@ rtaJS.prototype.process = function()
         var action = 'rta_save_image_sizes';
         var the_nonce = rta_data.nonce_savesizes;
         //$.post(rta_data.ajaxurl+"?action="+$("#frm_rta_image_sizes").attr("action"), $('#frm_rta_image_sizes').serialize());
-
+        var self = this;
         // proper request
         $.ajax({
             type: 'POST',
@@ -391,6 +406,15 @@ rtaJS.prototype.process = function()
                   action: action,
                   nonce: the_nonce,
                   form: $('#frm_rta_image_sizes').serialize(),
+            },
+            success: function (response) {
+                if (! response.error)
+                {
+                  if (response.new_image_sizes)
+                  {
+                    $('.thumbnail_select .checkbox-list').fadeOut(80).html(response.new_image_sizes).fadeIn(80);
+                  }
+                }
             }
         });
 
@@ -401,7 +425,7 @@ rtaJS.prototype.process = function()
 
         if(confirm("Are you sure you want delete it?")) {
             $("#"+rowid).remove();
-            rta_save_image_sizes();
+            this.save_image_sizes();
         }
     }
 

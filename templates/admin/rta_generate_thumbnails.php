@@ -10,7 +10,7 @@
 <section class='image_sizes'>
 
   <div class='container'>
-  <h4><?php _e('Image Sizes','regenerate-thumbnails-advanced'); ?>   <input type="button" name="btn_add_image_size" id="btn_add_image_size" class="btn_add_more" value="<?php _e('Add New Size','regenerate-thumbnails-advanced'); ?>" onclick="javascript:rta_add_image_size_row();" /></h4>
+  <h4><?php _e('Image Sizes','regenerate-thumbnails-advanced'); ?>   <input type="button" name="btn_add_image_size" id="btn_add_image_size" class="btn_add_more" value="<?php _e('Add New Size','regenerate-thumbnails-advanced'); ?>"  /></h4>
 
       <div class='table imagesizes'>
 
@@ -129,7 +129,7 @@
 
 <section class='form_controls'>
   <div class='container'>
-    <button  type='submit' disabled class='rta_regenerate disabled'>Save and Regenerate</button>
+    <button  type='button' disabled class='rta_regenerate disabled'>Save and Regenerate</button>
   </div>
 </section>
 
@@ -161,7 +161,7 @@
         </div>
     </div>
 
-    <a href="#" onclick="javascript: return rta_show_errorbox();" class="rta_error_link rta_hidden">There were some errors, click for details</a>
+    <a href="javascript:void(0);" class="rta_error_link rta_hidden">There were some errors, click for details</a>
     <div class="listContainer rta_error_box row rta_hidden">
         <div class="statuslist col-sm-6">
             <h4 class="listTitle">Error(s)</h4>

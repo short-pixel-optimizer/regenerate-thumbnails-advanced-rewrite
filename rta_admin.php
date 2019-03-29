@@ -195,10 +195,16 @@ class RTA_Admin extends RTA
         }
 
         if (isset($_POST['form']))
-          parse_str($_POST['form'], $data);
+        {
+            $data = json_decode(html_entity_decode(stripslashes($_POST['form'])), true);
+            //parse_str($_POST['form'], $data);
+
+        }
         else {
           $this->jsonResponse(array('error' => true, 'logstatus' => "No Data", 'message' => "Site error, No Data"));
         }
+
+        $this->debug('POST VARS'); $this->debug($data);
 
         $has_period = (isset($data['period']) && $data['period'] > 0) ? true : false;
         $is_featured_only = (isset($data['regenonly_featured']) ) ? true : false;
@@ -279,7 +285,6 @@ class RTA_Admin extends RTA
                 ); */
 
                 $the_query = new WP_Query($query_args);
-                $this->debug($the_query);
                 $this->debug('(General) Process Start with args'); $this->debug($query_args);
                 $post_count = 0;
 
@@ -318,16 +323,20 @@ class RTA_Admin extends RTA
                 $viewControl = new rtaAdminController($this);
                 $imageSizes = $viewControl->getImageSizes();
 
-                $regenerate_sizes = isset($data['regenerate_sizes']) ? $data['regenerate_sizes'] : array();
+                $regenerate_sizes = isset($data['regenerate_sizes']) ? array_filter($data['regenerate_sizes']) : array();
 
-                if (count($regenerate_sizes) != count($imageSizes) )
+                $this->debug('Count regen'); $this->debug(count($regenerate_sizes));
+
+                if ( (count($regenerate_sizes) != count($imageSizes)) && count($regenerate_sizes) > 0 )
                 {
-                    $this->debug('Generate Size');
-                    $this->debug($regenerate_sizes);
+                    // reset the array index, because never know.
+                    $regenerate_sizes = array_values($regenerate_sizes);
+                    $this->debug('Regen Sizes'); $this->debug($regenerate_sizes);
 
                     // replace standard filter of image sizes, with our selection
                     add_filter('intermediate_image_sizes', function($image_sizes) use ($regenerate_sizes)
                     {
+                      $this->debug('Filter, limited image sizes applied');
                       return $regenerate_sizes;
                     });
                 }
@@ -606,7 +615,8 @@ class RTA_Admin extends RTA
     }
 
     public function view_generate_thumbnails() {
-
+        wp_enqueue_style('rta_css');
+        wp_enqueue_script('rta_js');
         //$rta_image_sizes = get_option( 'rta_image_sizes' );
         $view = new rtaAdminController($this);
         $view->show();

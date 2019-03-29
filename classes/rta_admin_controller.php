@@ -72,6 +72,7 @@ class rtaAdminController
   }
 
   public function save_image_sizes() {
+      global $_wp_additional_image_sizes;
 
       $jsonReponse = array('message' => '', 'error' => '');
       $error = false;
@@ -120,9 +121,12 @@ class rtaAdminController
       $option['image_sizes'] = $rta_image_sizes;
       update_option( 'rta_image_sizes', $option );
 
-      $message = $this->controller->rta_get_message_html( $rta_lang['image_sizes_save_message'], 'message' );
+      // redo the thumbnail options, apply changes
+      $sizes = isset($formpost['regenerate_sizes']) ? $formpost['regenerate_sizes'] : array();
+      $newsizes = $this->generateImageSizeOptions($sizes);
 
-      $jsonResponse = array( 'error' => $error, 'message' => $message );
+      $message = $this->controller->rta_get_message_html( $rta_lang['image_sizes_save_message'], 'message' );
+      $jsonResponse = array( 'error' => $error, 'message' => $message, 'new_image_sizes' => $newsizes );
 
       return $jsonResponse;
 
@@ -132,24 +136,47 @@ class rtaAdminController
   {
     global $_wp_additional_image_sizes;
 
+    $option = get_option('rta_image_sizes');
+    $our_image_sizes = isset($option['image_sizes']) ? $option['image_sizes']: array();
+
     $imageSizes = array();
     foreach ( get_intermediate_image_sizes() as $_size )
     {
-       $imageSizes[] = $_size;
+       if ( strpos($_size, 'rta_') === false)
+        $imageSizes[$_size] = $_size;
     }
 
+    // put our defined images manually, to properly update when sizes /names change.
+    if (isset($our_image_sizes['pname']))
+    {
+      for($i = 0; $i < count($our_image_sizes['pname']); $i++ )
+      {
+        $int_name = $our_image_sizes['name'][$i];
+        $name = $our_image_sizes['pname'][$i];
+        if (strlen($name) == 0) // can't since name is tied to what it gives back to the process
+            $name = $int_name;
+
+        $imageSizes[$int_name] = $name;
+      }
+    }
     return $imageSizes;
 
   }
 
-  public function generateImageSizeOptions()
+  public function generateImageSizeOptions($checked_ar = false)
   {
     $output = '';
     $i = 0;
-    foreach($this->getImageSizes() as $size):
+    $check_all = ($checked_ar === false) ? true : false;
+
+    foreach($this->getImageSizes() as $value =>  $size):
+
+      //if ($check_all)
+        //$checked = 'checked';
+      $checked = ($check_all || in_array($size, $checked_ar)) ? 'checked' : '';
 
       $output .= "<span class='item'>
-        <input type='checkbox' id='regenerate_sizes[$i]' name='regenerate_sizes[$i]' value='$size' checked>
+        <input type='checkbox' id='regenerate_sizes[$i]' name='regenerate_sizes[$i]' value='$value' $checked>
           <label for='regenerate_sizes[$i]'>" .  ucfirst($size) . "</label>
       </span>";
 

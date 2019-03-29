@@ -87,11 +87,15 @@
 .rta-admin section.regenerate .images {
   margin-left: 225px;
   float: left;
-  padding: 5px;
+  padding: 15px;
   border: 1px solid #cecece;
-  margin-right: 50px; }
+  margin-right: 50px;
+  opacity: 0; }
   .rta-admin section.regenerate .images h5 {
     text-align: center; }
   .rta-admin section.regenerate .images img {
     max-width: 500px;
     max-height: 500px; }
+.rta-admin section.regenerate .rta_hidden {
+  display: inline-block;
+  display: none; }

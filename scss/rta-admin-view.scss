@@ -130,7 +130,6 @@
     {
       display: inline-block;
       width: 200px;
-
       padding: 25px 0;
     }
     .rta_progress {
@@ -139,9 +138,10 @@
     .images {
       margin-left: 225px;
       float: left;
-      padding: 5px;
+      padding: 15px;
       border: 1px solid #cecece;
       margin-right: 50px;
+      opacity: 0;
       h5 {
         text-align: center;
       }
@@ -150,6 +150,11 @@
         max-height: 500px;
       }
 
+    }
+    .rta_hidden
+    {
+      display: inline-block;
+      display: none;
     }
   }
 }

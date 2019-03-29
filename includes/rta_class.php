@@ -49,8 +49,8 @@ class RTA
         do_action('rta_before_enqueue_scripts');
 
         //wp_enqueue_script( 'jquery' );
-        wp_enqueue_script( 'rta_js', RTA_PLUGIN_URL.'js/rta.js', array( 'jquery' ), RTA_PLUGIN_VERSION );
-        wp_enqueue_style( 'rta_css', RTA_PLUGIN_URL.'css/rta.css', array(), RTA_PLUGIN_VERSION );
+        wp_register_script( 'rta_js', RTA_PLUGIN_URL.'js/rta.js', array( 'jquery' ), RTA_PLUGIN_VERSION );
+        wp_register_style( 'rta_css', RTA_PLUGIN_URL.'css/rta.css', array(), RTA_PLUGIN_VERSION );
 
         wp_localize_script( 'rta_js', 'rta_data', array(
                             'ajaxurl' => admin_url( 'admin-ajax.php' ),
@@ -277,7 +277,7 @@ class RTA
         }
 
         global $wpdb;
-        // [BS] TODO - Query not prepared by default here. 
+        // [BS] TODO - Query not prepared by default here.
         $sql = "SELECT ".$attr." FROM `".$wpdb->prefix.$table."` WHERE ".$where;
         if( $get_row ) {
             $data = $wpdb->get_row($sql);
