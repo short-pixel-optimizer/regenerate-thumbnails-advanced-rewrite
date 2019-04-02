@@ -86,6 +86,7 @@ class RTA_Admin extends RTA
         $base = substr($mainFile, 0, strlen($mainFile) - strlen($ext) - 1);
         $pattern = '/' . preg_quote($base, '/') . '-\d+x\d+\.'. $ext .'/';
         $thumbsCandidates = @glob($base . "-*." . $ext);
+
         $thumbs = array();
         if(is_array($thumbsCandidates)) {
             foreach($thumbsCandidates as $th) {
@@ -93,7 +94,7 @@ class RTA_Admin extends RTA
                     $thumbs[]= $th;
                 }
             }
-            if(   count($this->customThumbSuffixes)
+            if( count($this->customThumbSuffixes)
                && !(   is_plugin_active('envira-gallery/envira-gallery.php')
                     || is_plugin_active('soliloquy/soliloquy.php')
                     || is_plugin_active('soliloquy-lite/soliloquy-lite.php'))){
@@ -259,8 +260,14 @@ class RTA_Admin extends RTA
 
              $sql = ' SELECT meta_value from ' . $wpdb->postmeta . ' where meta_key = "_thumbnail_id"';
              $result = $wpdb->get_col($sql);
-             if (count($result) > 0)
+            if (count($result) > 0)
               $query_args['post__in'] = array_values($result);
+
+            if (count($result) == 0)
+            {
+              $return_arr = array('pCount' => 0, 'type' => $process_type, 'period' => $period);
+              $this->jsonResponse($return_arr);
+            }
 
          }
 
@@ -316,7 +323,7 @@ class RTA_Admin extends RTA
                 $logstatus = '';
                 $error = array();
 
-                $del_thumbs = isset($data['del_thumbs']) ? true : false;
+                $del_thumbs = isset($data['del_associated_thumbs']) ? true : false;
                 $del_leftover_metadata = isset($data['del_leftover_metadata']) ? true : false;
                 $bulk = ($period == 0) ? true : false;
 
@@ -490,11 +497,11 @@ class RTA_Admin extends RTA
                             $metadata = wp_generate_attachment_metadata($image_id, $fullsizepath);
 
                             $updated_sizes = array();
-                            if (isset($metadata['sizes']))
+                            /* if (isset($metadata['sizes']))
                             {
-                              $original_sizes = isset($original_meta['sizes']) ? $original_meta['sizes'] : array();
-                              list($updated_sizes, $removed_sizes) = $this->getUpdatedSizes($original_sizes, $metadata['sizes']);
-                            }
+                            //   $original_sizes = isset($original_meta['sizes']) ? $original_meta['sizes'] : array();
+                            //  list($updated_sizes, $removed_sizes) = $this->getUpdatedSizes($original_sizes, $metadata['sizes']);
+                          } */
                             //restore the optimized main image
                             if($backup && $backup !== $fullsizepath) {
                                 rename($backup . "_optimized_" . $image_id, $fullsizepath);
@@ -510,7 +517,8 @@ class RTA_Admin extends RTA
                                 $error[] = array('offset' => ($offset + 1), 'error' => $error, 'logstatus' => $logstatus, 'imgUrl' => $filename_only, 'startTime' => $data['startTime'], 'fromTo' => $data['fromTo'], 'type' => $process_type, 'period' => $period);
                             } else {
                                 wp_update_attachment_metadata($image_id, $metadata);
-                                do_action('shortpixel-thumbnails-regenerated', $image_id, $original_meta, $updated_sizes, $bulk);
+                                // if bulk is set here, shortpixel will never put it in the queue, for some reason.
+                                do_action('shortpixel-thumbnails-regenerated', $image_id, $original_meta, $metadata, false);
                             }
                             $imageUrl = $filename_only;
                             $logstatus = 'Processed';

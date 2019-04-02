@@ -44,7 +44,12 @@ class RTA_Front extends RTA
         $rta_image_sizes = get_option( 'rta_image_sizes' );
         $image_sizes = $rta_image_sizes['image_sizes'];
         $rta_sizes = array();
-        if(is_array($image_sizes) && sizeof($image_sizes['name']) > 0){
+
+        if (count($image_sizes) == 0)
+        {
+          return $sizes;
+        }
+        if(is_array($image_sizes) && sizeof($image_sizes) > 0 && isset($image_sizes['name'])){
             for($i=0;$i<sizeof($image_sizes['name']);$i++){
                 $slug = $image_sizes['name'][$i];
                 $name = $image_sizes['pname'][$i];
