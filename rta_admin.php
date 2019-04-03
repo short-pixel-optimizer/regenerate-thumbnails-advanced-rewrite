@@ -120,6 +120,7 @@ class RTA_Admin extends RTA
      * schedules the image's attachment post to be deleted if all the thumbnails are missing or just removes the missing thumbnails from the sizes array if some still are present.
      * @param $image_id
      * @param $image_posts_to_delete
+     * TODO Remove this pass by reference.
      */
     function rta_del_leftover_metadata($image_id, $fullsizepath, &$image_posts_to_delete) {
         $original_meta = wp_get_attachment_metadata($image_id);

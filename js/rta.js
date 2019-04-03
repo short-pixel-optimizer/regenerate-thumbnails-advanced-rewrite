@@ -79,7 +79,7 @@ rtaJS.prototype.selectAll = function(e)
      checked = false;
    }
 
-   $('input[name^="' + target + '"]').attr('checked', checked).trigger('change');
+   $('input[name^="' + target + '"]').prop('checked', checked).trigger('change');
 
 }
 
