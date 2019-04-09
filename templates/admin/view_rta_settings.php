@@ -24,7 +24,8 @@
                       if (isset($image_sizes['name'])){
                         for($i=0;$i<count($image_sizes['name']);$i++){ ?>
 
-                      <?php $rowid = uniqid();
+                      <?php
+                        $rowid = uniqid();
 
                       ?>
                       <div id="<?php echo $rowid;?>" class='row flex'>

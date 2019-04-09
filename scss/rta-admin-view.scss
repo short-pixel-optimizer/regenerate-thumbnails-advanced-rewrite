@@ -19,6 +19,7 @@
   {
     min-height: 600px;
     background: #fff;
+    padding-bottom: 45px;
 
   }
 
@@ -42,7 +43,6 @@
   {
     max-width: 65%;
   }
-
 
   %button
   {
@@ -217,7 +217,7 @@
   {
     position: absolute;
     left: 45px;
-    bottom: 45px;
+    bottom: 0px;
 
     .save_indicator
     {

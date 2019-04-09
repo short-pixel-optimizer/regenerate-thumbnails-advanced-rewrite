@@ -30,20 +30,22 @@ class rtaAdminController
             'right_bottom' => __('Right bottom','regenerate-thumbnails-advanced'),
         );
 
-
-        $options = get_option('rta_image_sizes');
-        if (isset($options['image_sizes']))
-          $this->custom_image_sizes = $options['image_sizes'];
-
-        if (isset($options['jpeg_quality']))
-          $this->jpeg_quality = $options['jpeg_quality'];
-
-        if (isset($options['process_image_sizes']))
-          $this->process_image_sizes = $options['process_image_sizes'];
+        $this->setOptionData();
 
   }
 
+  protected function setOptionData()
+  {
+    $options = get_option('rta_image_sizes');
+    if (isset($options['image_sizes']))
+      $this->custom_image_sizes = $options['image_sizes'];
 
+    if (isset($options['jpeg_quality']))
+      $this->jpeg_quality = $options['jpeg_quality'];
+
+    if (isset($options['process_image_sizes']))
+      $this->process_image_sizes = $options['process_image_sizes'];
+  }
 
   public function show()
   {
@@ -66,7 +68,7 @@ class rtaAdminController
     foreach($this->cropOptions as $name => $label)
     {
       $selected =  ($name == $current) ? 'selected' : '';
-      $output .= "<option name='$name' $selected>$label</option>";
+      $output .= "<option value='$name' $selected>$label</option>";
     }
 
     return $output;
@@ -114,7 +116,6 @@ class rtaAdminController
             {
               continue;
             }
-
             // sanitize!
             $rta_image_sizes['name'][] = isset($image_sizes['name'][$i]) ? sanitize_text_field($image_sizes['name'][$i]) : '';
             $rta_image_sizes['pname'][] = isset($image_sizes['pname'][$i]) ? sanitize_text_field($image_sizes['pname'][$i]) : '';
@@ -134,9 +135,10 @@ class rtaAdminController
       $sizes = isset($formpost['regenerate_sizes']) ? $formpost['regenerate_sizes'] : array();
       $option['process_image_sizes'] = $sizes;  // the once that are set to regen.
 
-      $newsizes = $this->generateImageSizeOptions($sizes);
-
       update_option( 'rta_image_sizes', $option );
+      $this->setOptionData();
+
+      $newsizes = $this->generateImageSizeOptions($sizes);
 
       $message = $this->controller->rta_get_message_html( $rta_lang['image_sizes_save_message'], 'message' );
       $jsonResponse = array( 'error' => $error, 'message' => $message, 'new_image_sizes' => $newsizes );
@@ -145,7 +147,7 @@ class rtaAdminController
 
   }
 
-  /** Returns system wide defined image sizes */ 
+  /** Returns system wide defined image sizes */
   public function getImageSizes()
   {
     global $_wp_additional_image_sizes;
@@ -183,11 +185,12 @@ class rtaAdminController
     $i = 0;
     $check_all = ($checked_ar === false) ? true : false;
 
+    // size here is a name, value is how the name is found in the system (in interface, the technical name)
     foreach($this->getImageSizes() as $value =>  $size):
 
       //if ($check_all)
         //$checked = 'checked';
-      $checked = ($check_all || in_array($size, $checked_ar)) ? 'checked' : '';
+      $checked = ($check_all || in_array($value, $checked_ar)) ? 'checked' : '';
 
       $output .= "<span class='item'>
         <input type='checkbox' id='regenerate_sizes[$i]' name='regenerate_sizes[$i]' value='$value' $checked>

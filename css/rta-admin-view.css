@@ -14,7 +14,8 @@
     margin: 8px 0 8px 15px; }
   .rta-admin form {
     min-height: 600px;
-    background: #fff; }
+    background: #fff;
+    padding-bottom: 45px; }
   .rta-admin .rta-regenerate-wrap, .rta-admin .rta-settings-wrap {
     flex: 1;
     margin-bottom: 20px;
@@ -134,7 +135,7 @@
   .rta-admin .form_controls {
     position: absolute;
     left: 45px;
-    bottom: 45px; }
+    bottom: 0px; }
     .rta-admin .form_controls .save_indicator {
       display: none;
       color: #049901;

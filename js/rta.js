@@ -34,7 +34,6 @@ rtaJS.prototype.init = function()
 
   $(document).on('change', '.rta-settings-wrap input, .rta-settings-wrap select', $.proxy(this.show_save_indicator, this) );
 
-  // [TODO] check offset, total cookie. If there. resume processing
   var offset = parseInt(this.get_cookie('rta_offset'));
   var total = parseInt(this.get_cookie('rta_total'));
 
