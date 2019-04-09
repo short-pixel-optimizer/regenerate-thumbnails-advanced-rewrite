@@ -519,7 +519,8 @@ class RTA_Admin extends RTA
                             } else {
                                 wp_update_attachment_metadata($image_id, $metadata);
                                 // if bulk is set here, shortpixel will never put it in the queue, for some reason.
-                                do_action('shortpixel-thumbnails-regenerated', $image_id, $original_meta, $metadata, false);
+                                $is_a_bulk = true; // we are sending multiple images.
+                                do_action('shortpixel-thumbnails-regenerated', $image_id, $original_meta, $metadata, $is_a_bulk);
                             }
                             $imageUrl = $filename_only;
                             $logstatus = 'Processed';
