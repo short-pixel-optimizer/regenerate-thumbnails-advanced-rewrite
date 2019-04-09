@@ -56,6 +56,7 @@ class RTA
                             'ajaxurl' => admin_url( 'admin-ajax.php' ),
                             'nonce_savesizes' => wp_create_nonce('rta_save_image_sizes'),
                             'nonce_generate' => wp_create_nonce('rta_regenerate_thumbnails'),
+                            'confirm_nosave' => __('Settings not saved. You want to continue?'), 
                             ));
 
         do_action('rta_after_enqueue_scripts');

@@ -8,6 +8,8 @@ rtaJS.prototype = {
   is_interrupted_process: false,
   in_process: false,
   formcookie: null,
+  is_saved: true,
+
 }
 
 rtaJS.prototype.init = function()
@@ -23,11 +25,14 @@ rtaJS.prototype.init = function()
 
   // save image sizes when updated
   $(document).on('change', '.table.imagesizes input, .table.imagesizes select', $.proxy(this.image_size_changed, this));
+  $(document).on('click', 'button[name="save_settings"]', $.proxy(this.image_size_changed, this));
   $(document).on('click', '.table.imagesizes .btn_remove_row', $.proxy(this.remove_image_size_row, this));
   $(document).on('click', '#btn_add_image_size', $.proxy(this.add_image_size_row));
 
   $(document).on('click', '.rta_error_link', $.proxy(function () { this.show_errorbox(true); }, this) ) ;
   this.formcookie = this.get_form_cookie();
+
+  $(document).on('change', '.rta-settings-wrap input, .rta-settings-wrap select', $.proxy(this.show_save_indicator, this) );
 
   // [TODO] check offset, total cookie. If there. resume processing
   var offset = parseInt(this.get_cookie('rta_offset'));
@@ -66,6 +71,17 @@ rtaJS.prototype.checkSubmitReady = function()
     $('button.rta_regenerate').prop('disabled', true);
   }
 
+  if (this.is_saved)
+  {
+    $('button[name="save_settings"]').prop('disabled', true);
+    $('button[name="save_settings"]').addClass('disabled');
+  }
+  else {
+    $('button[name="save_settings"]').prop('disabled', false);
+    $('button[name="save_settings"]').removeClass('disabled');
+
+  }
+
 }
 
 rtaJS.prototype.selectAll = function(e)
@@ -87,8 +103,17 @@ rtaJS.prototype.processInit = function (e)
 {
   e.preventDefault();
 
+  if (! this.is_saved)
+  {
+    if(! confirm(rta_data.confirm_nosave)) {
+        return false;
+    }
+  }
+
   this.unset_all_cookies();
   this.show_errorbox(false);
+  this.hide_progress();
+  //this.show_errorlink(false);
 //  this.show_progress(0);
   this.show_wait(true);
 
@@ -188,11 +213,6 @@ rtaJS.prototype.process = function()
 
   }
 
-    rtaJS.prototype.hide_errorbox = function() {
-        var $ = jQuery;
-
-    }
-
     rtaJS.prototype.show_progress = function(percentage_done) {
         //var $ = jQuery;
         if($(".rta_progress .images img").attr("src").indexOf("http") != -1 ) {
@@ -207,7 +227,9 @@ rtaJS.prototype.process = function()
         $(".CircularProgressbar-path").css("stroke-dashoffset",total_circle+"px");
         $(".CircularProgressbar-text").html(percentage_done+"%");
         if(!$(".rta_progress").is(":visible")) {
+
             this.show_wait(false);
+            $('.rta_progress').removeClass('rta_hidden');
             $(".rta_progress").slideDown();
             $(".rta_progress").css('display', 'inline-block');
         }
@@ -217,7 +239,7 @@ rtaJS.prototype.process = function()
         if (! show)
           $(".rta_wait_loader").hide();
         else
-          $(".rta_wait_loader").show();
+          $(".rta_wait_loader").show().removeClass('rta_hidden');
     }
 
     rtaJS.prototype.add_error = function(log) {
@@ -240,14 +262,14 @@ rtaJS.prototype.process = function()
       //  var $ = jQuery;
        if (!show)
        {
-         $(".rta_error_box").slideUp();
+         $(".rta_error_box").slideUp(10);
          $(".rta_error_box ul").html("");
-         $(".rta_error_link").slideUp();
+         $(".rta_error_link").slideUp(10);
 
        }
        else {
          if(!$(".rta_error_box").is(":visible") && $(".rta_error_box ul li").length) {
-             $(".rta_error_box").slideDown();
+             $(".rta_error_box").removeClass('rta_hidden').slideDown();
          }
        }
 
@@ -257,7 +279,7 @@ rtaJS.prototype.process = function()
     rtaJS.prototype.show_errorlink = function() {
     //    var $ = jQuery;
         if(!$(".rta_error_link").is(":visible") && $(".rta_error_box ul li").length) {
-            $(".rta_error_link").slideDown();
+            $(".rta_error_link").removeClass('rta_hidden').slideDown();
         }
     }
 
@@ -370,9 +392,12 @@ rtaJS.prototype.process = function()
         $(row).attr('id', uniqueId);
         $(row).removeClass('proto');
         container.append(row.css('display', 'table-row') );
+
+        container.find('.header').removeClass('rta_hidden');
     }
 
     rtaJS.prototype.image_size_changed = function(e) {
+        e.preventDefault();
         var rowid = $(e.target).parents('.row').attr('id');
         this.update_thumb_name(rowid);
         this.save_image_sizes();
@@ -393,9 +418,10 @@ rtaJS.prototype.process = function()
     }
 
     rtaJS.prototype.save_image_sizes = function() {
+        this.settings_doingsave_indicator(true);
         var action = 'rta_save_image_sizes';
         var the_nonce = rta_data.nonce_savesizes;
-        //$.post(rta_data.ajaxurl+"?action="+$("#frm_rta_image_sizes").attr("action"), $('#frm_rta_image_sizes').serialize());
+
         var self = this;
         // proper request
         $.ajax({
@@ -405,7 +431,7 @@ rtaJS.prototype.process = function()
             data: {
                   action: action,
                   nonce: the_nonce,
-                  form: $('#frm_rta_image_sizes').serialize(),
+                  form: $('#rta_settings_form').serialize(),
             },
             success: function (response) {
                 if (! response.error)
@@ -415,9 +441,28 @@ rtaJS.prototype.process = function()
                     $('.thumbnail_select .checkbox-list').fadeOut(80).html(response.new_image_sizes).fadeIn(80);
                   }
                 }
+                self.is_saved = true;
+                self.settings_doingsave_indicator(false);
+                self.checkSubmitReady();
             }
         });
+    }
 
+    rtaJS.prototype.settings_doingsave_indicator = function (show)
+    {
+        if (show)
+        {
+            $('.form_controls .save_indicator').fadeIn(20);
+        }
+        else {
+            $('.form_controls .save_indicator').fadeOut(100);
+        }
+    }
+
+    rtaJS.prototype.show_save_indicator = function()
+    {
+        this.is_saved = false;
+        this.checkSubmitReady();
     }
 
     rtaJS.prototype.remove_image_size_row = function(e) {

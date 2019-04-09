@@ -41,9 +41,16 @@ class RTA_Front extends RTA
 
     public function rta_image_size_names_choose( $sizes ) {
 
-        $rta_image_sizes = get_option( 'rta_image_sizes' );
-        $image_sizes = $rta_image_sizes['image_sizes'];
+        $options = get_option( 'rta_image_sizes' );
+        $image_sizes = $options['image_sizes'];
         $rta_sizes = array();
+
+        // if user has selected custom thumbnails to use, remove the rest.
+        if (isset($options['process_image_sizes']))
+        {
+          $sizes = $options['process_image_sizes'];
+          return;
+        }
 
         if (count($image_sizes) == 0)
         {

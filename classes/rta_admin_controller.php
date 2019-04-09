@@ -5,6 +5,7 @@ class rtaAdminController
   protected $controller;
 
   protected $custom_image_sizes;
+  protected $process_image_sizes = false;
   protected $jpeg_quality = 90;
 
   protected $cropOptions;
@@ -37,6 +38,9 @@ class rtaAdminController
         if (isset($options['jpeg_quality']))
           $this->jpeg_quality = $options['jpeg_quality'];
 
+        if (isset($options['process_image_sizes']))
+          $this->process_image_sizes = $options['process_image_sizes'];
+
   }
 
 
@@ -44,6 +48,12 @@ class rtaAdminController
   public function show()
   {
     $html = $this->controller->rta_load_template( "rta_generate_thumbnails", "admin", array('view' => $this) );
+    echo $html;
+  }
+
+  public function loadChildTemplate($name)
+  {
+    $html = $this->controller->rta_load_template($name, 'admin', array('view' => $this ));
     echo $html;
   }
 
@@ -119,11 +129,14 @@ class rtaAdminController
         $option['jpeg_quality'] = $jpeg_quality;
 
       $option['image_sizes'] = $rta_image_sizes;
-      update_option( 'rta_image_sizes', $option );
 
       // redo the thumbnail options, apply changes
       $sizes = isset($formpost['regenerate_sizes']) ? $formpost['regenerate_sizes'] : array();
+      $option['process_image_sizes'] = $sizes;  // the once that are set to regen.
+
       $newsizes = $this->generateImageSizeOptions($sizes);
+
+      update_option( 'rta_image_sizes', $option );
 
       $message = $this->controller->rta_get_message_html( $rta_lang['image_sizes_save_message'], 'message' );
       $jsonResponse = array( 'error' => $error, 'message' => $message, 'new_image_sizes' => $newsizes );
@@ -132,6 +145,7 @@ class rtaAdminController
 
   }
 
+  /** Returns system wide defined image sizes */ 
   public function getImageSizes()
   {
     global $_wp_additional_image_sizes;

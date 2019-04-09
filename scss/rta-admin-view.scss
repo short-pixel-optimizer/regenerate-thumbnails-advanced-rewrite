@@ -1,5 +1,49 @@
 .rta-admin
 {
+  .two-panel-wrap
+  {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  h2 {
+    font-size: 26px;
+    padding-left: 8px;
+  }
+  h4 {
+    font-size: 16px;
+    margin: 8px 0 8px 15px;
+  }
+
+  form
+  {
+    min-height: 600px;
+    background: #fff;
+
+  }
+
+  .rta-regenerate-wrap, .rta-settings-wrap
+  {
+    //width: 50%; float: left;
+    flex: 1;
+    //min-height: 600px;
+    margin-bottom: 20px;
+    position: relative;
+    //max-width: 49%;
+    padding: 0 15px;
+  }
+
+  .rta-regenerate-wrap
+  {
+    max-width: 35%;
+  }
+
+  .rta-settings-wrap
+  {
+    max-width: 65%;
+  }
+
+
   %button
   {
     color: rgb(255, 255, 255);
@@ -14,9 +58,10 @@
   }
   .container
   {
-    max-width:90%;
-    background: #fff;
+  //  max-width:90%;
     padding: 20px;
+  //background: #fff;
+    margin: 0 auto;
   }
 
   .option
@@ -47,10 +92,7 @@
     }
   }
 
-  h4 {
-    font-size: 20px;
-    margin-left: 15px;
-  }
+
   button
   {
     @extend %button;
@@ -86,7 +128,7 @@
       span { display: table-cell;  padding: 5px; min-width: 100px; }
     }
 
-    .row.proto // used for JS cloning
+    .row.proto, .rta_hidden // used for JS cloning
     {
       display: none;
     }
@@ -124,8 +166,21 @@
     > span { cursor: pointer; color: #222; margin-right: 12px; display: inline-block }
   }
 
+  .cleanup-wrapper
+  {
+    padding: 8px;
+    border: 1px solid #ddd;
+    .option
+    {
+      display: flex;
+      flex: 1;
+      .note { flex: 2; }
+    }
+  }
+
   section.regenerate
   {
+    background-color: #fff;
     .CircularProgressbar
     {
       display: inline-block;
@@ -157,4 +212,30 @@
       display: none;
     }
   }
+
+  .form_controls
+  {
+    position: absolute;
+    left: 45px;
+    bottom: 45px;
+
+    .save_indicator
+    {
+      display: none;
+      color: #049901;
+      font-weight: 700;
+      background: url('/wp-admin/images/wpspin_light.gif') no-repeat left center;
+      background-size: 16px 16px;
+      padding-left: 20px;
+      .saved {
+        font-size: 60px;
+      }
+    }
+  }
+
+  // low in the tree, to override most.
+  /*.rta_hidden
+  {
+    display: none !important;
+  } */
 }

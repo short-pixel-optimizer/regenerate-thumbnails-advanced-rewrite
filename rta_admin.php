@@ -329,11 +329,12 @@ class RTA_Admin extends RTA
                 $bulk = ($period == 0) ? true : false;
 
                 $viewControl = new rtaAdminController($this);
-                $imageSizes = $viewControl->getImageSizes();
 
-                $regenerate_sizes = isset($data['regenerate_sizes']) ? array_filter($data['regenerate_sizes']) : array();
+                $imageSizes = $viewControl->getImageSizes();
+                $regenerate_sizes = $viewControl->process_image_sizes;  // isset($data['regenerate_sizes']) ? array_filter($data['regenerate_sizes']) : array();
 
                 $this->debug('Count regen'); $this->debug(count($regenerate_sizes));
+                $this->debug($imageSizes);
 
                 if ( (count($regenerate_sizes) != count($imageSizes)) && count($regenerate_sizes) > 0 )
                 {
