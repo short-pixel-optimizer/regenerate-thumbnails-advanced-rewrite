@@ -32,9 +32,9 @@
 
                             <span><input type="text" name="image_sizes[pname][]" class="image_sizes_pname" value="<?php echo $image_sizes['pname'][$i];?>" placeholder="<?php _e('Image Size Public Name','regenerate-thumbnails-advanced'); ?>" /></span>
 
-                            <span><input type="number" name="image_sizes[width][]" class="image_sizes_width tiny" value="<?php echo $image_sizes['width'][$i];?>" placeholder="<?php _e('Width','regenerate-thumbnails-advanced'); ?>" /> px </span>
+                            <span><input type="number" min="0" name="image_sizes[width][]" class="image_sizes_width tiny" value="<?php echo $image_sizes['width'][$i];?>" placeholder="<?php _e('Width','regenerate-thumbnails-advanced'); ?>" /> px </span>
 
-                            <span> <input type="number" name="image_sizes[height][]" class="image_sizes_height tiny" value="<?php echo $image_sizes['height'][$i];?>" placeholder="<?php _e('Height','regenerate-thumbnails-advanced'); ?>" /> px </span>
+                            <span> <input type="number" min="0" name="image_sizes[height][]" class="image_sizes_height tiny" value="<?php echo $image_sizes['height'][$i];?>" placeholder="<?php _e('Height','regenerate-thumbnails-advanced'); ?>" /> px </span>
 
                             <span>  <select name="image_sizes[cropping][]" class="image_sizes_cropping">
                               <?php echo $view->cropOptions($image_sizes['cropping'][$i]); ?>

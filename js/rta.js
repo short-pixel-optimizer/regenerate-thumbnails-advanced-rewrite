@@ -404,14 +404,25 @@ rtaJS.prototype.process = function()
 
     rtaJS.prototype.update_thumb_name = function(rowid) {
         if($("#"+rowid).length) {
+            var old_name = $("#"+rowid+" .image_sizes_name").val();
             var name = "rta_thumb";//$("#"+rowid+" .image_sizes_name").val();
             var width = $("#"+rowid+" .image_sizes_width").val();
             var height = $("#"+rowid+" .image_sizes_height").val();
             var cropping = $("#"+rowid+" .image_sizes_cropping").val();
+            var pname = $("#"+rowid+" .image_sizes_pname").val();
 
             if (width <= 0) width = '';  // don't include zero values here.
             if (height <= 0) height = '';
             var slug = (name+" "+cropping+" "+width+"x"+height).toLowerCase().replace(/ /g, '_');
+
+            // update the image size selection so it keeps checked indexes.
+            $('input[name^="regenerate_sizes"][value="' + old_name + '"]').val(slug);
+            if (pname.length <= 0)
+            {
+              $('input[name^="regenerate_sizes"][value="' + old_name + '"]').text(slug);
+            }
+
+
             $("#"+rowid+" .image_sizes_name").val(slug);
         }
     }
