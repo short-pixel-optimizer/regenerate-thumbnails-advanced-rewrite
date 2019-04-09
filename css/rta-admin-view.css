@@ -6,6 +6,12 @@
   .rta-admin .two-panel-wrap {
     display: flex;
     justify-content: space-between; }
+    @media (max-width: 1600px) {
+      .rta-admin .two-panel-wrap {
+        flex-direction: column-reverse; }
+        .rta-admin .two-panel-wrap .rta-regenerate-wrap, .rta-admin .two-panel-wrap .rta-settings-wrap {
+          width: 95%;
+          max-width: none; } }
   .rta-admin h2 {
     font-size: 26px;
     padding-left: 8px; }
@@ -36,7 +42,7 @@
     border-bottom: 1px solid #ccc;
     box-shadow: 0px 0px 4px #aaa; }
   .rta-admin .container {
-    padding: 20px;
+    padding: 20px 8px;
     margin: 0 auto; }
   .rta-admin .option {
     padding: 10px; }
@@ -52,7 +58,7 @@
       font-size: 12px;
       margin-left: 15px; }
   .rta-admin input.tiny {
-    width: 75px; }
+    width: 65px; }
   .rta-admin button {
     font-size: 14px;
     text-transform: uppercase;
@@ -69,17 +75,20 @@
     padding: 5px 6px;
     margin-left: 25px; }
   .rta-admin .table {
-    flex-wrap: wrap;
+    table-layout: fixed;
     display: table;
     border-spacing: 10px 0;
-    border: 1px solid #eee; }
+    border: 1px solid #eee;
+    word-wrap: normal;
+    white-space: nowrap; }
     .rta-admin .table .header, .rta-admin .table .row {
       width: 100%;
       display: table-row; }
+      .rta-admin .table .header input.image_sizes_pname, .rta-admin .table .row input.image_sizes_pname {
+        max-width: 180px; }
       .rta-admin .table .header span, .rta-admin .table .row span {
         display: table-cell;
-        padding: 5px;
-        min-width: 100px; }
+        padding: 5px; }
     .rta-admin .table .row.proto, .rta-admin .table .rta_hidden {
       display: none; }
   .rta-admin .flex {

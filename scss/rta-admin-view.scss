@@ -1,9 +1,22 @@
+@import 'mixins';
+
 .rta-admin
 {
   .two-panel-wrap
   {
     display: flex;
     justify-content: space-between;
+    @include breakpoint(0,1600px)
+    {
+      flex-direction: column-reverse;
+      .rta-regenerate-wrap, .rta-settings-wrap
+      {
+        width: 95%;
+        max-width: none;
+      }
+
+    }
+
   }
 
   h2 {
@@ -59,7 +72,7 @@
   .container
   {
   //  max-width:90%;
-    padding: 20px;
+    padding: 20px 8px;
   //background: #fff;
     margin: 0 auto;
   }
@@ -88,7 +101,7 @@
   {
     &.tiny
     {
-      width: 75px;
+      width: 65px;
     }
   }
 
@@ -118,14 +131,23 @@
   }
   .table
   {
-    flex-wrap: wrap;
+    //flex-wrap: wrap;
+    table-layout: fixed;
     display: table;
     border-spacing: 10px 0;
     border: 1px solid #eee;
+    word-wrap: normal;
+    white-space: nowrap;
+
     .header, .row {
       width: 100%;
       display: table-row;
-      span { display: table-cell;  padding: 5px; min-width: 100px; }
+
+      input.image_sizes_pname { max-width: 180px; }
+
+      span { display: table-cell;  padding: 5px;
+        //min-width: 100px;
+      }
     }
 
     .row.proto, .rta_hidden // used for JS cloning

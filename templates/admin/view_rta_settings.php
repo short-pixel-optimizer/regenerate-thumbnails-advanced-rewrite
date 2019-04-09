@@ -28,7 +28,7 @@
                         $rowid = uniqid();
 
                       ?>
-                      <div id="<?php echo $rowid;?>" class='row flex'>
+                      <div id="<?php echo $rowid;?>" class='row'>
 
                             <span><input type="text" name="image_sizes[pname][]" class="image_sizes_pname" value="<?php echo $image_sizes['pname'][$i];?>" placeholder="<?php _e('Image Size Public Name','regenerate-thumbnails-advanced'); ?>" /></span>
 

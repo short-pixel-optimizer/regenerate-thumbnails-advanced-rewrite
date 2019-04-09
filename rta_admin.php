@@ -495,7 +495,6 @@ class RTA_Admin extends RTA
                             $original_meta = wp_get_attachment_metadata($image_id);
                             // TODO also make sure only the regenerated thumbnails are passed to the action
 
-                            //This has to be changed to also generate the newly added sizes
                             $metadata = wp_generate_attachment_metadata($image_id, $fullsizepath);
 
                             $updated_sizes = array();
