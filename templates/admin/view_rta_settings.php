@@ -73,13 +73,21 @@
   <div class='container'>
 
       <div class='option'>
-        <label><?php _e('Regenerate selected thumbnails:') ?></label>
+        <label><?php _e('Use selected thumbnails:') ?></label>
         <div class='checkbox-list'>
             <?php echo $view->generateImageSizeOptions($view->process_image_sizes); ?>
         </div>
         <div class='select-options'><span class='select' data-action='select' data-target='regenerate_sizes' >Select All</span>
           <span class='deselect' data-action='deselect' data-target='regenerate_sizes'>Deselect All</span>
+          <div class='note'>
+            <ul>
+            <li><?php _e('Select the thumbnails you want to have available in your system. ', 'regenerate-thumbnails-advanced') ?></li>
+            <li><?php printf(__('%s Keep existing %s will only generate missing thumbnails of your selected size', 'regenerate-thumbnails-advanced'), '<strong>','</strong>'); ?></li>
+           </ul>
+         </div>
+
         </div>
+
       </div> <!-- option -->
 
     <div class='option'>

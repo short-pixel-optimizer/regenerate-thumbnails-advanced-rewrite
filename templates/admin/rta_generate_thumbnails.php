@@ -1,5 +1,3 @@
-
-
 <div class="rta-admin-wrap rta-admin">
     <div class='two-panel-wrap'>
       <div class='rta-regenerate-wrap'>

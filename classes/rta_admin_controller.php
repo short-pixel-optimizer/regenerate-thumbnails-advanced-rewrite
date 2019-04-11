@@ -4,8 +4,10 @@ class rtaAdminController
 {
   protected $controller;
 
+  /** Settings saved in the option table. Being set on construct. Refreshed on save */
   protected $custom_image_sizes;
   protected $process_image_sizes = false;
+  protected $process_image_options = array();
   protected $jpeg_quality = 90;
 
   protected $cropOptions;
@@ -45,6 +47,9 @@ class rtaAdminController
 
     if (isset($options['process_image_sizes']))
       $this->process_image_sizes = $options['process_image_sizes'];
+
+    if (isset($options['process_image_options']))
+        $this->process_image_options = $options['process_image_options'];
   }
 
   public function show()
@@ -133,7 +138,19 @@ class rtaAdminController
 
       // redo the thumbnail options, apply changes
       $sizes = isset($formpost['regenerate_sizes']) ? $formpost['regenerate_sizes'] : array();
-      $option['process_image_sizes'] = $sizes;  // the once that are set to regen.
+      $sizes_options = array();
+      foreach($sizes as $rsize)
+      {
+          if (isset($formpost['keep_' . $rsize]))
+          {
+            $size_options[$rsize] = array('overwrite_files' => false);
+          }
+          else {
+            $size_options[$rsize] = array('overwrite_files' => true);
+          }
+      }
+      $option['process_image_sizes'] = array_values($sizes);  // the once that are set to regen. Array values resets index
+      $option['process_image_options'] = $size_options;
 
       update_option( 'rta_image_sizes', $option );
       $this->setOptionData();
@@ -147,7 +164,10 @@ class rtaAdminController
 
   }
 
-  /** Returns system wide defined image sizes */
+  /** Returns system wide defined image sizes plus our custom sizes
+  *
+  * This function is exclusively meant for display / view purposes
+  */
   public function getImageSizes()
   {
     global $_wp_additional_image_sizes;
@@ -185,17 +205,26 @@ class rtaAdminController
     $i = 0;
     $check_all = ($checked_ar === false) ? true : false;
 
+    $process_options = $this->process_image_options;
+
     // size here is a name, value is how the name is found in the system (in interface, the technical name)
     foreach($this->getImageSizes() as $value =>  $size):
 
       //if ($check_all)
         //$checked = 'checked';
       $checked = ($check_all || in_array($value, $checked_ar)) ? 'checked' : '';
+      $hidden = ($checked == 'checked') ? '' : 'hidden'; // hide add. option if not checked.
 
-      $output .= "<span class='item'>
-        <input type='checkbox' id='regenerate_sizes[$i]' name='regenerate_sizes[$i]' value='$value' $checked>
-          <label for='regenerate_sizes[$i]'>" .  ucfirst($size) . "</label>
+      $checked_keep = (isset($process_options[$value]) && isset($process_options[$value]['overwrite_files']) && ! $process_options[$value]['overwrite_files'] )  ? 'checked' : true;
+
+
+      $output .= "<div class='item'>";
+      $output .= "<span>
+        <label> <input type='checkbox' id='regenerate_sizes[$i]' name='regenerate_sizes[$i]' value='$value' $checked>
+          " .  ucfirst($size) . "</label>
       </span>";
+      $output .= "<span class='options $hidden'><label><input type='checkbox' $checked_keep name='keep_" . $value . "'> Keep existing</label></span>";
+      $output .= "</div>";
 
       $i++;
     endforeach;

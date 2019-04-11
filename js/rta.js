@@ -33,6 +33,7 @@ rtaJS.prototype.init = function()
   this.formcookie = this.get_form_cookie();
 
   $(document).on('change', '.rta-settings-wrap input, .rta-settings-wrap select', $.proxy(this.show_save_indicator, this) );
+  $(document).on('change', 'input[name^="regenerate_sizes"]', $.proxy(this.checkOptionsVisible, this));
 
   var offset = parseInt(this.get_cookie('rta_offset'));
   var total = parseInt(this.get_cookie('rta_total'));
@@ -421,6 +422,8 @@ rtaJS.prototype.process = function()
             {
               $('input[name^="regenerate_sizes"][value="' + old_name + '"]').text(slug);
             }
+            $('input[name="keep_' + old_name + '"]').attr('name', 'keep_' + slug);
+
 
 
             $("#"+rowid+" .image_sizes_name").val(slug);
@@ -449,6 +452,7 @@ rtaJS.prototype.process = function()
                   if (response.new_image_sizes)
                   {
                     $('.thumbnail_select .checkbox-list').fadeOut(80).html(response.new_image_sizes).fadeIn(80);
+                    self.checkOptionsVisible();
                   }
                 }
                 self.is_saved = true;
@@ -479,9 +483,27 @@ rtaJS.prototype.process = function()
         var rowid = $(e.target).parents('.row').attr('id');
 
         if(confirm("Are you sure you want delete it?")) {
+            var intName = $('#' + rowid).find('.image_sizes_name').val();
+            $('input[name^="regenerate_sizes"][value="' + intName + '"]').remove(); // remove the checkbox as well, otherwise this will remain saved.
+
             $("#"+rowid).remove();
+
             this.save_image_sizes();
         }
+    }
+
+    rtaJS.prototype.checkOptionsVisible = function()
+    {
+        $('input[name^="regenerate_sizes"]').each(function ()
+        {
+           if ($(this).is(':checked'))
+           {
+             $(this).parents('.item').find('.options').removeClass('hidden');
+           }
+           else {
+             $(this).parents('.item').find('.options').addClass('hidden');
+           }
+        });
     }
 
     window.rtaJS = new rtaJS();

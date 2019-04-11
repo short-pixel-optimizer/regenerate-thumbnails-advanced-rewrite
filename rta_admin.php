@@ -19,6 +19,8 @@ class RTA_Admin extends RTA
     const PERIOD_6MONTH = 5;
     const PERIOD_YEAR = 6;
 
+    protected $viewControl = null; // controller that handles the admin page.
+
     //Admin side starting point. Will call appropriate admin side hooks
     public function __construct() {
         $this->customThumbSuffixes = array('_c', '_tl', '_tr', '_br', '_bl');
@@ -80,7 +82,8 @@ class RTA_Admin extends RTA
         echo $html;
     }
 
-    function rta_del_associated_thumbs($mainFile='') {
+    // TODO Issue with this - function would remove all thumbnails. Need a better function.
+    /*function rta_del_associated_thumbs($mainFile='') {
         //See ShortPixel Image Optimiser's findThumbs method
         $ext = pathinfo($mainFile, PATHINFO_EXTENSION);
         $base = substr($mainFile, 0, strlen($mainFile) - strlen($ext) - 1);
@@ -114,7 +117,7 @@ class RTA_Admin extends RTA
             }
         }
         return $thumbs;
-    }
+    } */
 
     /**
      * schedules the image's attachment post to be deleted if all the thumbnails are missing or just removes the missing thumbnails from the sizes array if some still are present.
@@ -279,18 +282,10 @@ class RTA_Admin extends RTA
           $data['fromTo'] = 0;
 
         $imageUrl='';
-
         $logstatus = '';
-        //$offset = 0;
+
         switch ($process_type) {
             case 'general': // this function only gather amount of images to process, runs before 'submit'
-                /*$args = array(
-                    'post_type' => 'attachment',
-                    'post_mime_type' => 'image',
-                    'posts_per_page' => -1,
-                    'post_status' => 'any',
-                    'offset' => 0,
-                ); */
 
                 $the_query = new WP_Query($query_args);
                 $this->debug('(General) Process Start with args'); $this->debug($query_args);
@@ -299,8 +294,8 @@ class RTA_Admin extends RTA
                 if ($the_query->have_posts()) {
                     $post_count = $the_query->post_count;
                 }else{
-                    $logstatus = 'No pictures uploaded';
-                    $error[] = array('offset' => 0, 'logstatus' => $logstatus, 'imgUrl' => '', 'startTime' => '', 'fromTo' => '', 'type' => $process_type, 'period' =>'');
+                    $logstatus = __('No images found for this period or none uploaded');
+                    //$error[] = array('offset' => 0, 'logstatus' => $logstatus, 'imgUrl' => '', 'startTime' => '', 'fromTo' => '', 'type' => $process_type, 'period' =>'');
                     $finalResult = array('offset' => 0, 'error' => 1,'pCount'=>0, 'logstatus' => $logstatus, 'imgUrl' => '', 'type' => $process_type, 'period' =>'');
                     //header('Content-Type: application/json');
                     //echo json_encode($finalResult);
@@ -328,162 +323,48 @@ class RTA_Admin extends RTA
                 $del_leftover_metadata = isset($data['del_leftover_metadata']) ? true : false;
                 $bulk = ($period == 0) ? true : false;
 
-                $viewControl = new rtaAdminController($this);
+                $this->viewControl = new rtaAdminController($this);
 
-                $imageSizes = $viewControl->getImageSizes();
-                $regenerate_sizes = $viewControl->process_image_sizes;  // isset($data['regenerate_sizes']) ? array_filter($data['regenerate_sizes']) : array();
-
-                $this->debug('Count regen'); $this->debug(count($regenerate_sizes));
-                $this->debug($imageSizes);
-
-                if ( (count($regenerate_sizes) != count($imageSizes)) && count($regenerate_sizes) > 0 )
-                {
-                    // reset the array index, because never know.
-                    $regenerate_sizes = array_values($regenerate_sizes);
-                    $this->debug('Regen Sizes'); $this->debug($regenerate_sizes);
-
-                    // replace standard filter of image sizes, with our selection
-                    add_filter('intermediate_image_sizes', function($image_sizes) use ($regenerate_sizes)
-                    {
-                      $this->debug('Filter, limited image sizes applied');
-                      return $regenerate_sizes;
-                    });
-                }
-                //  return;
-                /*if (isset($data['offset'])) {
-                    $offset = intval($data['offset']);
-                } */
-                //$offset = isset($data['offset']) ? intval($data['offset']) : 0;
-
-                /*$args = array(
-                    'post_type' => 'attachment',
-                    'post_mime_type' => 'image',
-                    'post_status' => 'any',
-                    'posts_per_page' => 1,
-                    'offset' => $offset,
-                  //  'orderby' => 'ID',
-                  //  'order' => 'DESC',
-                ); */
-
-                /*if (isset($data['period'])) {
-                    $period = $data['period'];
-                    $bulk = ($period == self::PERIOD_ALL) ? true : false;
-                    $date_query = $this->getQueryDate($period);
-
-                    if (is_array($date_query['args']))
-                    {
-                      $args['date_query'] = $date_query['args'];
-                    }
-                } */
-
-                /* [BS] This was weirdly overwriting any previous args
-                $args = array(
-                    'post_type' => 'attachment',
-                    'post_mime_type' => 'image',
-                    'post_status' => 'any',
-                    'posts_per_page' => 1,
-                    'offset' => $offset,
-                ); */
-
-              //  $this->debug('Submit process');
-              //  $this->debug($args);
-
-              /*  if ($period != 0 && isset($date)) {
-                    if (!empty($date)) {
-                        $fromTo = explode('-', $date);
-                        $startDate = date('m/d/Y', strtotime($fromTo[0]));
-                        $endDate = date('m/d/Y', strtotime($fromTo[1].' +1 day'));
-
-                        if (!empty($startDate) && empty($endDate)) {
-                            $args['date_query'] = array('after' => $startDate);
-                        } elseif (!empty($endDate) && empty($startDate)) {
-                            $args['date_query'] = array('before' => $endDate);
-                        } elseif (!empty($startDate) && !empty($endDate)) {
-                            $args['date_query'] = array('after' => $startDate, 'before' => $endDate);
-                        }
-                    }
-                } */
-                /*$featured_img_w = $data['featured_img_w'];
-                $featured_img_h = $data['featured_img_h'];
-                $no_featured_img_w = $data['no_featured_img_w'];
-                $no_featured_img_h = $data['no_featured_img_h'];
-                $default_thumb_w = $data['default_img_w'];
-                $default_thumb_h = $data['default_img_h'];
-                update_option('thumbnail_size_w',$default_thumb_w);
-                update_option('thumbnail_size_h',$default_thumb_h); */
-                $featured_images_ids = array();
-                /*if(!empty($featured_img_w) || !empty($no_featured_img_w)) {
-                    $featured_images = $this->rta_get_data("postmeta", "meta_key = '_thumbnail_id'");
-                    foreach($featured_images as $row) {
-                        $featured_images_ids[] = $row->meta_value;
-                    }
-                } */
                 $the_query = new WP_Query($query_args);
                 $this->debug('Regenerate Process started with'); $this->debug($query_args);
 
-                $debug = '';
                 if ($the_query->have_posts()) {
+
                     $image_posts_to_delete = array();
+
+                    // The process runs just 1 image per run here.
                     while ($the_query->have_posts()) {
                         $the_query->the_post();
                         $image_id = $the_query->post->ID;
 
-                        $fullsizepath = get_attached_file($image_id);
+                        // simplification
+                        $this->currentImage = new rtaImage($image_id);
+                        $fullsizepath = $this->currentImage->getPath();
 
-                        $debug .= "ID $image_id FULLSIZEPATH: $fullsizepath";
+                        if ($del_thumbs)
+                        {
+                          $this->currentImage->setCleanUp(true);
+                          $this->debug('Image thumbnails will be cleaned');
+                        }
 
-                        if($del_leftover_metadata && !file_exists($fullsizepath)) {
-                            $debug .= ' missing, continue ';
+                        $this->debug( (array) $this->currentImage );
+
+                        if($del_leftover_metadata && ! $this->currentImage->exists() )  { // !file_exists($fullsizepath) )
                             $this->rta_del_leftover_metadata($image_id, $fullsizepath, $image_posts_to_delete);
+                            $this->debug('Image did not exist. Removing leftover metadata');
                             continue; //the main image is missing, nothing to regenerate.
                         }
-                        $debug .= ' exists ';
 
-                        /*if(!empty($featured_img_w) || !empty($no_featured_img_w)) {
-                            $is_featured = false;
-                            if(in_array($image_id, $featured_images_ids)) {
-                                $is_featured = true;
-                            }
-                            if($is_featured) {
-                                if(!empty($featured_img_w) && !empty($featured_img_h)){
-                                    update_option('thumbnail_size_w',$featured_img_w);
-                                    update_option('thumbnail_size_h',$featured_img_h);
-                                }else{
-                                    update_option('thumbnail_size_w',$default_thumb_w);
-                                    update_option('thumbnail_size_h',$default_thumb_h);
-                                }
-                            }else{
-                                if(!empty($no_featured_img_w) && !empty($no_featured_img_h)){
-                                    update_option('thumbnail_size_w',$no_featured_img_w);
-                                    update_option('thumbnail_size_h',$no_featured_img_h);
-                                }else{
-                                    update_option('thumbnail_size_w',$default_thumb_w);
-                                    update_option('thumbnail_size_h',$default_thumb_h);
-                                }
-                            }
-                        } */
-                        $is_image = true;
                         if (isset($data['mediaID'])){
-                            $image_id = $data['mediaID'];
-                        }
-                        //is image:
-                        if (!is_array(getimagesize($fullsizepath))) {
-                            $is_image = false;
-                        }
-                        $filename_only = wp_get_attachment_thumb_url($image_id);
-
-                        if($del_thumbs) {
-                            $result = $this->rta_del_associated_thumbs($fullsizepath);
+                            $image_id = intval($data['mediaID']);
                         }
 
-                        if ($is_image) {
-                            if (false === $fullsizepath || !file_exists($fullsizepath)) {
-                                $error[] = array('offset' => ($offset + 1), 'error' => $error, 'logstatus' => $logstatus, 'imgUrl' => $fullsizepath, 'startTime' => $data['startTime'], 'fromTo' => $data['fromTo'], 'type' => $process_type, 'period' => $period);
-                            }
+                        $filename_only = $this->currentImage->getUri(); //wp_get_attachment_thumb_url($image_id);
+
+                        if ($this->currentImage->isImage() ) {
+
                             @set_time_limit(900);
                             do_action('shortpixel-thumbnails-before-regenerate', $image_id);
-                            //include( ABSPATH . 'wp-admin/includes/image.php' );
-                            //$metadata = wp_generate_attachment_metadata($image_id, $fullsizepath);
 
                             //use the original main image if exists
                             $backup = apply_filters('shortpixel_get_backup', $fullsizepath);
@@ -492,50 +373,60 @@ class RTA_Admin extends RTA
                                 copy($backup, $fullsizepath);
                             }
 
-                            $original_meta = wp_get_attachment_metadata($image_id);
+                            //$original_meta = wp_get_attachment_metadata($image_id);
+
+                            add_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
+
                             // TODO also make sure only the regenerated thumbnails are passed to the action
+                            $new_metadata = wp_generate_attachment_metadata($image_id, $fullsizepath);
 
-                            $metadata = wp_generate_attachment_metadata($image_id, $fullsizepath);
+                            remove_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
 
-                            $updated_sizes = array();
-                            /* if (isset($metadata['sizes']))
-                            {
-                            //   $original_sizes = isset($original_meta['sizes']) ? $original_meta['sizes'] : array();
-                            //  list($updated_sizes, $removed_sizes) = $this->getUpdatedSizes($original_sizes, $metadata['sizes']);
-                          } */
                             //restore the optimized main image
                             if($backup && $backup !== $fullsizepath) {
                                 rename($backup . "_optimized_" . $image_id, $fullsizepath);
                             }
 
                             //get the attachment name
-                            if (is_wp_error($metadata)) {
+                            if (is_wp_error($new_metadata)) {
                                 $error[] = array('offset' => ($offset + 1), 'error' => $error, 'logstatus' => $logstatus, 'imgUrl' => $filename_only, 'startTime' => $data['startTime'], 'fromTo' => $data['fromTo'], 'type' => $process_type, 'period' => $period);
                             }
-                            if (empty($metadata)) {
+                            if (empty($new_metadata)) {
                                 $filename_only = wp_get_attachment_url($image_id);
                                 $logstatus = '<b>'.basename($filename_only).'</b> is missing';
                                 $error[] = array('offset' => ($offset + 1), 'error' => $error, 'logstatus' => $logstatus, 'imgUrl' => $filename_only, 'startTime' => $data['startTime'], 'fromTo' => $data['fromTo'], 'type' => $process_type, 'period' => $period);
                             } else {
-                                wp_update_attachment_metadata($image_id, $metadata);
+
+                                // going for the save.
+                                $original_meta = $this->currentImage->getMetaData();
+                                $result = $this->currentImage->saveNewMeta($new_metadata); // this here calls the regeneration.
+                                $this->debug('Result :');
+                                $this->debug($result);
+                                $this->debug($this->currentImage->getMetaData());
 
                                 $is_a_bulk = true; // we are sending multiple images.
-                                $regenSizes = isset($metadata['sizes']) ? $metadata['sizes'] : array();
+                                $regenSizes = isset($new_metadata['sizes']) ? $new_metadata['sizes'] : array();
                                 // TODO Something wrong with this hook.
-                                do_action('shortpixel-thumbnails-regenerated', $image_id, $original_meta, $regenSizes, $is_a_bulk);
+
+                                $this->debug('Sending to ShortPixel: ');
+                                $this->debug($original_meta);
+                                $this->debug($regenSizes);
+
+                                // Do not send if nothing was regenerated, otherwise SP thinks all needs to be redone
+                                if (count($regenSizes) > 0)
+                                  do_action('shortpixel-thumbnails-regenerated', $image_id, $original_meta, $regenSizes, $is_a_bulk);
                             }
                             $imageUrl = $filename_only;
                             $logstatus = 'Processed';
                             $filename_only = wp_get_attachment_thumb_url($image_id);
                         } else {
                             $filename_only = wp_get_attachment_url($image_id);
-                            $logstatus = '<b>'.basename($filename_only).'</b> is missing';
+                            $logstatus = '<b>'.basename($filename_only).'</b> is missing or not an image file';
                             $error[] = array('offset' => ($offset + 1), 'error' => $error, 'logstatus' => $logstatus, 'imgUrl' => $filename_only, 'startTime' => $data['startTime'], 'fromTo' => $data['fromTo'], 'type' => $process_type, 'period' => $period);
                         }
 
-                    }
-                  //  update_option('thumbnail_size_w',$default_thumb_w);
-                  //  update_option('thumbnail_size_h',$default_thumb_h);
+                    } // Post Loop
+
                     foreach($image_posts_to_delete as $to_delete) {
                         wp_delete_post($to_delete, true);
                     }
@@ -553,69 +444,80 @@ class RTA_Admin extends RTA
                 if(!isset($filename_only)){
                     $filename_only = 'No files';
                 }
-                $this->debug($debug);
+                $this->debug($error);
                 $finalResult = array('offset' => ($offset + 1), 'error' => $error, 'logstatus' => $logstatus, 'imgUrl' => $filename_only, 'startTime' => $data['startTime'], 'fromTo' => $data['fromTo'], 'type' => $process_type, 'period' => $period);
                 break;
-        } // switch
+        } // switch - end submit.
 
-        //header('Content-Type: application/json');
-        //echo json_encode($finalResult);
+
         $this->jsonResponse($finalResult);
         exit();
     }
 
-    /** Get the updated thumbnails after regenerate.
-    *
-    * The sizes present in updated, but not in original should be the images that changed.
-    * Both can be empty.
-    * @param Array $original
-    * @param Array $updated
-    * @return Array Array with updated and removed information
-    */
-    protected function getUpdatedSizes($original, $updated)
+    public function get_error($message)
     {
-        $result_updated = array();
-        $result_removed = array();
 
-        // name is name of thumbnails size. Ar is width, height data.
-        foreach($updated as $name => $ar)
+    }
+
+    public function capture_generate_sizes($full_sizes)
+    {
+//        $this->debug('Ignoring Wordpress:'); $this->debug($ignored_sizes);
+
+        $do_regenerate_sizes = $this->viewControl->process_image_sizes; //settings
+        $process_options = $this->viewControl->process_image_options;
+
+        $imageMetaSizes = $this->currentImage->getCurrentSizes();
+        $this->debug('Image Meta Sizes');
+        $this->debug($imageMetaSizes);
+        $this->debug($process_options);
+
+        $prevent_regen = array();
+        foreach($do_regenerate_sizes as $rsize)
         {
-          if (! isset($original[$name]))
+          // 1. Check if size exists, if not, needs generation anyhow.
+          if (! isset($imageMetaSizes[$rsize]))
           {
-              if (! $this->hasSameDimension($original, $ar['width'], $ar['height']))
-                  $result_updated[$name] = $ar ;
+            $this->debug("Image Meta size setting missing - $rsize ");
+            continue;
           }
+
+          // 2. Check meta info (file) from the current meta info we have.
+          $metaSize = $imageMetaSizes[$rsize];
+          $overwrite = isset($process_options[$rsize]['overwrite_files']) ? $process_options[$rsize]['overwrite_files'] : false; // 3. Check if we keep or overwrite.
+
+           if (! $overwrite)
+           {
+            // thumbFile is RELATIVE. So find dir via main image.
+             $thumbFile = $this->currentImage->getDir() . $metaSize['file'];
+             $this->debug('Preventing overwrite of - ' . $thumbFile);
+             if (file_exists($thumbFile)) // 4. Check if file is really there
+             {
+                $prevent_regen[] = $rsize;
+                // Add to current Image the metaSize since it will be dropped by the metadata redoing.
+                $this->debug('File exists on ' . $rsize . ' ' . $thumbFile . '  - skipping regen');
+                $this->currentImage->addPersistentMeta($rsize, $metaSize);
+             }
+           }
 
         }
 
-        foreach($original as $name => $ar)
+        // 5. Drop the 'not to be' regen. images from the sizes so it will not process.
+        $do_regenerate_sizes = array_diff($do_regenerate_sizes, $prevent_regen);
+        $this->debug('Sizes going for regen - '); $this->debug($do_regenerate_sizes);
+
+        $returned_sizes = array();
+        foreach($full_sizes as $key => $data)
         {
-          if (! isset($updated[$name]))
-          {
-            if (! $this->hasSameDimension($updated, $ar['width'], $ar['height']))
-              $removed[$name] = $ar;
-          }
+            if (in_array($key, $do_regenerate_sizes))
+            {
+              $returned_sizes[$key] = $data;
+            }
         }
 
-        return array($result_updated, $result_removed);
+        $this->currentImage->setRegeneratedSizes($do_regenerate_sizes);
+        return $returned_sizes;
     }
 
-    /** Check if there is a thumbnail definition with the same dimensions.
-    *
-    */
-    private function hasSameDimension($sizes, $width, $height)
-    {
-      foreach($sizes as $name => $ar)
-      {
-          if ($ar['width'] == $width && $ar['height'] == $height)
-          {
-            $this->debug('Found' . $name . ' with same width and heigth ' . $width . ' ' . $height);
-            return true;
-          }
-      }
-
-      return false;
-    }
 
     public function rta_image_custom_sizes( $sizes ) {
 
@@ -633,13 +535,6 @@ class RTA_Admin extends RTA
         $view = new rtaAdminController($this);
         $view->show();
 
-      /*  $attr = $rta_image_sizes;
-        $default_thumb_w = get_option('thumbnail_size_w');
-        $default_thumb_h = get_option('thumbnail_size_h');
-        $attr['default_thumb_w'] = $default_thumb_w;
-        $attr['default_thumb_h'] = $default_thumb_h;
-    //    $html = $this->rta_load_template( "rta_generate_thumbnails", "admin", $attr );
-        echo $html; */
     }
 
     /* Saves and generates JSON response */
@@ -663,26 +558,6 @@ class RTA_Admin extends RTA
     public function rta_settings() {
         global $rta_options, $rta_lang;
         do_action('rta_before_settings', $this, $rta_options );
-
-      /*  [BS] Seems to be not in use */
-      /*
-        if( isset($_POST['btnsave']) && $_POST['btnsave'] != "" ) {
-            $exclude = array('btnsave');
-            $rta_options = array();
-            foreach( $_POST as $k => $v ) {
-                if( !in_array( $k, $exclude )) {
-                    if(!is_array($v)) {
-                        $val = $this->make_safe($v);
-                    }else{
-                        $val = $v;
-                    }
-                    $rta_options[$k] = $val;
-                }
-            }
-            update_option( 'rta_settings', $rta_options );
-            $message = $this->rta_get_message_html( $rta_lang['settings_save_message'], 'message' );
-        }
-        */
 
         $attr = $rta_options;
         $attr['message'] = $message;

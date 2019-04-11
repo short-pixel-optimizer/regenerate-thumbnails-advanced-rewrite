@@ -20,17 +20,17 @@
     margin: 8px 0 8px 15px; }
   .rta-admin form {
     min-height: 600px;
-    background: #fff;
-    padding-bottom: 45px; }
+    padding-bottom: 65px; }
   .rta-admin .rta-regenerate-wrap, .rta-admin .rta-settings-wrap {
     flex: 1;
     margin-bottom: 20px;
     position: relative;
-    padding: 0 15px; }
+    padding: 0 15px;
+    background: #fff; }
   .rta-admin .rta-regenerate-wrap {
     max-width: 35%; }
   .rta-admin .rta-settings-wrap {
-    max-width: 65%; }
+    max-width: 60%; }
   .rta-admin button, .rta-admin .btn_add_more {
     color: white;
     background: #00bcd4;
@@ -96,10 +96,17 @@
   .rta-admin .checkbox-list {
     display: inline-block; }
     .rta-admin .checkbox-list .item {
-      display: inline-block;
+      display: flex;
       margin: 5px 0px;
       float: left;
-      clear: both; }
+      clear: both;
+      justify-content: space-between;
+      width: 100%; }
+      .rta-admin .checkbox-list .item span {
+        display: inline-block;
+        margin-right: 14px; }
+      .rta-admin .checkbox-list .item span.hidden {
+        visibility: hidden; }
     .rta-admin .checkbox-list input {
       margin-right: 8px; }
   .rta-admin .select-options {
@@ -110,6 +117,10 @@
       color: #222;
       margin-right: 12px;
       display: inline-block; }
+    .rta-admin .select-options .note {
+      margin-left: 0;
+      border: 1px solid #ccc;
+      padding: 8px; }
   .rta-admin .cleanup-wrapper {
     padding: 8px;
     border: 1px solid #ddd; }
