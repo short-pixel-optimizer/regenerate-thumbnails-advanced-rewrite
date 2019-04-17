@@ -2,8 +2,10 @@
 /*
 Plugin Name: Regenerate Thumbnails Advanced
 Description: Regenerate thumbnails fast and easy while removing unused thumbnails of existing images; very useful when changing a theme.
-Version: 2.0.0-RC1
+Version: 2.0.0
 Author: ShortPixel
+Author URI: https://shortpixel.com/
+License: GPLv2 or later
 Text Domain: regenerate-thumbnails-advanced
 */
 
@@ -13,7 +15,7 @@ if ( !function_exists( 'add_action' ) ) {
     exit;
 }
 
-define( 'RTA_PLUGIN_VERSION', '2.0.0-RC1');
+define( 'RTA_PLUGIN_VERSION', '2.0.0');
 define( 'RTA_PLUGIN_PATH', plugin_dir_path(__FILE__) );
 define( 'RTA_PLUGIN_URL', plugin_dir_url(__FILE__) );
 define( 'RTA_SITE_BASE_URL',  rtrim(get_bloginfo('url'),"/")."/");
