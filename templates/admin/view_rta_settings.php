@@ -8,9 +8,6 @@
         <?php
         $image_sizes = $view->custom_image_sizes;
         $headershow = (count($image_sizes) == 0) ? ' rta_hidden' : '';
-
-
-        wp_prepare_attachment_for_js(89);
         ?>
 
               <div class='header flex <?php echo $headershow ?>'>
