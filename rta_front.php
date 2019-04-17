@@ -41,22 +41,16 @@ class RTA_Front extends RTA
 
     public function rta_image_size_names_choose( $sizes ) {
 
-        $options = get_option( 'rta_image_sizes' );
-        $image_sizes = $options['image_sizes'];
-        $rta_sizes = array();
-
-        // if user has selected custom thumbnails to use, remove the rest.
-        if (isset($options['process_image_sizes']))
-        {
-          $sizes = $options['process_image_sizes'];
-          return;
-        }
-
-        if (count($image_sizes) == 0)
-        {
+        $rta_image_sizes = get_option( 'rta_image_sizes', false );
+        if (! $rta_image_sizes) // option not set
           return $sizes;
-        }
-        if(is_array($image_sizes) && sizeof($image_sizes) > 0 && isset($image_sizes['name'])){
+        if (! isset($rta_image_sizes['image_sizes']))
+          return $sizes;
+
+        $image_sizes = $rta_image_sizes['image_sizes'];
+
+        $rta_sizes = array();
+        if(is_array($image_sizes) && count($image_sizes) > 0 && sizeof($image_sizes['name']) > 0){
             for($i=0;$i<sizeof($image_sizes['name']);$i++){
                 $slug = $image_sizes['name'][$i];
                 $name = $image_sizes['pname'][$i];
@@ -64,13 +58,19 @@ class RTA_Front extends RTA
             }
 
         }
-        return array_merge( $sizes, $rta_sizes );
+
+        $new_sizes = array_merge( $sizes, $rta_sizes );
+        return $new_sizes;
     }
 
     public function rta_after_theme_setup() {
 
-        $rta_image_sizes = get_option( 'rta_image_sizes' );
-        $image_sizes = isset($rta_image_sizes['image_sizes']) ? $rta_image_sizes['image_sizes'] : array();
+        $rta_image_sizes = get_option( 'rta_image_sizes', false);
+        if (! $rta_image_sizes)
+          return $rta_image_sizes;
+
+        $image_sizes = isset($rta_image_sizes['image_sizes']) && is_array($rta_image_sizes['image_sizes']) ? $rta_image_sizes['image_sizes'] : array();
+
         if(count($image_sizes) > 0 && count($image_sizes['name']) > 0){
             for($i=0;$i<sizeof($image_sizes['name']);$i++){
                 $crop = false;

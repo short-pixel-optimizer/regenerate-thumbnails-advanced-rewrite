@@ -5,7 +5,7 @@ class rtaAdminController
   protected $controller;
 
   /** Settings saved in the option table. Being set on construct. Refreshed on save */
-  protected $custom_image_sizes;
+  protected $custom_image_sizes = array();
   protected $process_image_sizes = false;
   protected $process_image_options = array();
   protected $jpeg_quality = 90;
@@ -39,16 +39,16 @@ class rtaAdminController
   protected function setOptionData()
   {
     $options = get_option('rta_image_sizes');
-    if (isset($options['image_sizes']))
+    if (isset($options['image_sizes']) && is_array($options['image_sizes']))
       $this->custom_image_sizes = $options['image_sizes'];
 
     if (isset($options['jpeg_quality']))
       $this->jpeg_quality = $options['jpeg_quality'];
 
-    if (isset($options['process_image_sizes']))
+    if (isset($options['process_image_sizes']) && is_array($options['process_image_sizes']))
       $this->process_image_sizes = $options['process_image_sizes'];
 
-    if (isset($options['process_image_options']))
+    if (isset($options['process_image_options']) && is_array($options['process_image_options']) )
         $this->process_image_options = $options['process_image_options'];
   }
 
@@ -138,7 +138,7 @@ class rtaAdminController
 
       // redo the thumbnail options, apply changes
       $sizes = isset($formpost['regenerate_sizes']) ? $formpost['regenerate_sizes'] : array();
-      $sizes_options = array();
+      $size_options = array();
       foreach($sizes as $rsize)
       {
           if (isset($formpost['keep_' . $rsize]))
