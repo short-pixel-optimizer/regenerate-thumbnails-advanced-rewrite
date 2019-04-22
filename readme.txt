@@ -30,7 +30,7 @@ Features:
 * Resume function - the regeneration process will continue from where it was left in case you accidentally close the processing tab in your browser.
 
 Support:
-For support please conctact us <a href="https://shortpixel.com/contact">here</a> making sure you mention RTA plugin.
+For support please contact us <a href="https://shortpixel.com/contact">here</a> making sure you mention RTA plugin.
 
 
 == Installation ==
@@ -62,7 +62,7 @@ Release date: 17th April 2019
 = 2.0.0 =
 
 Release date: 16th April 2019
-* Plugin completelly rewritten with additional features added:
+* Plugin completely rewritten with additional features added:
 * Add custom thumbnails
 * Select which thumbnails to regenerate
 * Regenerate thumbnails only for the featured images
