@@ -31,7 +31,7 @@ class RTA_Front extends RTA
     public function rta_jpeg_quality( $quality ) {
         $rta_image_sizes = get_option( 'rta_image_sizes' );
         if(is_array($rta_image_sizes) && sizeof($rta_image_sizes) > 0){
-            $jpeg_quality = $rta_image_sizes['jpeg_quality'];
+            $jpeg_quality = isset($rta_image_sizes['jpeg_quality']) ? $rta_image_sizes['jpeg_quality'] : null;
             if(!empty($jpeg_quality)) {
                 return (int)$jpeg_quality;
             }

@@ -47,9 +47,15 @@ class rtaAdminController
 
     if (isset($options['process_image_sizes']) && is_array($options['process_image_sizes']))
       $this->process_image_sizes = $options['process_image_sizes'];
+    else
+      $this->process_image_sizes = array();
+
 
     if (isset($options['process_image_options']) && is_array($options['process_image_options']) )
         $this->process_image_options = $options['process_image_options'];
+    else
+      $this->process_image_options = array();
+
   }
 
   public function show()
@@ -88,6 +94,10 @@ class rtaAdminController
     return false;
   }
 
+  /** Save thumbnail settings.
+  *
+  * @return JSON  Returns json result data
+  */
   public function save_image_sizes() {
       global $_wp_additional_image_sizes;
 
@@ -215,7 +225,7 @@ class rtaAdminController
       $checked = ($check_all || in_array($value, $checked_ar)) ? 'checked' : '';
       $hidden = ($checked == 'checked') ? '' : 'hidden'; // hide add. option if not checked.
 
-      $checked_keep = (isset($process_options[$value]) && isset($process_options[$value]['overwrite_files']) && ! $process_options[$value]['overwrite_files'] )  ? 'checked' : true;
+      $checked_keep = (isset($process_options[$value]) && isset($process_options[$value]['overwrite_files']) && ! $process_options[$value]['overwrite_files'] )  ? 'checked' : '';
 
 
       $output .= "<div class='item'>";
@@ -223,7 +233,7 @@ class rtaAdminController
         <label> <input type='checkbox' id='regenerate_sizes[$i]' name='regenerate_sizes[$i]' value='$value' $checked>
           " .  ucfirst($size) . "</label>
       </span>";
-      $output .= "<span class='options $hidden'><label><input type='checkbox' $checked_keep name='keep_" . $value . "'> Keep existing</label></span>";
+      $output .= "<span class='options $hidden'><label><input value='1' type='checkbox' $checked_keep name='keep_" . $value . "'> " . __('Keep existing', 'regenerate-thumbnails-advanced') . "</label></span>";
       $output .= "</div>";
 
       $i++;
