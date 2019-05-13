@@ -108,15 +108,15 @@ class rtaAdminController
       $option = array();
       $exclude = array();
 
-      $nonce = isset($_POST['nonce']) ? $_POST['nonce'] : false;
+      $nonce = isset($_POST['save_nonce']) ? $_POST['save_nonce'] : false;
       if (! wp_verify_nonce($nonce, 'rta_save_image_sizes'))
       {
         $jsonResponse['error'] = 'Invalid Nonce';
         return $jsonResponse;
       }
 
-      if (isset($_POST['form']))
-          parse_str($_POST['form'], $formpost);
+      if (isset($_POST['saveform']))
+          parse_str($_POST['saveform'], $formpost);
        else
           $formpost = array();
 

@@ -152,6 +152,10 @@
     .rta-admin section.regenerate .rta_hidden {
       display: inline-block;
       display: none; }
+    .rta-admin section.regenerate .save_note {
+      color: orange;
+      float: right;
+      margin-left: 30px; }
   .rta-admin .form_controls {
     position: absolute;
     left: 45px;

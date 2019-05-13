@@ -192,18 +192,16 @@ class RTA_Admin extends RTA
           $json = false;
         }
 
-        $nonce = isset($_POST['nonce'])? $_POST['nonce'] : false;
+        $nonce = isset($_POST['gen_nonce'])? $_POST['gen_nonce'] : false;
         if (! wp_verify_nonce($nonce, 'rta_regenerate_thumbnails'))
         {
               $this->jsonResponse(array('error' => true, 'logstatus' => "Invalid Nonce", 'message' => "Site error, Invalid Nonce"));
               exit();
         }
 
-        if (isset($_POST['form']))
+        if (isset($_POST['genform']))
         {
-            $data = json_decode(html_entity_decode(stripslashes($_POST['form'])), true);
-            //parse_str($_POST['form'], $data);
-
+            $data = json_decode(html_entity_decode(stripslashes($_POST['genform'])), true);
         }
         else {
           $this->jsonResponse(array('error' => true, 'logstatus' => "No Data", 'message' => "Site error, No Data"));

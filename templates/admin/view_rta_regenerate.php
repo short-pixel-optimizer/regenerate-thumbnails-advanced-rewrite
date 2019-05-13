@@ -28,12 +28,12 @@
       <h4><?php _e('Clean-up options', 'regenerate-thumbnails-advanced') ?></h4>
       <div class='option'>
           <label for="del_associated_thumbs"><?php _e('Delete Unused Thumbnails','regenerate-thumbnails-advanced'); ?></label>
-          <span><input type="checkbox" name="del_associated_thumbs" id="del_associated_thumbs" value="YES" /> </span>
+          <span><input type="checkbox" name="del_associated_thumbs" id="del_associated_thumbs" value="1" /> </span>
           <span class='note'><?php _e('This option will remove thumbnails not selected in the settings. Good for stale thumbnails, but be sure they are not in use.  ','regenerate-thumbnails-advanced'); ?></span>
       </div>
       <div class='option'>
           <label for="del_leftover_metadata"><?php _e('Delete Leftover Image Metadata','regenerate-thumbnails-advanced'); ?></label>
-          <span><input type="checkbox" name="del_leftover_metadata" id="del_leftover_metadata" value="YES" /> </span>
+          <span><input type="checkbox" name="del_leftover_metadata" id="del_leftover_metadata" value="1" /> </span>
           <span class='note'><?php _e('Delete all the metadata associated with missing (non-existing) images. Keep in mind there is no undo!','regenerate-thumbnails-advanced'); ?></span>
       </div>
     </div>
@@ -42,7 +42,8 @@
 
 <section class='form_controls'>
   <div class='container'>
-    <button  type='submit' disabled class='rta_regenerate disabled'>Regenerate</button>
+    <button  type='submit' disabled class='rta_regenerate disabled'><?php _e('Regenerate', 'regenerate-thumbnails-advanced'); ?></button>
+    <p class='save_note rta_hidden'><?php _e('Save your settings first','regenerate-thumbnails-advanced'); ?></p>
   </div>
 </section>
 </form>

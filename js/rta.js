@@ -58,7 +58,7 @@ rtaJS.prototype.checkSubmitReady = function()
   if (inputs.length == 0)
     processReady = false;
 
-  if (this.in_process)
+  if (this.in_process || ! this.is_saved)
     processReady = false;
 
   if (processReady)
@@ -75,12 +75,15 @@ rtaJS.prototype.checkSubmitReady = function()
   {
     $('button[name="save_settings"]').prop('disabled', true);
     $('button[name="save_settings"]').addClass('disabled');
+    $('.save_note').addClass('rta_hidden');
+
   }
   else {
     $('button[name="save_settings"]').prop('disabled', false);
     $('button[name="save_settings"]').removeClass('disabled');
-
+    $('.save_note').removeClass('rta_hidden');
   }
+
 
 }
 
@@ -103,12 +106,12 @@ rtaJS.prototype.processInit = function (e)
 {
   e.preventDefault();
 
-  if (! this.is_saved)
+/*  if (! this.is_saved)
   {
     if(! confirm(rta_data.confirm_nosave)) {
         return false;
     }
-  }
+  } */
 
   this.unset_all_cookies();
   this.show_errorbox(false);
@@ -129,11 +132,11 @@ rtaJS.prototype.processInit = function (e)
       dataType: 'json',
       url: rta_data.ajaxurl,
       data: {
-              nonce: rta_data.nonce_generate,
+              gen_nonce: rta_data.nonce_generate,
               action: 'rta_regenerate_thumbnails',
               type: 'general',
-              form: JSON.stringify(form),
-      },
+              genform: JSON.stringify(form),
+       },
       success: function (response) {
           if( response.pCount > 0 ) {
             self.offset = 0;
@@ -169,11 +172,11 @@ rtaJS.prototype.process = function()
             dataType: 'json',
             url: rta_data.ajaxurl,
             data: {
-                    nonce: rta_data.nonce_generate,
+                    gen_nonce: rta_data.nonce_generate,
                     action: 'rta_regenerate_thumbnails',
                     type: 'submit',
                     offset:offset,
-                    form: JSON.stringify(form),
+                    genform: JSON.stringify(form),
             },
             success: function (response) {
                 if( response.offset <= total ) {
@@ -443,8 +446,8 @@ rtaJS.prototype.process = function()
             url: rta_data.ajaxurl,
             data: {
                   action: action,
-                  nonce: the_nonce,
-                  form: $('#rta_settings_form').serialize(),
+                  save_nonce: the_nonce,
+                  saveform: $('#rta_settings_form').serialize(),
             },
             success: function (response) {
                 if (! response.error)
