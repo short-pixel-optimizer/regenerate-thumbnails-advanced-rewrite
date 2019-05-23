@@ -15,12 +15,13 @@
 
 class RTA
 {
+    protected $admin;
 
     //Plugin starting point. Will call appropriate actions
     public function __construct() {
 
-        add_action( 'plugins_loaded', array( $this, 'rta_init' ) );
-        add_action( 'wp_enqueue_scripts', array( $this, 'rta_enqueue_scripts' ), 10 );
+        add_action( 'init', array( $this, 'rta_init' ) );
+      ///  add_action( 'wp_enqueue_scripts', array( $this, 'rta_enqueue_scripts' ), 10 );
         add_action( 'admin_enqueue_scripts', array( $this, 'rta_enqueue_scripts' ), 10 );
     }
 
@@ -28,18 +29,9 @@ class RTA
     public function rta_init() {
 
         do_action('rta_before_init');
-        global $rta_options,$rta_lang;
-        $rta_options = get_option( 'rta_settings' );
-        load_plugin_textdomain( 'rta', FALSE, RTA_LANG_DIR );
-        require_once RTA_PLUGIN_PATH.'language/rta_general.php';
+        $this->admin = new RTA_Admin(); // admin hooks.
 
-        if(is_admin()){
-            require_once RTA_PLUGIN_PATH.'rta_admin.php';
-        }
-
-        require_once (RTA_PLUGIN_PATH.'rta_front.php');
-        require_once(RTA_PLUGIN_PATH . 'classes/rta_admin_controller.php');
-        require_once(RTA_PLUGIN_PATH . 'classes/rta_image.php');
+        load_plugin_textdomain( 'regenerate-thumbnails-advanced', FALSE, RTA_LANG_DIR );
 
         do_action('rta_after_init');
     }
@@ -57,7 +49,7 @@ class RTA
                             'ajaxurl' => admin_url( 'admin-ajax.php' ),
                             'nonce_savesizes' => wp_create_nonce('rta_save_image_sizes'),
                             'nonce_generate' => wp_create_nonce('rta_regenerate_thumbnails'),
-                            'confirm_nosave' => __('Settings not saved. You want to continue?'),
+                            'confirm_delete' => __('Are you sure you want to delete this image size?', 'regenerate-thumbnails-advanced'),
                             ));
 
         do_action('rta_after_enqueue_scripts');
@@ -82,7 +74,6 @@ class RTA
     }
 
     public function rta_load_template( $template='', $for='front', $attr=array() ) {
-        global $rta_options,$rta_lang;
 
         do_action( 'rta_before_load_template', $template, $for, $attr );
         $template = apply_filters( 'rta_template_to_load', $template, $for, $attr );
@@ -108,7 +99,6 @@ class RTA
     }
 
     public function rta_get_message_html( $message, $type = 'message' ) {
-        global $rta_options,$rta_lang;
         do_action( 'rta_before_get_message_html', $message, $type );
         $message = apply_filters( 'rta_message_text', $message, $type );
         $type = apply_filters( 'rta_message_type', $type, $message );
@@ -402,6 +392,4 @@ class RTA
 
         do_action('rta_after_uninstall');
     }
-}
-
-$rta = new RTA();
+} // class

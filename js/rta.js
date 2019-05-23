@@ -106,18 +106,10 @@ rtaJS.prototype.processInit = function (e)
 {
   e.preventDefault();
 
-/*  if (! this.is_saved)
-  {
-    if(! confirm(rta_data.confirm_nosave)) {
-        return false;
-    }
-  } */
-
   this.unset_all_cookies();
   this.show_errorbox(false);
   this.hide_progress();
-  //this.show_errorlink(false);
-//  this.show_progress(0);
+
   this.show_wait(true);
 
   this.in_process = true;
@@ -485,7 +477,7 @@ rtaJS.prototype.process = function()
     rtaJS.prototype.remove_image_size_row = function(e) {
         var rowid = $(e.target).parents('.row').attr('id');
 
-        if(confirm("Are you sure you want delete it?")) {
+        if(confirm( rta_data.confirm_delete )) {
             var intName = $('#' + rowid).find('.image_sizes_name').val();
             $('input[name^="regenerate_sizes"][value="' + intName + '"]').remove(); // remove the checkbox as well, otherwise this will remain saved.
 

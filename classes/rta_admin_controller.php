@@ -103,7 +103,6 @@ class rtaAdminController
 
       $jsonReponse = array('message' => '', 'error' => '');
       $error = false;
-      global $rta_lang;
       $rta_image_sizes = array();
       $option = array();
       $exclude = array();
@@ -166,9 +165,7 @@ class rtaAdminController
       $this->setOptionData();
 
       $newsizes = $this->generateImageSizeOptions($sizes);
-
-      $message = $this->controller->rta_get_message_html( $rta_lang['image_sizes_save_message'], 'message' );
-      $jsonResponse = array( 'error' => $error, 'message' => $message, 'new_image_sizes' => $newsizes );
+      $jsonResponse = array( 'error' => $error, 'message' => '', 'new_image_sizes' => $newsizes );
 
       return $jsonResponse;
 

@@ -30,7 +30,7 @@ class RTA_Admin extends RTA
 
         add_action( 'admin_menu', array( $this, 'rta_admin_menus' ) );
         add_action( 'wp_ajax_rta_regenerate_thumbnails', array( $this, 'rta_regenerate_thumbnails') );
-        add_filter( 'image_size_names_choose', array( $this, 'rta_image_custom_sizes' ), 10, 1 );
+        //add_filter( 'image_size_names_choose', array( $this, 'rta_image_custom_sizes' ), 10, 1 );
         add_action( 'wp_ajax_rta_save_image_sizes', array($this,'view_generate_thumbnails_save' ) );
 
         add_filter( 'plugin_action_links_' . plugin_basename(RTA_PLUGIN_FILE), array(&$this, 'generate_plugin_links'));//for plugin settings page
@@ -49,75 +49,6 @@ class RTA_Admin extends RTA
         return $links;
 
     }
-
-
-
-    /** [TODO] Check if this still exists **/
-    public function rta_image_sizes() {
-
-        global $rta_lang;
-
-        if( isset($_POST['btnsave']) && $_POST['btnsave'] != "" ) {
-            $exclude = array('btnsave');
-            $rta_image_sizes = array();
-            foreach( $_POST as $k => $v ) {
-                if( !in_array( $k, $exclude )) {
-                    if(!is_array($v)) {
-                        $val = $this->make_safe($v);
-                    }else{
-                        $val = $v;
-                    }
-                    $rta_image_sizes[$k] = $val;
-                }
-            }
-            update_option( 'rta_image_sizes', $rta_image_sizes );
-            $message = $this->rta_get_message_html( $rta_lang['image_sizes_save_message'], 'message' );
-        }
-        $rta_image_sizes = get_option( 'rta_image_sizes' );
-
-        $attr = $rta_image_sizes;
-        $attr['message'] = $message;
-        $html = $this->rta_load_template( "rta_image_sizes", "admin", $attr );
-
-        echo $html;
-    }
-
-    // TODO Issue with this - function would remove all thumbnails. Need a better function.
-    /*function rta_del_associated_thumbs($mainFile='') {
-        //See ShortPixel Image Optimiser's findThumbs method
-        $ext = pathinfo($mainFile, PATHINFO_EXTENSION);
-        $base = substr($mainFile, 0, strlen($mainFile) - strlen($ext) - 1);
-        $pattern = '/' . preg_quote($base, '/') . '-\d+x\d+\.'. $ext .'/';
-        $thumbsCandidates = @glob($base . "-*." . $ext);
-
-        $thumbs = array();
-        if(is_array($thumbsCandidates)) {
-            foreach($thumbsCandidates as $th) {
-                if(preg_match($pattern, $th)) {
-                    $thumbs[]= $th;
-                }
-            }
-            if( count($this->customThumbSuffixes)
-               && !(   is_plugin_active('envira-gallery/envira-gallery.php')
-                    || is_plugin_active('soliloquy/soliloquy.php')
-                    || is_plugin_active('soliloquy-lite/soliloquy-lite.php'))){
-                foreach ($this->customThumbSuffixes as $suffix){
-                    $pattern = '/' . preg_quote($base, '/') . '-\d+x\d+'. $suffix . '\.'. $ext .'/';
-                    foreach($thumbsCandidates as $th) {
-                        if(preg_match($pattern, $th)) {
-                            $thumbs[]= $th;
-                        }
-                    }
-                }
-            }
-        }
-        foreach($thumbs as $thumb) {
-            if($thumb !== $mainFile) {
-                @unlink($thumb);
-            }
-        }
-        return $thumbs;
-    } */
 
     /**
      * schedules the image's attachment post to be deleted if all the thumbnails are missing or just removes the missing thumbnails from the sizes array if some still are present.
@@ -515,14 +446,6 @@ class RTA_Admin extends RTA
     }
 
 
-    public function rta_image_custom_sizes( $sizes ) {
-
-        global $rta_lang;
-        return array_merge( $sizes, array(
-            'rta_featured_image' => $rta_lang['featured_image_label'],
-            'rta_non_featured_image' => $rta_lang['no_featured_image_label'],
-        ) );
-    }
 
     public function view_generate_thumbnails() {
         wp_enqueue_style('rta_css');
@@ -550,9 +473,8 @@ class RTA_Admin extends RTA
       }
     }
 
-
+/* Probably outdated
     public function rta_settings() {
-        global $rta_options, $rta_lang;
         do_action('rta_before_settings', $this, $rta_options );
 
         $attr = $rta_options;
@@ -561,7 +483,9 @@ class RTA_Admin extends RTA
         do_action('rta_after_settings', $this, $rta_options );
         echo $html;
     }
-
+*/
+    /*
+    * Seems not in use.
     private function load_wp_media_uploader() {
 
         wp_enqueue_script('media-upload');
@@ -569,7 +493,5 @@ class RTA_Admin extends RTA
     	wp_enqueue_style('thickbox');
         $html = $this->rta_load_template( "load_media_upload_js", "admin" );
         echo $html;
-    }
+    } */
 }
-
-$rta_admin = new RTA_Admin();
