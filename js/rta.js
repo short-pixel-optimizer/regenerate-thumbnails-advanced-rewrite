@@ -109,6 +109,7 @@ rtaJS.prototype.processInit = function (e)
   this.unset_all_cookies();
   this.show_errorbox(false);
   this.hide_progress();
+  this.toggleShortPixelNotice(false);
 
   this.show_wait(true);
 
@@ -204,6 +205,7 @@ rtaJS.prototype.process = function()
     this.is_interrupted_process = false;
 
     this.show_wait(false);
+    this.toggleShortPixelNotice(true);
     this.checkSubmitReady();
 
   }
@@ -472,6 +474,14 @@ rtaJS.prototype.process = function()
     {
         this.is_saved = false;
         this.checkSubmitReady();
+    }
+
+    rtaJS.prototype.toggleShortPixelNotice = function(show)
+    {
+      if (show)
+        $('.shortpixel-bulk-notice, .shortpixel-notice').removeClass('rta_hidden');
+      else
+        $('.shortpixel-bulk-notice, .shortpixel-notice').addClass('rta_hidden');
     }
 
     rtaJS.prototype.remove_image_size_row = function(e) {
