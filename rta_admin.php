@@ -375,7 +375,6 @@ class RTA_Admin extends RTA
 
                             add_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
 
-                            // TODO also make sure only the regenerated thumbnails are passed to the action
                             $new_metadata = wp_generate_attachment_metadata($image_id, $fullsizepath);
 
                             remove_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
@@ -404,15 +403,14 @@ class RTA_Admin extends RTA
 
                                 $is_a_bulk = true; // we are sending multiple images.
                                 $regenSizes = isset($new_metadata['sizes']) ? $new_metadata['sizes'] : array();
-                                // TODO Something wrong with this hook.
-
-                                $this->debug('Sending to ShortPixel: ');
-                                $this->debug($original_meta);
-                                $this->debug($regenSizes);
 
                                 // Do not send if nothing was regenerated, otherwise SP thinks all needs to be redone
+
                                 if (count($regenSizes) > 0)
+                                {
                                   do_action('shortpixel-thumbnails-regenerated', $image_id, $original_meta, $regenSizes, $is_a_bulk);
+                                }
+
                             }
                             $imageUrl = $filename_only;
                             $logstatus = 'Processed';
