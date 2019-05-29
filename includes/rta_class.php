@@ -23,6 +23,9 @@ class RTA
         add_action( 'init', array( $this, 'rta_init' ) );
       ///  add_action( 'wp_enqueue_scripts', array( $this, 'rta_enqueue_scripts' ), 10 );
         add_action( 'admin_enqueue_scripts', array( $this, 'rta_enqueue_scripts' ), 10 );
+
+        //add_filter('media_row_actions', array($this,'add_media_action'), 10, 2);
+
     }
 
     //Plugin initialization
@@ -134,6 +137,25 @@ class RTA
     {
       wp_send_json($response);
     }
+
+    /*   @todo To Implement 
+
+      public function add_media_action( $actions, $post) {
+      $url = admin_url( "upload.php");
+      $url = add_query_arg(array(
+          'action' => 'media_replace',
+          'attachment_id' => $post->ID,
+      ), $url);
+      $action = "regenerate_thumbnails";
+
+      $editurl = wp_nonce_url( $url, $action );
+      $link = "href=\"$editurl\"";
+
+      $newaction['regenerate'] = '<a ' . $link . ' aria-label="' . esc_html__("Replace media", "regenerate-thumbnails-advanced") . '" rel="permalink">' . esc_html__("Regenerate Thumbnails", "regenerate-thumbnails-advanced") . '</a>';
+      return array_merge($actions,$newaction);
+    }
+    */
+
 
 
     /* [BS] Seems not in use */

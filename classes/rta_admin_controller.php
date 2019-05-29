@@ -222,8 +222,11 @@ class rtaAdminController
       $checked = ($check_all || in_array($value, $checked_ar)) ? 'checked' : '';
       $hidden = ($checked == 'checked') ? '' : 'hidden'; // hide add. option if not checked.
 
+      $option_in_db = (isset($process_options[$value])) ? true : false;
       $checked_keep = (isset($process_options[$value]) && isset($process_options[$value]['overwrite_files']) && ! $process_options[$value]['overwrite_files'] )  ? 'checked' : '';
 
+      if ($option_in_db)
+        $checked .= ' data-setbyuser=true'; // if value was ever saved in DB, don't change it in the JS.
 
       $output .= "<div class='item'>";
       $output .= "<span>
