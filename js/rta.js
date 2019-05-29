@@ -504,6 +504,13 @@ rtaJS.prototype.process = function()
            if ($(this).is(':checked'))
            {
              $(this).parents('.item').find('.options').removeClass('hidden');
+             var input = $(this).parents('.item').find('input[type="checkbox"]');
+
+             if (typeof $(input).data('setbyuser') == 'undefined')
+             {
+                $(input).prop('checked', true);
+                $(input).data('setbyuser', true);
+              }
            }
            else {
              $(this).parents('.item').find('.options').addClass('hidden');
