@@ -5,8 +5,9 @@ function rtaJS() {};
 rtaJS.prototype = {
   offset: 0,
   total:  0,
-  is_interrupted_process: false,
-  in_process: false,
+  is_interrupted_process: false, // was the process killed by reload earlier?
+  in_process: false, // currently pushing it through.
+  is_stopped: false,
   formcookie: null,
   is_saved: true,
 
@@ -27,7 +28,8 @@ rtaJS.prototype.init = function()
   $(document).on('change', '.table.imagesizes input, .table.imagesizes select', $.proxy(this.image_size_changed, this));
   $(document).on('click', 'button[name="save_settings"]', $.proxy(this.image_size_changed, this));
   $(document).on('click', '.table.imagesizes .btn_remove_row', $.proxy(this.remove_image_size_row, this));
-  $(document).on('click', '#btn_add_image_size', $.proxy(this.add_image_size_row));
+  $(document).on('click', '#btn_add_image_size', $.proxy(this.add_image_size_row, this));
+  $(document).on('click', '.stop-process', $.proxy(this.stopProcess,this));
 
   $(document).on('click', '.rta_error_link', $.proxy(function () { this.show_errorbox(true); }, this) ) ;
   this.formcookie = this.get_form_cookie();
@@ -147,6 +149,8 @@ rtaJS.prototype.processInit = function (e)
 
 rtaJS.prototype.process = function()
 {
+    if (this.is_stopped)
+      return; // escape if process has been stopped.
     offset = this.offset;
     total = this.total;
 
@@ -176,10 +180,13 @@ rtaJS.prototype.process = function()
                     if(response.logstatus=='Processed') {
                         $(".rta_progress .images img").attr("src",response.imgUrl);
                     }
-                    self.set_process_cookie(response.offset,total);
-                    self.offset = response.offset;
 
-                    setTimeout(function(){ self.process(); },1000);
+                    if (! self.is_stopped)
+                    {
+                      self.set_process_cookie(response.offset,total);
+                      self.offset = response.offset;
+                      setTimeout(function(){ self.process(); },1000);
+                    }
                 }else{
                     self.set_cookie("rta_image_processed",$(".rta_progress .images img").attr("src"));
                     //this.show_buttons();
@@ -207,7 +214,19 @@ rtaJS.prototype.process = function()
     this.show_wait(false);
     this.toggleShortPixelNotice(true);
     this.checkSubmitReady();
+  }
 
+  rtaJS.prototype.stopProcess = function()
+  {
+    if (confirm(rta_data.confirm_stop))
+    {
+      this.is_stopped = true;
+      this.unset_all_cookies();
+      this.finishProcess();
+      this.hide_progress();
+      this.toggleShortPixelNotice(false);
+//      this.checkSubmitReady();
+    }
   }
 
     rtaJS.prototype.show_progress = function(percentage_done) {
@@ -297,8 +316,9 @@ rtaJS.prototype.process = function()
         this.set_cookie('rta_last_settings', '');
     }
 
-    rtaJS.prototype.set_default_values = function() {
-    }
+    /* Empty function, disabling
+      rtaJS.prototype.set_default_values = function() {
+    } */
 
     rtaJS.prototype.set_process_cookie = function(offset, total)
     {

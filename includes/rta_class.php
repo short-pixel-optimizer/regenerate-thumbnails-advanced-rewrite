@@ -53,6 +53,7 @@ class RTA
                             'nonce_savesizes' => wp_create_nonce('rta_save_image_sizes'),
                             'nonce_generate' => wp_create_nonce('rta_regenerate_thumbnails'),
                             'confirm_delete' => __('Are you sure you want to delete this image size?', 'regenerate-thumbnails-advanced'),
+                            'confirm_stop' => __("This will stop the regeneration process. You want to stop?", 'regenerate-thumbnails-advanced' ),
                             ));
 
         do_action('rta_after_enqueue_scripts');
@@ -138,7 +139,7 @@ class RTA
       wp_send_json($response);
     }
 
-    /*   @todo To Implement 
+    /*   @todo To Implement
 
       public function add_media_action( $actions, $post) {
       $url = admin_url( "upload.php");

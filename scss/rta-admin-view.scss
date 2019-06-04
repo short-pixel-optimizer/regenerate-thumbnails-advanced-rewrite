@@ -75,6 +75,7 @@
   //  max-width:90%;
     padding: 20px 8px;
   //background: #fff;
+  position: relative;
     margin: 0 auto;
   }
 
@@ -223,6 +224,7 @@
     }
     .rta_progress {
       display: inline-block;
+      position: relative;
     }
     .images {
       margin-left: 225px;
@@ -265,7 +267,15 @@
       font-weight: 700;
       text-align: center;
     }
-  }
+    button.stop-process
+    {
+      position: absolute;
+      bottom: 10px;
+      left: 80%;
+      font-weight: normal;
+      text-transform: none;
+    }
+  } // section.regenerate
 
   .form_controls
   {

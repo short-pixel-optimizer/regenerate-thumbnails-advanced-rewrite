@@ -25,6 +25,9 @@
             <h5><?php _e('Regenerated image:','regenerate-thumbnails-advanced'); ?></h5>
             <img src="" alt="">
         </div>
+
+        <button class='button stop-process'><?php _e('Stop Process', 'regenerate-thumbnails-advanced') ?></button>
+
     </div>
 
     <a href="javascript:void(0);" class="rta_error_link rta_hidden"><?php _e('There were some errors, click for details', 'regenerate-thumbnails-advanced'); ?></a>
