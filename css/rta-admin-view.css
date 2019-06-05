@@ -138,7 +138,8 @@
       padding: 25px 0; }
     .rta-admin section.regenerate .rta_progress {
       display: inline-block;
-      position: relative; }
+      position: relative;
+      min-height: 310px; }
     .rta-admin section.regenerate .images {
       margin-left: 225px;
       float: left;

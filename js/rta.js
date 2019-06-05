@@ -116,6 +116,7 @@ rtaJS.prototype.processInit = function (e)
   this.show_wait(true);
 
   this.in_process = true;
+  this.is_stopped = false;
   this.checkSubmitReady();
   this.set_form_cookie();
 
@@ -185,7 +186,7 @@ rtaJS.prototype.process = function()
                     {
                       self.set_process_cookie(response.offset,total);
                       self.offset = response.offset;
-                      setTimeout(function(){ self.process(); },1000);
+                      setTimeout(function(){ self.process(); },400);
                     }
                 }else{
                     self.set_cookie("rta_image_processed",$(".rta_progress .images img").attr("src"));
@@ -213,6 +214,7 @@ rtaJS.prototype.process = function()
 
     this.show_wait(false);
     this.toggleShortPixelNotice(true);
+    $('.stop-process').addClass('rta_hidden');
     this.checkSubmitReady();
   }
 
@@ -246,6 +248,7 @@ rtaJS.prototype.process = function()
 
             this.show_wait(false);
             $('.rta_progress').removeClass('rta_hidden');
+            $('.stop-process').removeClass('rta_hidden');
             $(".rta_progress").slideDown();
             $(".rta_progress").css('display', 'inline-block');
         }

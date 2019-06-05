@@ -26,7 +26,7 @@
             <img src="" alt="">
         </div>
 
-        <button class='button stop-process'><?php _e('Stop Process', 'regenerate-thumbnails-advanced') ?></button>
+        <button class='button stop-process rta_hidden'><?php _e('Stop Process', 'regenerate-thumbnails-advanced') ?></button>
 
     </div>
 
