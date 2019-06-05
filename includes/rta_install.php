@@ -27,7 +27,7 @@ class RTA_Install extends RTA
           $process_image_options = array();
           foreach($standard_sizes as $name)
           {
-            $process_image_options[$name] = array('overwrite_files' => 1);
+            $process_image_options[$name] = array('overwrite_files' => false);
           }
           $options = array();
           $options['process_image_sizes'] = $standard_sizes;
