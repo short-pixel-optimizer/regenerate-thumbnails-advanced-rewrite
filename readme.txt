@@ -56,8 +56,14 @@ The script stops but it will resume after you open the settings page of the plug
 
 = 2.1.0 =
 
-Release date: 
-* 
+Release date: 7th June 2019
+* Replace the two options Exact size for featured/non-featured images with one checkbox Only featured
+* Button to stop the regeneration
+* Make Keep existing be checked by default
+* Change "Regenerate selected thumbnails" checklist to a settings selection
+* ShortPixel Image Optimizer integration - call the 'shortpixel-thumbnails-regenerated' action passing only the changed sizes
+* Fix: Security - Image sizes XSS exploit
+* Fix: count(): Parameter must be an array
 
 = 2.0.1 =
 
