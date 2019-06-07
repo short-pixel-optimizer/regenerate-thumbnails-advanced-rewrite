@@ -4,7 +4,10 @@ class rtaAdminController
 {
   protected $controller;
 
-  protected $custom_image_sizes;
+  /** Settings saved in the option table. Being set on construct. Refreshed on save */
+  protected $custom_image_sizes = array();
+  protected $process_image_sizes = false;
+  protected $process_image_options = array();
   protected $jpeg_quality = 90;
 
   protected $cropOptions;
@@ -29,21 +32,41 @@ class rtaAdminController
             'right_bottom' => __('Right bottom','regenerate-thumbnails-advanced'),
         );
 
-
-        $options = get_option('rta_image_sizes');
-        if (isset($options['image_sizes']))
-          $this->custom_image_sizes = $options['image_sizes'];
-
-        if (isset($options['jpeg_quality']))
-          $this->jpeg_quality = $options['jpeg_quality'];
+        $this->setOptionData();
 
   }
 
+  protected function setOptionData()
+  {
+    $options = get_option('rta_image_sizes');
+    if (isset($options['image_sizes']) && is_array($options['image_sizes']))
+      $this->custom_image_sizes = $options['image_sizes'];
 
+    if (isset($options['jpeg_quality']))
+      $this->jpeg_quality = $options['jpeg_quality'];
+
+    if (isset($options['process_image_sizes']) && is_array($options['process_image_sizes']))
+      $this->process_image_sizes = $options['process_image_sizes'];
+    else
+      $this->process_image_sizes = array();
+
+
+    if (isset($options['process_image_options']) && is_array($options['process_image_options']) )
+        $this->process_image_options = $options['process_image_options'];
+    else
+      $this->process_image_options = array();
+
+  }
 
   public function show()
   {
     $html = $this->controller->rta_load_template( "rta_generate_thumbnails", "admin", array('view' => $this) );
+    echo $html;
+  }
+
+  public function loadChildTemplate($name)
+  {
+    $html = $this->controller->rta_load_template($name, 'admin', array('view' => $this ));
     echo $html;
   }
 
@@ -56,7 +79,7 @@ class rtaAdminController
     foreach($this->cropOptions as $name => $label)
     {
       $selected =  ($name == $current) ? 'selected' : '';
-      $output .= "<option name='$name' $selected>$label</option>";
+      $output .= "<option value='$name' $selected>$label</option>";
     }
 
     return $output;
@@ -71,25 +94,28 @@ class rtaAdminController
     return false;
   }
 
+  /** Save thumbnail settings.
+  *
+  * @return JSON  Returns json result data
+  */
   public function save_image_sizes() {
       global $_wp_additional_image_sizes;
 
       $jsonReponse = array('message' => '', 'error' => '');
       $error = false;
-      global $rta_lang;
       $rta_image_sizes = array();
       $option = array();
       $exclude = array();
 
-      $nonce = isset($_POST['nonce']) ? $_POST['nonce'] : false;
+      $nonce = isset($_POST['save_nonce']) ? $_POST['save_nonce'] : false;
       if (! wp_verify_nonce($nonce, 'rta_save_image_sizes'))
       {
         $jsonResponse['error'] = 'Invalid Nonce';
         return $jsonResponse;
       }
 
-      if (isset($_POST['form']))
-          parse_str($_POST['form'], $formpost);
+      if (isset($_POST['saveform']))
+          parse_str($_POST['saveform'], $formpost);
        else
           $formpost = array();
 
@@ -104,7 +130,6 @@ class rtaAdminController
             {
               continue;
             }
-
             // sanitize!
             $rta_image_sizes['name'][] = isset($image_sizes['name'][$i]) ? sanitize_text_field($image_sizes['name'][$i]) : '';
             $rta_image_sizes['pname'][] = isset($image_sizes['pname'][$i]) ? sanitize_text_field($image_sizes['pname'][$i]) : '';
@@ -119,19 +144,37 @@ class rtaAdminController
         $option['jpeg_quality'] = $jpeg_quality;
 
       $option['image_sizes'] = $rta_image_sizes;
-      update_option( 'rta_image_sizes', $option );
 
       // redo the thumbnail options, apply changes
       $sizes = isset($formpost['regenerate_sizes']) ? $formpost['regenerate_sizes'] : array();
-      $newsizes = $this->generateImageSizeOptions($sizes);
+      $size_options = array();
+      foreach($sizes as $rsize)
+      {
+          if (isset($formpost['keep_' . $rsize]))
+          {
+            $size_options[$rsize] = array('overwrite_files' => false);
+          }
+          else {
+            $size_options[$rsize] = array('overwrite_files' => true);
+          }
+      }
+      $option['process_image_sizes'] = array_values($sizes);  // the once that are set to regen. Array values resets index
+      $option['process_image_options'] = $size_options;
 
-      $message = $this->controller->rta_get_message_html( $rta_lang['image_sizes_save_message'], 'message' );
-      $jsonResponse = array( 'error' => $error, 'message' => $message, 'new_image_sizes' => $newsizes );
+      update_option( 'rta_image_sizes', $option );
+      $this->setOptionData();
+
+      $newsizes = $this->generateImageSizeOptions($sizes);
+      $jsonResponse = array( 'error' => $error, 'message' => '', 'new_image_sizes' => $newsizes );
 
       return $jsonResponse;
 
   }
 
+  /** Returns system wide defined image sizes plus our custom sizes
+  *
+  * This function is exclusively meant for display / view purposes
+  */
   public function getImageSizes()
   {
     global $_wp_additional_image_sizes;
@@ -169,16 +212,29 @@ class rtaAdminController
     $i = 0;
     $check_all = ($checked_ar === false) ? true : false;
 
+    $process_options = $this->process_image_options;
+
+    // size here is a name, value is how the name is found in the system (in interface, the technical name)
     foreach($this->getImageSizes() as $value =>  $size):
 
       //if ($check_all)
         //$checked = 'checked';
-      $checked = ($check_all || in_array($size, $checked_ar)) ? 'checked' : '';
+      $checked = ($check_all || in_array($value, $checked_ar)) ? 'checked' : '';
+      $hidden = ($checked == 'checked') ? '' : 'hidden'; // hide add. option if not checked.
 
-      $output .= "<span class='item'>
-        <input type='checkbox' id='regenerate_sizes[$i]' name='regenerate_sizes[$i]' value='$value' $checked>
-          <label for='regenerate_sizes[$i]'>" .  ucfirst($size) . "</label>
+      $option_in_db = (isset($process_options[$value])) ? true : false;
+      $checked_keep = (isset($process_options[$value]) && isset($process_options[$value]['overwrite_files']) && ! $process_options[$value]['overwrite_files'] )  ? 'checked' : '';
+
+      if ($option_in_db)
+        $checked .= ' data-setbyuser=true'; // if value was ever saved in DB, don't change it in the JS.
+
+      $output .= "<div class='item'>";
+      $output .= "<span>
+        <label> <input type='checkbox' id='regenerate_sizes[$i]' name='regenerate_sizes[$i]' value='$value' $checked>
+          " .  ucfirst($size) . "</label>
       </span>";
+      $output .= "<span class='options $hidden'><label><input value='1' type='checkbox' $checked_keep name='keep_" . $value . "'> " . __('Keep existing', 'regenerate-thumbnails-advanced') . "</label></span>";
+      $output .= "</div>";
 
       $i++;
     endforeach;

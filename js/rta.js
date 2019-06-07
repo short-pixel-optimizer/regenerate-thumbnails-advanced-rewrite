@@ -5,9 +5,12 @@ function rtaJS() {};
 rtaJS.prototype = {
   offset: 0,
   total:  0,
-  is_interrupted_process: false,
-  in_process: false,
+  is_interrupted_process: false, // was the process killed by reload earlier?
+  in_process: false, // currently pushing it through.
+  is_stopped: false,
   formcookie: null,
+  is_saved: true,
+
 }
 
 rtaJS.prototype.init = function()
@@ -23,13 +26,17 @@ rtaJS.prototype.init = function()
 
   // save image sizes when updated
   $(document).on('change', '.table.imagesizes input, .table.imagesizes select', $.proxy(this.image_size_changed, this));
+  $(document).on('click', 'button[name="save_settings"]', $.proxy(this.image_size_changed, this));
   $(document).on('click', '.table.imagesizes .btn_remove_row', $.proxy(this.remove_image_size_row, this));
-  $(document).on('click', '#btn_add_image_size', $.proxy(this.add_image_size_row));
+  $(document).on('click', '#btn_add_image_size', $.proxy(this.add_image_size_row, this));
+  $(document).on('click', '.stop-process', $.proxy(this.stopProcess,this));
 
   $(document).on('click', '.rta_error_link', $.proxy(function () { this.show_errorbox(true); }, this) ) ;
   this.formcookie = this.get_form_cookie();
 
-  // [TODO] check offset, total cookie. If there. resume processing
+  $(document).on('change', '.rta-settings-wrap input, .rta-settings-wrap select', $.proxy(this.show_save_indicator, this) );
+  $(document).on('change', 'input[name^="regenerate_sizes"]', $.proxy(this.checkOptionsVisible, this));
+
   var offset = parseInt(this.get_cookie('rta_offset'));
   var total = parseInt(this.get_cookie('rta_total'));
 
@@ -53,7 +60,7 @@ rtaJS.prototype.checkSubmitReady = function()
   if (inputs.length == 0)
     processReady = false;
 
-  if (this.in_process)
+  if (this.in_process || ! this.is_saved)
     processReady = false;
 
   if (processReady)
@@ -65,6 +72,20 @@ rtaJS.prototype.checkSubmitReady = function()
     $('button.rta_regenerate').addClass('disabled');
     $('button.rta_regenerate').prop('disabled', true);
   }
+
+  if (this.is_saved)
+  {
+    $('button[name="save_settings"]').prop('disabled', true);
+    $('button[name="save_settings"]').addClass('disabled');
+    $('.save_note').addClass('rta_hidden');
+
+  }
+  else {
+    $('button[name="save_settings"]').prop('disabled', false);
+    $('button[name="save_settings"]').removeClass('disabled');
+    $('.save_note').removeClass('rta_hidden');
+  }
+
 
 }
 
@@ -79,7 +100,7 @@ rtaJS.prototype.selectAll = function(e)
      checked = false;
    }
 
-   $('input[name^="' + target + '"]').attr('checked', checked).trigger('change');
+   $('input[name^="' + target + '"]').prop('checked', checked).trigger('change');
 
 }
 
@@ -89,10 +110,13 @@ rtaJS.prototype.processInit = function (e)
 
   this.unset_all_cookies();
   this.show_errorbox(false);
-//  this.show_progress(0);
+  this.hide_progress();
+  this.toggleShortPixelNotice(false);
+
   this.show_wait(true);
 
   this.in_process = true;
+  this.is_stopped = false;
   this.checkSubmitReady();
   this.set_form_cookie();
 
@@ -104,11 +128,11 @@ rtaJS.prototype.processInit = function (e)
       dataType: 'json',
       url: rta_data.ajaxurl,
       data: {
-              nonce: rta_data.nonce_generate,
+              gen_nonce: rta_data.nonce_generate,
               action: 'rta_regenerate_thumbnails',
               type: 'general',
-              form: JSON.stringify(form),
-      },
+              genform: JSON.stringify(form),
+       },
       success: function (response) {
           if( response.pCount > 0 ) {
             self.offset = 0;
@@ -126,6 +150,8 @@ rtaJS.prototype.processInit = function (e)
 
 rtaJS.prototype.process = function()
 {
+    if (this.is_stopped)
+      return; // escape if process has been stopped.
     offset = this.offset;
     total = this.total;
 
@@ -144,21 +170,24 @@ rtaJS.prototype.process = function()
             dataType: 'json',
             url: rta_data.ajaxurl,
             data: {
-                    nonce: rta_data.nonce_generate,
+                    gen_nonce: rta_data.nonce_generate,
                     action: 'rta_regenerate_thumbnails',
                     type: 'submit',
                     offset:offset,
-                    form: JSON.stringify(form),
+                    genform: JSON.stringify(form),
             },
             success: function (response) {
                 if( response.offset <= total ) {
                     if(response.logstatus=='Processed') {
                         $(".rta_progress .images img").attr("src",response.imgUrl);
                     }
-                    self.set_process_cookie(response.offset,total);
-                    self.offset = response.offset;
 
-                    setTimeout(function(){ self.process(); },1000);
+                    if (! self.is_stopped)
+                    {
+                      self.set_process_cookie(response.offset,total);
+                      self.offset = response.offset;
+                      setTimeout(function(){ self.process(); },400);
+                    }
                 }else{
                     self.set_cookie("rta_image_processed",$(".rta_progress .images img").attr("src"));
                     //this.show_buttons();
@@ -184,14 +213,23 @@ rtaJS.prototype.process = function()
     this.is_interrupted_process = false;
 
     this.show_wait(false);
+    this.toggleShortPixelNotice(true);
+    $('.stop-process').addClass('rta_hidden');
     this.checkSubmitReady();
-
   }
 
-    rtaJS.prototype.hide_errorbox = function() {
-        var $ = jQuery;
-
+  rtaJS.prototype.stopProcess = function()
+  {
+    if (confirm(rta_data.confirm_stop))
+    {
+      this.is_stopped = true;
+      this.unset_all_cookies();
+      this.finishProcess();
+      this.hide_progress();
+      this.toggleShortPixelNotice(false);
+//      this.checkSubmitReady();
     }
+  }
 
     rtaJS.prototype.show_progress = function(percentage_done) {
         //var $ = jQuery;
@@ -207,7 +245,10 @@ rtaJS.prototype.process = function()
         $(".CircularProgressbar-path").css("stroke-dashoffset",total_circle+"px");
         $(".CircularProgressbar-text").html(percentage_done+"%");
         if(!$(".rta_progress").is(":visible")) {
+
             this.show_wait(false);
+            $('.rta_progress').removeClass('rta_hidden');
+            $('.stop-process').removeClass('rta_hidden');
             $(".rta_progress").slideDown();
             $(".rta_progress").css('display', 'inline-block');
         }
@@ -217,7 +258,7 @@ rtaJS.prototype.process = function()
         if (! show)
           $(".rta_wait_loader").hide();
         else
-          $(".rta_wait_loader").show();
+          $(".rta_wait_loader").show().removeClass('rta_hidden');
     }
 
     rtaJS.prototype.add_error = function(log) {
@@ -240,14 +281,14 @@ rtaJS.prototype.process = function()
       //  var $ = jQuery;
        if (!show)
        {
-         $(".rta_error_box").slideUp();
+         $(".rta_error_box").slideUp(10);
          $(".rta_error_box ul").html("");
-         $(".rta_error_link").slideUp();
+         $(".rta_error_link").slideUp(10);
 
        }
        else {
          if(!$(".rta_error_box").is(":visible") && $(".rta_error_box ul li").length) {
-             $(".rta_error_box").slideDown();
+             $(".rta_error_box").removeClass('rta_hidden').slideDown();
          }
        }
 
@@ -257,7 +298,7 @@ rtaJS.prototype.process = function()
     rtaJS.prototype.show_errorlink = function() {
     //    var $ = jQuery;
         if(!$(".rta_error_link").is(":visible") && $(".rta_error_box ul li").length) {
-            $(".rta_error_link").slideDown();
+            $(".rta_error_link").removeClass('rta_hidden').slideDown();
         }
     }
 
@@ -278,8 +319,9 @@ rtaJS.prototype.process = function()
         this.set_cookie('rta_last_settings', '');
     }
 
-    rtaJS.prototype.set_default_values = function() {
-    }
+    /* Empty function, disabling
+      rtaJS.prototype.set_default_values = function() {
+    } */
 
     rtaJS.prototype.set_process_cookie = function(offset, total)
     {
@@ -370,9 +412,12 @@ rtaJS.prototype.process = function()
         $(row).attr('id', uniqueId);
         $(row).removeClass('proto');
         container.append(row.css('display', 'table-row') );
+
+        container.find('.header').removeClass('rta_hidden');
     }
 
     rtaJS.prototype.image_size_changed = function(e) {
+        e.preventDefault();
         var rowid = $(e.target).parents('.row').attr('id');
         this.update_thumb_name(rowid);
         this.save_image_sizes();
@@ -380,22 +425,36 @@ rtaJS.prototype.process = function()
 
     rtaJS.prototype.update_thumb_name = function(rowid) {
         if($("#"+rowid).length) {
+            var old_name = $("#"+rowid+" .image_sizes_name").val();
             var name = "rta_thumb";//$("#"+rowid+" .image_sizes_name").val();
             var width = $("#"+rowid+" .image_sizes_width").val();
             var height = $("#"+rowid+" .image_sizes_height").val();
             var cropping = $("#"+rowid+" .image_sizes_cropping").val();
+            var pname = $("#"+rowid+" .image_sizes_pname").val();
 
             if (width <= 0) width = '';  // don't include zero values here.
             if (height <= 0) height = '';
             var slug = (name+" "+cropping+" "+width+"x"+height).toLowerCase().replace(/ /g, '_');
+
+            // update the image size selection so it keeps checked indexes.
+            $('input[name^="regenerate_sizes"][value="' + old_name + '"]').val(slug);
+            if (pname.length <= 0)
+            {
+              $('input[name^="regenerate_sizes"][value="' + old_name + '"]').text(slug);
+            }
+            $('input[name="keep_' + old_name + '"]').attr('name', 'keep_' + slug);
+
+
+
             $("#"+rowid+" .image_sizes_name").val(slug);
         }
     }
 
     rtaJS.prototype.save_image_sizes = function() {
+        this.settings_doingsave_indicator(true);
         var action = 'rta_save_image_sizes';
         var the_nonce = rta_data.nonce_savesizes;
-        //$.post(rta_data.ajaxurl+"?action="+$("#frm_rta_image_sizes").attr("action"), $('#frm_rta_image_sizes').serialize());
+
         var self = this;
         // proper request
         $.ajax({
@@ -404,8 +463,8 @@ rtaJS.prototype.process = function()
             url: rta_data.ajaxurl,
             data: {
                   action: action,
-                  nonce: the_nonce,
-                  form: $('#frm_rta_image_sizes').serialize(),
+                  save_nonce: the_nonce,
+                  saveform: $('#rta_settings_form').serialize(),
             },
             success: function (response) {
                 if (! response.error)
@@ -413,20 +472,73 @@ rtaJS.prototype.process = function()
                   if (response.new_image_sizes)
                   {
                     $('.thumbnail_select .checkbox-list').fadeOut(80).html(response.new_image_sizes).fadeIn(80);
+                    self.checkOptionsVisible();
                   }
                 }
+                self.is_saved = true;
+                self.settings_doingsave_indicator(false);
+                self.checkSubmitReady();
             }
         });
+    }
 
+    rtaJS.prototype.settings_doingsave_indicator = function (show)
+    {
+        if (show)
+        {
+            $('.form_controls .save_indicator').fadeIn(20);
+        }
+        else {
+            $('.form_controls .save_indicator').fadeOut(100);
+        }
+    }
+
+    rtaJS.prototype.show_save_indicator = function()
+    {
+        this.is_saved = false;
+        this.checkSubmitReady();
+    }
+
+    rtaJS.prototype.toggleShortPixelNotice = function(show)
+    {
+      if (show)
+        $('.shortpixel-bulk-notice, .shortpixel-notice').removeClass('rta_hidden');
+      else
+        $('.shortpixel-bulk-notice, .shortpixel-notice').addClass('rta_hidden');
     }
 
     rtaJS.prototype.remove_image_size_row = function(e) {
         var rowid = $(e.target).parents('.row').attr('id');
 
-        if(confirm("Are you sure you want delete it?")) {
+        if(confirm( rta_data.confirm_delete )) {
+            var intName = $('#' + rowid).find('.image_sizes_name').val();
+            $('input[name^="regenerate_sizes"][value="' + intName + '"]').remove(); // remove the checkbox as well, otherwise this will remain saved.
+
             $("#"+rowid).remove();
+
             this.save_image_sizes();
         }
+    }
+
+    rtaJS.prototype.checkOptionsVisible = function()
+    {
+        $('input[name^="regenerate_sizes"]').each(function ()
+        {
+           if ($(this).is(':checked'))
+           {
+             $(this).parents('.item').find('.options').removeClass('hidden');
+             var input = $(this).parents('.item').find('input[type="checkbox"]');
+
+             if (typeof $(input).data('setbyuser') == 'undefined')
+             {
+                $(input).prop('checked', true);
+                $(input).data('setbyuser', true);
+              }
+           }
+           else {
+             $(this).parents('.item').find('.options').addClass('hidden');
+           }
+        });
     }
 
     window.rtaJS = new rtaJS();

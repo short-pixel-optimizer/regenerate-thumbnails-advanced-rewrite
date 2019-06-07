@@ -1,101 +1,194 @@
-.rta-admin button, .rta-admin .btn_add_more {
-  color: white;
-  background: #00bcd4;
-  position: relative;
-  box-shadow: none;
-  cursor: pointer;
-  border: 0;
-  border-right: 1px solid #ccc;
-  border-bottom: 1px solid #ccc;
-  box-shadow: 0px 0px 4px #aaa; }
-.rta-admin .container {
-  max-width: 90%;
-  background: #fff;
-  padding: 20px; }
-.rta-admin .option {
-  padding: 10px; }
-  .rta-admin .option > label {
-    width: 150px;
-    display: inline-block;
-    margin-right: 15px;
+.rta-admin {
+  /*.rta_hidden
+  {
+    display: none !important;
+  } */ }
+  .rta-admin .two-panel-wrap {
+    display: flex;
+    justify-content: space-between; }
+    @media (max-width: 1600px) {
+      .rta-admin .two-panel-wrap {
+        flex-direction: column-reverse; }
+        .rta-admin .two-panel-wrap .rta-regenerate-wrap, .rta-admin .two-panel-wrap .rta-settings-wrap {
+          width: 95%;
+          max-width: none; } }
+  .rta-admin h2 {
+    font-size: 26px;
+    padding-left: 8px; }
+  .rta-admin h4 {
+    font-size: 16px;
+    margin: 8px 0 8px 15px; }
+  .rta-admin form {
+    min-height: 600px;
+    padding-bottom: 65px; }
+  .rta-admin .rta-regenerate-wrap, .rta-admin .rta-settings-wrap {
+    flex: 1;
+    margin-bottom: 20px;
+    position: relative;
     padding: 0 15px;
-    font-weight: bold;
-    vertical-align: top;
-    line-height: 15px; }
-  .rta-admin .option .note {
-    font-size: 12px;
-    margin-left: 15px; }
-.rta-admin input.tiny {
-  width: 75px; }
-.rta-admin h4 {
-  font-size: 20px;
-  margin-left: 15px; }
-.rta-admin button {
-  font-size: 14px;
-  text-transform: uppercase;
-  font-weight: 700;
-  margin: 0px;
-  padding: 16px;
-  border-radius: 4px; }
-  .rta-admin button.disabled {
-    background: #ccc;
-    cursor: default;
-    color: #eee; }
-.rta-admin .btn_add_more {
-  font-size: 13px;
-  padding: 5px 6px;
-  margin-left: 25px; }
-.rta-admin .table {
-  flex-wrap: wrap;
-  display: table;
-  border-spacing: 10px 0;
-  border: 1px solid #eee; }
-  .rta-admin .table .header, .rta-admin .table .row {
-    width: 100%;
-    display: table-row; }
-    .rta-admin .table .header span, .rta-admin .table .row span {
-      display: table-cell;
-      padding: 5px;
-      min-width: 100px; }
-  .rta-admin .table .row.proto {
-    display: none; }
-.rta-admin .flex {
-  display: flex; }
-.rta-admin .checkbox-list {
-  display: inline-block; }
-  .rta-admin .checkbox-list .item {
-    display: inline-block;
-    margin: 5px 0px;
-    float: left;
-    clear: both; }
-  .rta-admin .checkbox-list input {
-    margin-right: 8px; }
-.rta-admin .select-options {
-  margin-left: 200px;
-  margin-top: 15px; }
-  .rta-admin .select-options > span {
+    background: #fff; }
+  .rta-admin .rta-regenerate-wrap {
+    max-width: 35%; }
+  .rta-admin .rta-settings-wrap {
+    max-width: 60%; }
+  .rta-admin button, .rta-admin .btn_add_more {
+    color: white;
+    background: #00bcd4;
+    position: relative;
+    box-shadow: none;
     cursor: pointer;
-    color: #222;
-    margin-right: 12px;
+    border: 0;
+    border-right: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    box-shadow: 0px 0px 4px #aaa; }
+  .rta-admin .container {
+    padding: 20px 8px;
+    position: relative;
+    margin: 0 auto; }
+  .rta-admin .option {
+    padding: 10px; }
+    .rta-admin .option > label {
+      width: 150px;
+      display: inline-block;
+      margin-right: 15px;
+      padding: 0 15px;
+      font-weight: bold;
+      vertical-align: top;
+      line-height: 15px; }
+    .rta-admin .option .note {
+      font-size: 12px;
+      margin-left: 15px; }
+  .rta-admin input.tiny {
+    width: 65px; }
+  .rta-admin button {
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin: 0px;
+    padding: 16px;
+    border-radius: 4px; }
+    .rta-admin button.disabled {
+      background: #ccc;
+      cursor: default;
+      color: #eee; }
+  .rta-admin .btn_add_more {
+    font-size: 13px;
+    padding: 5px 6px;
+    margin-left: 25px; }
+  .rta-admin .table {
+    table-layout: fixed;
+    display: table;
+    border-spacing: 10px 0;
+    border: 1px solid #eee;
+    word-wrap: normal;
+    white-space: nowrap; }
+    .rta-admin .table .header, .rta-admin .table .row {
+      width: 100%;
+      display: table-row; }
+      .rta-admin .table .header input.image_sizes_pname, .rta-admin .table .row input.image_sizes_pname {
+        max-width: 180px; }
+      .rta-admin .table .header span, .rta-admin .table .row span {
+        display: table-cell;
+        padding: 5px; }
+    .rta-admin .table .row.proto, .rta-admin .table .rta_hidden {
+      display: none; }
+  .rta-admin .flex {
+    display: flex; }
+  .rta-admin .checkbox-list {
     display: inline-block; }
-.rta-admin section.regenerate .CircularProgressbar {
-  display: inline-block;
-  width: 200px;
-  padding: 25px 0; }
-.rta-admin section.regenerate .rta_progress {
-  display: inline-block; }
-.rta-admin section.regenerate .images {
-  margin-left: 225px;
-  float: left;
-  padding: 15px;
-  border: 1px solid #cecece;
-  margin-right: 50px;
-  opacity: 0; }
-  .rta-admin section.regenerate .images h5 {
-    text-align: center; }
-  .rta-admin section.regenerate .images img {
-    max-width: 500px;
-    max-height: 500px; }
-.rta-admin section.regenerate .rta_hidden {
-  display: inline-block;
-  display: none; }
+    .rta-admin .checkbox-list .item {
+      display: flex;
+      margin: 5px 0px;
+      float: left;
+      clear: both;
+      justify-content: space-between;
+      width: 100%; }
+      .rta-admin .checkbox-list .item span {
+        display: inline-block;
+        margin-right: 14px; }
+      .rta-admin .checkbox-list .item span.hidden {
+        visibility: hidden; }
+    .rta-admin .checkbox-list input {
+      margin-right: 8px; }
+  .rta-admin .select-options {
+    margin-left: 200px;
+    margin-top: 15px; }
+    .rta-admin .select-options > span {
+      cursor: pointer;
+      color: #222;
+      margin-right: 12px;
+      display: inline-block; }
+    .rta-admin .select-options .note {
+      margin-left: 0;
+      border: 1px solid #ccc;
+      padding: 8px; }
+  .rta-admin .cleanup-wrapper {
+    padding: 8px;
+    border: 1px solid #ddd; }
+    .rta-admin .cleanup-wrapper .option {
+      display: flex;
+      flex: 1; }
+      .rta-admin .cleanup-wrapper .option .note {
+        flex: 2; }
+  .rta-admin section.regenerate {
+    background-color: #fff; }
+    .rta-admin section.regenerate .CircularProgressbar {
+      display: inline-block;
+      width: 200px;
+      padding: 25px 0; }
+    .rta-admin section.regenerate .rta_progress {
+      display: inline-block;
+      position: relative;
+      min-height: 310px; }
+    .rta-admin section.regenerate .images {
+      margin-left: 225px;
+      float: left;
+      padding: 15px;
+      border: 1px solid #cecece;
+      margin-right: 50px;
+      opacity: 0; }
+      .rta-admin section.regenerate .images h5 {
+        text-align: center; }
+      .rta-admin section.regenerate .images img {
+        max-width: 500px;
+        max-height: 500px; }
+    .rta-admin section.regenerate .rta_hidden {
+      display: inline-block;
+      display: none; }
+    .rta-admin section.regenerate .shortpixel-notice {
+      background: #fff;
+      width: 250px;
+      min-height: 270px;
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin: 0 5% 10px 25px;
+      float: right; }
+      .rta-admin section.regenerate .shortpixel-notice h3 {
+        line-height: 1.3em; }
+    .rta-admin section.regenerate .shortpixel-bulk-notice {
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center; }
+    .rta-admin section.regenerate button.stop-process {
+      position: absolute;
+      bottom: 10px;
+      left: 80%;
+      font-weight: normal;
+      text-transform: none; }
+  .rta-admin .form_controls {
+    position: absolute;
+    left: 45px;
+    bottom: 0px; }
+    .rta-admin .form_controls .save_indicator {
+      display: none;
+      color: #049901;
+      font-weight: 700;
+      background: url("/wp-admin/images/wpspin_light.gif") no-repeat left center;
+      background-size: 16px 16px;
+      padding-left: 20px; }
+      .rta-admin .form_controls .save_indicator .saved {
+        font-size: 60px; }
+    .rta-admin .form_controls .save_note {
+      color: orange;
+      float: right;
+      margin-left: 30px; }

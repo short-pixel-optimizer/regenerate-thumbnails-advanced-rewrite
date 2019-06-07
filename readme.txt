@@ -3,8 +3,8 @@ Contributors: ShortPixel
 Donate link: https://www.paypal.me/resizeImage
 Tags: regenerate, thumbnail, thumbnails, thumb, thumbs, easy, media, force regenerate, image, images, pics, date
 Requires at least: 4.0
-Tested up to: 5.0
-Stable tag: 2.0.0
+Tested up to: 5.1
+Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,7 +30,7 @@ Features:
 * Resume function - the regeneration process will continue from where it was left in case you accidentally close the processing tab in your browser.
 
 Support:
-For support please conctact us <a href="https://shortpixel.com/contact">here</a> making sure you mention RTA plugin.
+For support please contact us <a href="https://shortpixel.com/contact">here</a> making sure you mention RTA plugin.
 
 
 == Installation ==
@@ -50,14 +50,29 @@ The script stops but it will resume after you open the settings page of the plug
 == Screenshots ==
 
 1. Plugin settings page
-2. Plugins settings page - additional thumbnail sizes
-3. Thumbnail regeneration process in action
+2. Thumbnail regeneration process in action
 
 == Changelog ==
 
+= 2.1.0 =
+
+Release date: 
+* 
+
+= 2.0.1 =
+
+Release date: 17th April 2019
+* Fix warnings related to corrupted metadata in some cases
+
 = 2.0.0 =
 
-* Plugin completelly rewritten with additional features added:
+Release date: 16th April 2019
+* Plugin completely rewritten with additional features added:
+* Add custom thumbnails
+* Select which thumbnails to regenerate
+* Regenerate thumbnails only for the featured images
+* Rewrite the existing thumbnails or not depending on the selected options
+* Integrate seamlessly with <a href="https://wordpress.org/plugins/shortpixel-image-optimiser/">ShortPixel Image Optimizer</a>
 * Delete unused thumbnails from disk
 * Remove metadata for missing images and thumbnails
 

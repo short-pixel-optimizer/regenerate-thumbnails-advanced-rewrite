@@ -31,7 +31,7 @@ class RTA_Front extends RTA
     public function rta_jpeg_quality( $quality ) {
         $rta_image_sizes = get_option( 'rta_image_sizes' );
         if(is_array($rta_image_sizes) && sizeof($rta_image_sizes) > 0){
-            $jpeg_quality = $rta_image_sizes['jpeg_quality'];
+            $jpeg_quality = isset($rta_image_sizes['jpeg_quality']) ? $rta_image_sizes['jpeg_quality'] : null;
             if(!empty($jpeg_quality)) {
                 return (int)$jpeg_quality;
             }
@@ -41,10 +41,16 @@ class RTA_Front extends RTA
 
     public function rta_image_size_names_choose( $sizes ) {
 
-        $rta_image_sizes = get_option( 'rta_image_sizes' );
+        $rta_image_sizes = get_option( 'rta_image_sizes', false );
+        if (! $rta_image_sizes) // option not set
+          return $sizes;
+        if (! isset($rta_image_sizes['image_sizes']))
+          return $sizes;
+
         $image_sizes = $rta_image_sizes['image_sizes'];
+
         $rta_sizes = array();
-        if(is_array($image_sizes) && sizeof($image_sizes['name']) > 0){
+        if(is_array($image_sizes) && count($image_sizes) > 0 && sizeof($image_sizes['name']) > 0){
             for($i=0;$i<sizeof($image_sizes['name']);$i++){
                 $slug = $image_sizes['name'][$i];
                 $name = $image_sizes['pname'][$i];
@@ -52,13 +58,19 @@ class RTA_Front extends RTA
             }
 
         }
-        return array_merge( $sizes, $rta_sizes );
+
+        $new_sizes = array_merge( $sizes, $rta_sizes );
+        return $new_sizes;
     }
 
     public function rta_after_theme_setup() {
 
-        $rta_image_sizes = get_option( 'rta_image_sizes' );
-        $image_sizes = isset($rta_image_sizes['image_sizes']) ? $rta_image_sizes['image_sizes'] : array();
+        $rta_image_sizes = get_option( 'rta_image_sizes', false);
+        if (! $rta_image_sizes)
+          return $rta_image_sizes;
+
+        $image_sizes = isset($rta_image_sizes['image_sizes']) && is_array($rta_image_sizes['image_sizes']) ? $rta_image_sizes['image_sizes'] : array();
+
         if(count($image_sizes) > 0 && count($image_sizes['name']) > 0){
             for($i=0;$i<sizeof($image_sizes['name']);$i++){
                 $crop = false;
