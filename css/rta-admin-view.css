@@ -21,6 +21,30 @@
   .rta-admin form {
     min-height: 600px;
     padding-bottom: 65px; }
+  .rta-admin .rta-notice {
+    margin: 8px 0;
+    padding: 8px;
+    border-width: 1px;
+    border-style: solid;
+    transition: all 500ms ease-in; }
+    .rta-admin .rta-notice .icon {
+      font-size: 35px;
+      float: left;
+      display: inline-block;
+      width: auto;
+      height: auto; }
+    .rta-admin .rta-notice p {
+      font-size: 15px;
+      margin: 4px 0;
+      margin-left: 45px; }
+      .rta-admin .rta-notice p.small {
+        font-size: 0.8em; }
+    .rta-admin .rta-notice.warning {
+      border-color: #ffb900; }
+      .rta-admin .rta-notice.warning .icon {
+        color: #ffb900; }
+    .rta-admin .rta-notice.error {
+      border-color: #ff0000; }
   .rta-admin .rta-regenerate-wrap, .rta-admin .rta-settings-wrap {
     flex: 1;
     margin-bottom: 20px;
@@ -130,6 +154,19 @@
       flex: 1; }
       .rta-admin .cleanup-wrapper .option .note {
         flex: 2; }
+  .rta-admin .warning-removal {
+    position: relative;
+    text-decoration: line-through; }
+    .rta-admin .warning-removal .icon-warning {
+      font-size: 30px;
+      color: #ff0000;
+      width: 20px;
+      height: 20px;
+      text-decoration: none;
+      position: absolute;
+      left: -30px;
+      top: -7px;
+      margin: 0; }
   .rta-admin section.regenerate {
     background-color: #fff; }
     .rta-admin section.regenerate .CircularProgressbar {

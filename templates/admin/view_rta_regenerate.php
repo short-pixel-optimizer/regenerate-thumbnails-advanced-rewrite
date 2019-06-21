@@ -31,6 +31,12 @@
           <span><input type="checkbox" name="del_associated_thumbs" id="del_associated_thumbs" value="1" /> </span>
           <span class='note'><?php _e('This option will remove thumbnails not selected in the settings. Good for stale thumbnails, but be sure they are not in use.  ','regenerate-thumbnails-advanced'); ?></span>
       </div>
+      <div class='warning inline rta-notice rta_hidden' id='warn-delete-items'>
+      <div class='icon dashicons-info dashicons'></div>
+      <p><?php _e('Unused thumbnails will be removed from your site. Please check your settings if this is intentional.'); ?></p>
+
+      <p class='small'><?php _e('Regenerate Thumbnails Advanced will not prevent new media uploads from generating removed sizes', 'regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></span></p>
+      </div>
       <div class='option'>
           <label for="del_leftover_metadata"><?php _e('Delete Leftover Image Metadata','regenerate-thumbnails-advanced'); ?></label>
           <span><input type="checkbox" name="del_leftover_metadata" id="del_leftover_metadata" value="1" /> </span>

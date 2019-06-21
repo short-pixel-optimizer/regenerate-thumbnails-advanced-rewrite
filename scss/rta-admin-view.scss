@@ -14,9 +14,7 @@
         width: 95%;
         max-width: none;
       }
-
     }
-
   }
 
   h2 {
@@ -28,12 +26,51 @@
     margin: 8px 0 8px 15px;
   }
 
+
   form
   {
     min-height: 600px;
   //  background: #fff;
     padding-bottom: 65px;
+  }
 
+  .rta-notice
+  {
+    margin: 8px 0;
+    padding: 8px;
+
+    border-width: 1px;
+    border-style: solid;
+    transition: all 500ms ease-in;
+    .icon
+    {
+      font-size: 35px;
+      float: left;
+      display: inline-block;
+      width: auto;
+      height: auto;
+
+    }
+    p  {
+      font-size: 15px;
+      margin: 4px 0;
+      margin-left: 45px;
+      &.small
+      {
+        font-size: 0.8em;
+      }
+    }
+    &.warning
+    {
+      border-color: #ffb900;
+      .icon {
+        color: #ffb900;
+      }
+    }
+    &.error
+    {
+      border-color: #ff0000;
+    }
   }
 
   .rta-regenerate-wrap, .rta-settings-wrap
@@ -190,8 +227,6 @@
 
     }
 
-
-
   }
 
   .select-options {
@@ -210,6 +245,30 @@
       display: flex;
       flex: 1;
       .note { flex: 2; }
+    }
+  }
+
+  .warning-removal
+  {
+    position: relative;
+    text-decoration: line-through;
+
+
+    .icon-warning
+    {
+      font-size: 30px;
+      color: #ff0000;
+      width: 20px;
+      height: 20px;
+      text-decoration: none;
+      position: absolute;
+      left: -30px;
+      top: -7px;
+      margin: 0;
+    }
+
+    input {
+    //  display: none;
     }
   }
 
