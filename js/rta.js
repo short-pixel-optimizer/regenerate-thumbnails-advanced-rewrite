@@ -31,11 +31,17 @@ rtaJS.prototype.init = function()
   $(document).on('click', '#btn_add_image_size', $.proxy(this.add_image_size_row, this));
   $(document).on('click', '.stop-process', $.proxy(this.stopProcess,this));
 
+  // Warnings, errors and such.
   $(document).on('click', '.rta_error_link', $.proxy(function () { this.show_errorbox(true); }, this) ) ;
+  $(document).on('change', 'input[name="del_associated_thumbs"]', $.proxy(this.toggleDeleteItems,this));
+  $(document).on('change', 'input[name^="regenerate_sizes"]', $.proxy(this.toggleDeleteItems,this));
   this.formcookie = this.get_form_cookie();
+  this.toggleDeleteItems();
 
   $(document).on('change', '.rta-settings-wrap input, .rta-settings-wrap select', $.proxy(this.show_save_indicator, this) );
   $(document).on('change', 'input[name^="regenerate_sizes"]', $.proxy(this.checkOptionsVisible, this));
+
+
 
   var offset = parseInt(this.get_cookie('rta_offset'));
   var total = parseInt(this.get_cookie('rta_total'));
@@ -539,6 +545,36 @@ rtaJS.prototype.process = function()
              $(this).parents('.item').find('.options').addClass('hidden');
            }
         });
+    }
+
+    rtaJS.prototype.toggleDeleteItems = function()
+    {
+      $('.checkbox-list label').removeClass('warning-removal');
+      $('.checkbox-list .icon-warning').remove();
+
+      // remove elements added by this func.
+      var target = $('input[name="del_associated_thumbs"]');
+      if ($(target).is(':checked'))
+      {
+        var has_items = false;
+        $('input[name^="regenerate_sizes"]').not(':checked').each(function()
+        {
+            //$(this).addClass('rta_hidden');
+            $(this).parent('label').addClass('warning-removal');
+            $(this).parent('label').find('input').before("<span class='dashicons dashicons-no icon-warning'></span>");
+            has_items = true;
+        });
+
+        if (has_items)
+        {
+          $('#warn-delete-items').removeClass('rta_hidden');
+        }
+      }
+      else {
+          $('#warn-delete-items').addClass('rta_hidden');
+      }
+      //
+
     }
 
     window.rtaJS = new rtaJS();

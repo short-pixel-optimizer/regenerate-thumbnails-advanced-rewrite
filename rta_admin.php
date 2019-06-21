@@ -21,6 +21,9 @@ class RTA_Admin extends RTA
 
     protected $viewControl = null; // controller that handles the admin page.
 
+    private $process_remove_thumbnails = false;
+    private $process_delete_leftmetadata = false;
+
     //Admin side starting point. Will call appropriate admin side hooks
     public function __construct() {
         $this->customThumbSuffixes = array('_c', '_tl', '_tr', '_br', '_bl');
@@ -250,6 +253,10 @@ class RTA_Admin extends RTA
 
                 $del_thumbs = isset($data['del_associated_thumbs']) ? true : false;
                 $del_leftover_metadata = isset($data['del_leftover_metadata']) ? true : false;
+
+                $this->process_remove_thumbnails = $del_thumbs;
+                $this->process_delete_leftmetadata = $del_leftover_metadata;
+
                 $bulk = ($period == 0) ? true : false;
 
                 $this->viewControl = new rtaAdminController($this);
@@ -278,6 +285,7 @@ class RTA_Admin extends RTA
 
                         $this->debug( (array) $this->currentImage );
 
+                        // If Image doesn't exist at all, remove all metadata.
                         if($del_leftover_metadata && ! $this->currentImage->exists() )  { // !file_exists($fullsizepath) )
                             $this->rta_del_leftover_metadata($image_id, $fullsizepath, $image_posts_to_delete);
                             $this->debug('Image did not exist. Removing leftover metadata');
@@ -393,6 +401,7 @@ class RTA_Admin extends RTA
         $do_regenerate_sizes = $this->viewControl->process_image_sizes; //settings
         $process_options = $this->viewControl->process_image_options;
 
+        // imageMetaSizes is sizeName => Data based array of WP metadata.
         $imageMetaSizes = $this->currentImage->getCurrentSizes();
         $this->debug('Image Meta Sizes');
         $this->debug($imageMetaSizes);
@@ -432,6 +441,19 @@ class RTA_Admin extends RTA
         $do_regenerate_sizes = array_diff($do_regenerate_sizes, $prevent_regen);
         $this->debug('Sizes going for regen - '); $this->debug($do_regenerate_sizes);
 
+        // 6. If unused thumbnails are not set for delete, keep the metadata intact.
+        if (! $this->process_remove_thumbnails)
+        {
+          $other_meta = array_diff( array_keys($imageMetaSizes), $do_regenerate_sizes, $prevent_regen);
+          $this->debug('Image sizes not selected, but not up for deletion');
+          $this->debug($other_meta);
+          foreach($other_meta as $size)
+          {
+            if (isset($imageMetaSizes[$size]))
+                  $this->currentImage->addPersistentMeta($size, $imageMetaSizes[$size]);
+          }
+        }
+
         $returned_sizes = array();
         foreach($full_sizes as $key => $data)
         {
@@ -440,6 +462,8 @@ class RTA_Admin extends RTA
               $returned_sizes[$key] = $data;
             }
         }
+
+
 
         $this->currentImage->setRegeneratedSizes($do_regenerate_sizes);
         return $returned_sizes;

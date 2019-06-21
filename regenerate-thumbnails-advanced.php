@@ -2,7 +2,7 @@
 /*
 Plugin Name: Regenerate Thumbnails Advanced
 Description: Regenerate thumbnails fast and easy while removing unused thumbnails of existing images; very useful when changing a theme.
-Version: 2.1.0
+Version: 2.1.1-DEV01
 Author: ShortPixel
 Author URI: https://shortpixel.com/
 License: GPLv2 or later
