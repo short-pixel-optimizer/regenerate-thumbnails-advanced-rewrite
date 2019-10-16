@@ -1,4 +1,4 @@
-<div class="rta-admin-wrap rta-admin">
+<div class="rta-admin-wrap rta-admin wrap">
     <div class='two-panel-wrap'>
       <div class='rta-regenerate-wrap'>
         <h2><?php _e('Regenerate Thumbnails','regenerate-thumbnails-advanced'); ?></h2>

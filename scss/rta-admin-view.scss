@@ -9,7 +9,7 @@
     @include breakpoint(0,1600px)
     {
       flex-direction: column-reverse;
-      .rta-regenerate-wrap, .rta-settings-wrap
+      .rta-settings-wrap
       {
         width: 95%;
         max-width: none;
@@ -271,71 +271,6 @@
     //  display: none;
     }
   }
-
-  section.regenerate
-  {
-    background-color: #fff;
-    .CircularProgressbar
-    {
-      display: inline-block;
-      width: 200px;
-      padding: 25px 0;
-    }
-    .rta_progress {
-      display: inline-block;
-      position: relative;
-      min-height: 310px;
-    }
-    .images {
-      margin-left: 225px;
-      float: left;
-      padding: 15px;
-      border: 1px solid #cecece;
-      margin-right: 50px;
-      opacity: 0;
-      h5 {
-        text-align: center;
-      }
-      img {
-        max-width: 500px;
-        max-height: 500px;
-      }
-
-    }
-    .rta_hidden
-    {
-      display: inline-block;
-      display: none;
-    }
-    .shortpixel-notice
-    {
-      background: #fff;
-      width: 250px;
-      min-height: 270px;
-      border: 1px solid #ccc;
-      padding: 15px;
-      margin: 0 5% 10px 25px;
-      float: right;
-      h3 {
-        line-height: 1.3em; // match size
-      }
-
-    }
-    .shortpixel-bulk-notice
-    {
-      font-size: 14px;
-      font-weight: 700;
-      text-align: center;
-    }
-    button.stop-process
-    {
-      position: absolute;
-      bottom: 10px;
-      left: 80%;
-      font-weight: normal;
-      text-transform: none;
-    }
-  } // section.regenerate
 
   .form_controls
   {
