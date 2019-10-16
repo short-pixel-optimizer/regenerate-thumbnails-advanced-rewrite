@@ -55,6 +55,12 @@ The script stops but it will resume after you open the settings page of the plug
 
 == Changelog ==
 
+= 2.2 =
+
+* Reworked and improved the process interface
+* Cookie-based processing removed, now keeps progress as a server setting
+* Internal processes optimized. 
+
 = 2.1.0 =
 
 Release date: 7th June 2019

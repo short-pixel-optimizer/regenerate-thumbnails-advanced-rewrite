@@ -251,7 +251,7 @@ class rtaAdminController extends rtaController
         <label> <input type='checkbox' id='regenerate_sizes[$i]' name='regenerate_sizes[$i]' value='$value' $checked>
           " .  ucfirst($size) . "</label>
       </span>";
-      $output .= "<span class='options $hidden'><label><input value='1' type='checkbox' $checked_keep name='keep_" . $value . "'> " . __('Keep existing', 'regenerate-thumbnails-advanced') . "</label></span>";
+      $output .= "<span class='options $hidden'><label><input value='1' type='checkbox' $checked_keep name='keep_" . $value . "'> " . __('Don\'t redo existing', 'regenerate-thumbnails-advanced') . "</label></span>";
       $output .= "</div>";
 
       $i++;
