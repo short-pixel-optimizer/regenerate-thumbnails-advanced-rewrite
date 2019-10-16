@@ -545,8 +545,7 @@ class RTA_Admin extends rtaController
         exit();
 
     }
-
-
+  
     public function capture_generate_sizes($full_sizes)
     {
         $do_regenerate_sizes = $this->viewControl->process_image_sizes; //settings

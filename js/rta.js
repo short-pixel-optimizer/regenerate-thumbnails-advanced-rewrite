@@ -236,7 +236,20 @@ rtaJS.prototype.process = function()
                 //    self.show_errorlink(true);
                 }
 
-            }
+            },
+            error: function (response) {
+
+              var status = new Object;
+              status.id = -1;
+              status.message = response.status + ' ' + response.statusText + ' :: ' + self.offset;
+              status.error = true;
+              self.add_status([status]);
+
+              self.offset++;
+              if( self.offset <= total ) {
+                self.process();  // continue if we still can.
+              }
+            },
         });
     }else{
       //  this.set_cookie("rta_image_processed",$(".rta_progress .images img").attr("src"));
