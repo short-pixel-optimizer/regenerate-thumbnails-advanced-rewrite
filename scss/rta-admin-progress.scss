@@ -1,0 +1,208 @@
+
+section.regenerate
+{
+  background-color: #fff;
+  margin-bottom: 200px; // space to WP footer.
+
+
+  .rta_panel_off
+  {
+      opacity: 0;
+      transition: all 0ms linear;
+  }
+
+  .rta_progress {
+
+    position: relative;
+    min-height: 310px;
+    width: 65%;
+    justify-content: flex-start;
+    .rta_progress_view
+    {
+      margin: 0 auto;
+
+      svg.CircularProgressbar
+      {
+          display: inline-block;
+          width: 200px;
+          padding: 25px 0;
+          .CircularProgressbar-trail {
+              stroke: #d6d6d6;
+          }
+          .CircularProgressbar-path {
+              stroke: #00bcd4;
+              stroke-linecap: round;
+              transition: stroke-dashoffset 0.5s ease 0s;
+          }
+          .CircularProgressbar-text {
+              fill: #00bcd4;
+              font-size: 20px;
+              dominant-baseline: middle;
+              text-anchor: middle;
+          }
+          .progress-count {
+            font-size: 9px;
+            font-weight: bold;
+            dominant-baseline: middle;
+            text-anchor: middle;
+            fill: 999;
+          }
+      }
+    }
+
+    .images {
+    //  margin-left: 225px;
+    //  float: left;
+      padding: 15px;
+      border-top: 1px solid #cecece;
+      border-bottom: 1px solid #cecece;
+
+    //  margin-right: 50px;
+    //  opacity: 0;
+      width: 60%;
+      h5 {
+        text-align: center;
+      }
+      .thumbnail
+      {
+        text-align: center;
+        margin-top: 35px;
+        img {
+          max-width: 500px;
+          max-height: 500px;
+        }
+      }
+
+    }
+
+  } // rta-progress (left)
+
+
+  .rta_status_box
+  {
+    width: 35%;
+    border-left: 1px solid #ccc;
+
+    .rta_wait_loader
+    {
+       margin-top: 35px;
+       padding-left: 20px;
+       opacity: 0;
+       //display:none;
+       .dashicons {
+         animation: wait-spin 2000ms infinite linear;
+         width: 35px;
+         height: 35px;
+         font-size: 35px;
+         float: left;
+         margin-right: 30px;
+
+       }
+    }
+    .rta_notices
+    {
+
+      ul.statuslist {
+        max-height: 350px;
+        overflow-y: auto;
+        overflow-x: visible;
+        margin-left: 15px;
+        li {
+          font-size: 14px;
+          &.error
+          {
+            color: #ff0000;
+          }
+        }
+      }
+    }
+    h4 {
+      font-size: 22px;
+      font-weight: bold;
+    }
+    @keyframes wait-spin {
+      0% {
+        transform: rotate(0); }
+
+      100% {
+        transform: rotate(360deg); }
+    }
+  }
+
+  .rta_success_box
+  {
+    position: absolute;
+    left: 30%;
+    top: -5%;
+  //  height: 350px;
+    width: 45%;
+    margin-left: -200px;
+    opacity: 0.9;
+    background-color: #fff;
+    text-align: center;
+    padding: 15px;
+    border: 1px solid #00bcd4;
+    border-radius: 8px;
+
+    p {
+      font-size: 16px;
+    }
+
+    h3.header {
+      font-size: 32px;
+      font-weight: bold;
+      color: green;
+    }
+
+    .shortpixel
+    {
+       h3 a {
+         line-height: 28px;
+       }
+    }
+
+    .modal-close
+    {
+      position: absolute;
+      right: 15px;
+      top: 15px;
+      cursor: pointer;
+      .dashicons
+      {
+        font-size: 36px;
+        width: 36px;
+        height: 36px;
+      }
+
+    }
+
+  } // success_box
+
+
+  .shortpixel-notice
+  {
+    background: #fff;
+    width: 250px;
+    min-height: 270px;
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin: 0 5% 10px 25px;
+    float: right;
+    h3 {
+      line-height: 1.3em; // match size
+    }
+
+  }
+
+
+  button.stop-process
+  {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+    font-weight: normal;
+    text-transform: none;
+  }
+
+
+} // section.regenerate

@@ -1,6 +1,6 @@
 
 
-<form method="post" name="frm_rta_image_sizes" id="frm_rta_image_sizes" class="frm_rta" enctype="multipart/form-data">
+<form method="post" name="rtaform_process" id="rtaform_process" class="frm_rta" enctype="multipart/form-data">
 <section class='period'>
   <div class='container'>
     <div class='option'>
@@ -48,7 +48,7 @@
 
 <section class='form_controls'>
   <div class='container'>
-    <button  type='submit' disabled class='rta_regenerate disabled'><?php _e('Regenerate', 'regenerate-thumbnails-advanced'); ?></button>
+    <button type='submit' disabled class='rta_regenerate disabled'><?php _e('Regenerate', 'regenerate-thumbnails-advanced'); ?></button>
     <p class='save_note rta_hidden'><?php _e('Save your settings first','regenerate-thumbnails-advanced'); ?></p>
   </div>
 </section>

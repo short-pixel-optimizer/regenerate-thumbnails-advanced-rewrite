@@ -1,4 +1,5 @@
 <?php
+namespace ReThumbAdvanced;
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
@@ -13,19 +14,16 @@
  * @since      File available since Release 1.0.0
 */
 
-class RTA_Front extends RTA
+class RTA_Front
 {
     //Front side starting point. Will call appropriate front side hooks
     public function __construct() {
-
-        do_action('rta_before_front', $this );
         //All front side code will go here
-
         add_action( 'after_setup_theme', array( $this, 'rta_after_theme_setup' ) );
         add_filter( 'image_size_names_choose', array( $this, 'rta_image_size_names_choose' ), 10, 1 );
         add_filter( 'jpeg_quality', array( $this, 'rta_jpeg_quality' ),10, 1);
 
-        do_action('rta_after_front', $this );
+        do_action('rta_after_front_init');
     }
 
     public function rta_jpeg_quality( $quality ) {
@@ -86,5 +84,3 @@ class RTA_Front extends RTA
         }
     }
 }
-
-$rta_front = new RTA_Front();
