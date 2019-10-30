@@ -23,8 +23,8 @@ class RTA_Admin extends rtaController
 
     protected $viewControl = null; // controller that handles the admin page.
 
-    //private $process_remove_thumbnails = false;
-    //private $process_delete_leftmetadata = false;
+    private $process_remove_thumbnails = false;
+    private $process_delete_leftmetadata = false;
 
     private $process;
 
@@ -344,24 +344,8 @@ class RTA_Admin extends rtaController
     // generate thumbnails. @todo Update process, so it does it by 5 or so images, not the one-by-one boredom.
     public function regenerate_thumbnails() {
 
-        //$process = $this->get_process();
-        //$process = $this->process;
         $form = $this->process->formData;
         $this->process->running = true;
-
-        $has_period = (isset($form['period']) && $form['period'] > 0) ? true : false;
-        //$is_featured_only = (isset($data['regenonly_featured']) ) ? true : false;
-
-        //$process_type = (isset($_POST['type'])) ? sanitize_text_field($_POST['type']) : false;
-        $period = isset($form['period']) ? intval($form['period']) : -1;
-
-        $posts_per_page = 3;
-        $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0;
-
-        $query_args = $this->getThumbQueryArgs($form, $posts_per_page, $offset);
-
-        $imageUrl='';
-        $error = array();
 
         $del_thumbs = isset($form['del_associated_thumbs']) ? $form['del_associated_thumbs'] : false;
         $del_leftover_metadata = isset($form['del_leftover_metadata']) ? $form['del_leftover_metadata'] : false;
@@ -369,14 +353,26 @@ class RTA_Admin extends rtaController
         $this->process_remove_thumbnails = $del_thumbs;
         $this->process_delete_leftmetadata = $del_leftover_metadata;
 
+        $has_period = (isset($form['period']) && $form['period'] > 0) ? true : false;
+        //$is_featured_only = (isset($data['regenonly_featured']) ) ? true : false;
+
+        //$process_type = (isset($_POST['type'])) ? sanitize_text_field($_POST['type']) : false;
+        $period = isset($form['period']) ? intval($form['period']) : -1;
+
+        $posts_per_page = apply_filters('rta/process/per_page',  $form['posts_per_page']) ;
+        $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0;
+
+        $query_args = $this->getThumbQueryArgs($form, $posts_per_page, $offset);
+
+        $imageUrl='';
+        $error = array();
+
         $bulk = ($period == 0) ? true : false;
 
         $this->viewControl = new rtaAdminController($this);
 
         $the_query = new \WP_Query($query_args);
-
         $last_success_url = false;
-
 
         if ($the_query->have_posts()) {
 
@@ -387,22 +383,28 @@ class RTA_Admin extends rtaController
                 $the_query->the_post();
                 $image_id = $the_query->post->ID;
 
-                Log::addDebug('Next Item  in process ' .  $image_id);
+                Log::addDebug('Next Item in process ' .  $image_id);
 
                 // simplification
                 $this->currentImage = new rtaImage($image_id);
                 $fullsizepath = $this->currentImage->getPath();
 
-                if ($del_thumbs)
+                if ($this->process_remove_thumbnails)
                 {
                   $this->currentImage->setCleanUp(true);
                   Log::addDebug('Image thumbnails will be cleaned');
                 }
 
+                if ($this->process_delete_leftmetadata)
+                {
+                  $this->currentImage->setMetaCheck(true);
+                  Log::addDebug('Image Metadata Thumbs will be checked');
+                }
+
               //  Log::addDebug( (array) $this->currentImage );
 
                 // If Image doesn't exist at all, remove all metadata.
-                if($del_leftover_metadata && ! $this->currentImage->exists() )  { // !file_exists($fullsizepath) )
+                if($this->process_delete_leftmetadata && ! $this->currentImage->exists() )  { // !file_exists($fullsizepath) )
                     $this->rta_del_leftover_metadata($image_id, $fullsizepath, $image_posts_to_delete);
                     Log::addDebug('Image did not exist. Removing leftover metadata');
                     continue; //the main image is missing, nothing to regenerate.
@@ -422,6 +424,7 @@ class RTA_Admin extends rtaController
                     //use the original main image if exists
                     $backup = apply_filters('shortpixel_get_backup', $fullsizepath);
                     if($backup && $backup !== $fullsizepath) {
+                        Log::addDebug('Retrieving SPIO backups for process');
                         copy($fullsizepath, $backup . "_optimized_" . $image_id);
                         copy($backup, $fullsizepath);
                     }
@@ -434,6 +437,7 @@ class RTA_Admin extends rtaController
 
                     remove_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
 
+                    Log::addDebug('New Attachment metadata generated');
                     //restore the optimized main image
                     if($backup && $backup !== $fullsizepath) {
                         rename($backup . "_optimized_" . $image_id, $fullsizepath);
@@ -455,14 +459,11 @@ class RTA_Admin extends rtaController
                         $original_meta = $this->currentImage->getMetaData();
                         $result = $this->currentImage->saveNewMeta($new_metadata); // this here calls the regeneration.
                         Log::addDebug('Result :', $result);
-                        //Log::addDebug($result);
-                      //  Log::addDebug($this->currentImage->getMetaData());
 
                         $is_a_bulk = true; // we are sending multiple images.
                         $regenSizes = isset($new_metadata['sizes']) ? $new_metadata['sizes'] : array();
 
                         // Do not send if nothing was regenerated, otherwise SP thinks all needs to be redone
-
                         if (count($regenSizes) > 0)
                         {
                           do_action('shortpixel-thumbnails-regenerated', $image_id, $original_meta, $regenSizes, $is_a_bulk);
@@ -545,17 +546,14 @@ class RTA_Admin extends rtaController
         exit();
 
     }
-  
+
     public function capture_generate_sizes($full_sizes)
     {
-        $do_regenerate_sizes = $this->viewControl->process_image_sizes; //settings
+        $do_regenerate_sizes = $this->viewControl->process_image_sizes; // to images to be regenerated.
         $process_options = $this->viewControl->process_image_options;
 
         // imageMetaSizes is sizeName => Data based array of WP metadata.
         $imageMetaSizes = $this->currentImage->getCurrentSizes();
-      //  Log::addDebug('Image Meta Sizes');
-      //  Log::addDebug($imageMetaSizes);
-      //  Log::addDebug($process_options);
 
         $prevent_regen = array();
         foreach($do_regenerate_sizes as $rsize)
@@ -584,8 +582,8 @@ class RTA_Admin extends rtaController
                 $this->currentImage->addPersistentMeta($rsize, $metaSize);
              }
            }
-
         }
+
 
         // 5. Drop the 'not to be' regen. images from the sizes so it will not process.
         $do_regenerate_sizes = array_diff($do_regenerate_sizes, $prevent_regen);
@@ -600,8 +598,8 @@ class RTA_Admin extends rtaController
 
           foreach($other_meta as $size)
           {
-            if (isset($imageMetaSizes[$size]))
-                  $this->currentImage->addPersistentMeta($size, $imageMetaSizes[$size]);
+             if (isset($imageMetaSizes[$size]))
+               $this->currentImage->addPersistentMeta($size, $imageMetaSizes[$size]);
           }
         }
 

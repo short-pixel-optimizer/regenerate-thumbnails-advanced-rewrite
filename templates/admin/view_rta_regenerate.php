@@ -20,6 +20,8 @@
       <input type='checkbox' id='regenonly_featured' name="regenonly_featured" value="1">
     </div>
   </div>
+
+  <input type='hidden' name='posts_per_page' value='3' /> 
 </section>
 
 <section class='extra_options'>

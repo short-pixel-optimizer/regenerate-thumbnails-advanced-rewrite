@@ -21,6 +21,7 @@ class rtaPlugin
 
       $this->initRuntime();
 
+      add_action( 'after_setup_theme', array( $this, 'add_custom_sizes' ) );
       add_action( 'init', array( $this, 'init' ) );
       add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ), 10 );
 
@@ -119,6 +120,28 @@ class rtaPlugin
       $view->show();
   }
 
+  public function add_custom_sizes() {
+
+      $rta_image_sizes = get_option( 'rta_image_sizes', false);
+      if (! $rta_image_sizes)
+        return $rta_image_sizes;
+
+      $image_sizes = isset($rta_image_sizes['image_sizes']) && is_array($rta_image_sizes['image_sizes']) ? $rta_image_sizes['image_sizes'] : array();
+
+      if(count($image_sizes) > 0 && count($image_sizes['name']) > 0){
+          for($i=0;$i<sizeof($image_sizes['name']);$i++){
+              $crop = false;
+              if($image_sizes['cropping'][$i]=='no_cropped'){
+                  $crop = false;
+              }elseif($image_sizes['cropping'][$i]=='cropped') {
+                  $crop = true;
+              }else{
+                  $crop = explode("_", $image_sizes['cropping'][$i]);
+              }
+              add_image_size( $image_sizes['name'][$i], $image_sizes['width'][$i], $image_sizes['height'][$i], $crop );
+          }
+      }
+  }
 
 
 }
