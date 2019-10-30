@@ -1,5 +1,7 @@
 <?php
 namespace ReThumbAdvanced;
+use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
+
 
 class rtaImage
 {
@@ -8,6 +10,7 @@ class rtaImage
   protected $is_image = true;
   protected $does_exist = true;
   protected $do_cleanup =false;
+  protected $do_metacheck = false;
 
   protected $filePath;
   protected $fileUri;
@@ -62,6 +65,20 @@ class rtaImage
 
       $result = array();
 
+      if ($this->do_metacheck && isset($updated_meta['sizes']))
+      {
+        Log::addDebug('Do metaCheck now for ' . $this->id);
+        foreach($updated_meta['sizes'] as $size => $sizedata)
+        {
+           $thumbfile = $this->getDir() . $sizedata['file'];
+           if (! file_exists($thumbfile))
+           {
+             Log::addDebug('Thumbfile not existing. Unsetting this size', array($size, $thumbfile, $this->id));
+             unset($updated_meta['sizes'][$size]);
+           }
+        }
+      }
+
       $result['update'] = wp_update_attachment_metadata($this->id, $updated_meta);
       $this->metadata = wp_get_attachment_metadata($this->id);
 
@@ -74,7 +91,7 @@ class rtaImage
   }
 
   /** This function tries to find related thumbnails to the current image. If there are not in metadata after our process, assume cleanup.
-  *
+  * This removed thumbnail files.
   * See ShortPixel Image Optimiser's findThumbs method
   **
   **/
@@ -190,6 +207,11 @@ class rtaImage
   public function setCleanUp($clean)
   {
     $this->do_cleanup = $clean;
+  }
+
+  public function setMetaCheck($bool)
+  {
+    $this->do_metacheck = $bool;
   }
 
 

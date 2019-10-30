@@ -545,6 +545,7 @@ rtaJS.prototype.processStoppable = function()
                 self.is_saved = true;
                 self.settings_doingsave_indicator(false);
                 self.checkSubmitReady();
+                self.toggleDeleteItems();
             }
         });
     }

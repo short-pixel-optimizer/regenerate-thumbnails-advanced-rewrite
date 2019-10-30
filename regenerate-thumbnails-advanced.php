@@ -3,7 +3,7 @@ namespace ReThumbAdvanced;
 /*
 Plugin Name: Regenerate Thumbnails Advanced
 Description: Regenerate thumbnails fast and easy while removing unused thumbnails of existing images; very useful when changing a theme.
-Version: 2.2-DEV02
+Version: 2.2-DEV04
 Author: ShortPixel
 Author URI: https://shortpixel.com/
 License: GPLv2 or later
@@ -17,7 +17,7 @@ if ( !function_exists( 'add_action' ) ) {
     exit;
 }
 
-define( 'RTA_PLUGIN_VERSION', '2.2-DEV02');
+define( 'RTA_PLUGIN_VERSION', '2.2-DEV04');
 define( 'RTA_PLUGIN_PATH', plugin_dir_path(__FILE__) );
 define( 'RTA_PLUGIN_URL', plugin_dir_url(__FILE__) );
 define( 'RTA_SITE_BASE_URL',  rtrim(get_bloginfo('url'),"/")."/");
@@ -26,7 +26,8 @@ define( 'RTA_LANG_DIR', dirname( plugin_basename(__FILE__) ).'/languages' );
 
 // define ('RTA_DEBUG', true); // for wp-config
 
-require_once(RTA_PLUGIN_PATH . '/build/shortpixel/autoload.php');
+require_once(RTA_PLUGIN_PATH . 'build/shortpixel/autoload.php');
+require_once(RTA_PLUGIN_PATH . 'classes/rta_controller.php');
 require_once(RTA_PLUGIN_PATH . 'classes/rta-plugin.php');
 /*require_once(RTA_PLUGIN_PATH .'rta_admin.php');
 require_once(RTA_PLUGIN_PATH .'rta_front.php');
