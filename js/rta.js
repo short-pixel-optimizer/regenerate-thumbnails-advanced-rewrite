@@ -43,6 +43,8 @@ rtaJS.prototype.init = function()
   $(document).on('change', '.rta-settings-wrap input, .rta-settings-wrap select', $.proxy(this.show_save_indicator, this) );
   $(document).on('change', 'input[name^="regenerate_sizes"]', $.proxy(this.checkOptionsVisible, this));
 
+  $('.toggle-window').on('click', $.proxy(this.toggleWindow, this));
+
 }
 
 // function to check if admin screen can start a new job.
@@ -629,6 +631,25 @@ rtaJS.prototype.processStoppable = function()
       }
       //
 
+    }
+
+    rtaJS.prototype.toggleWindow = function(e)
+    {
+        var $target = $(e.target);
+        if (! $target.hasClass('toggle-window'))
+          $target = $(e.target).parents('.toggle-window');
+
+        var $window = $('#' + $target.data('window'));
+        if ($window.hasClass('window-up'))
+        {
+          $window.removeClass('window-up').addClass('window-down');
+          $target.find('span.dashicons').removeClass('dashicons-arrow-down').addClass('dashicons-arrow-up');
+
+        }
+        else {
+          $window.removeClass('window-down').addClass('window-up');
+          $target.find('span.dashicons').addClass('dashicons-arrow-down').removeClass('dashicons-arrow-up');
+        }
     }
 
     window.rtaJS = new rtaJS();

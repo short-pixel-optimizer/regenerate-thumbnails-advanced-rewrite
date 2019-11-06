@@ -21,28 +21,53 @@
     </div>
   </div>
 
-  <input type='hidden' name='posts_per_page' value='3' /> 
+  <input type='hidden' name='posts_per_page' value='3' />
 </section>
 
 <section class='extra_options'>
   <div class='container'>
-    <div class='cleanup-wrapper'>
-      <h4><?php _e('Clean-up options', 'regenerate-thumbnails-advanced') ?></h4>
+    <div class='toggle-window' data-window='advanced-window'>
+        <h4><?php _e('Advanced options', 'regenerate-thumbnails-advanced') ?></h4>
+        <span class='dashicons dashicons-arrow-down'>&nbsp;</span>
+    </div>
+    <div class='cleanup-wrapper window-up' id='advanced-window'>
       <div class='option'>
-          <label for="del_associated_thumbs"><?php _e('Delete Unused Thumbnails','regenerate-thumbnails-advanced'); ?></label>
-          <span><input type="checkbox" name="del_associated_thumbs" id="del_associated_thumbs" value="1" /> </span>
-          <span class='note'><?php _e('This option will remove thumbnails not selected in the settings. Good for stale thumbnails, but be sure they are not in use.  ','regenerate-thumbnails-advanced'); ?></span>
+
+      </div>
+
+      <div class='option'>
+          <label>
+            <input type='checkbox' name='process_clean_metadata' value='1'>
+            <span><?php _e('Clean unknown metadata', 'regenerate-thumbnails-advanced'); ?></span>
+         </label>
+
+         <span class='note'><?php _e('Clean old metadata not defined in system sizes. Use after removing plugins / themes with old definitions. Will not remove thumbnails from disk', 'regenerate-thumbnails-advanced') ?>
+      </div>
+
+
+      <div class='option'>
+          <label for="del_associated_thumbs">
+            <input type="checkbox" name="del_associated_thumbs" id="del_associated_thumbs" value="1" />
+            <span><?php _e('Delete Unselected Thumbnails','regenerate-thumbnails-advanced'); ?></span>
+          </label>
+          <span class='note'><?php _e('Delete thumbnails and metadata not selected in the settings. Will delete thumbnails from disk - be sure they are not in use.  ','regenerate-thumbnails-advanced'); ?></span>
       </div>
       <div class='warning inline rta-notice rta_hidden' id='warn-delete-items'>
       <div class='icon dashicons-info dashicons'></div>
-      <p><?php _e('Unused thumbnails will be removed from your site. Please check your settings if this is intentional.'); ?></p>
+      <p><?php _e('Not selected thumbnails will be removed from your site. Check your settings if this is intentional.'); ?></p>
 
       <p class='small'><?php _e('Regenerate Thumbnails Advanced will not prevent new media uploads from generating removed sizes', 'regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></span></p>
       </div>
+
       <div class='option'>
-          <label for="del_leftover_metadata"><?php _e('Delete Leftover Image Metadata','regenerate-thumbnails-advanced'); ?></label>
-          <span><input type="checkbox" name="del_leftover_metadata" id="del_leftover_metadata" value="1" /> </span>
-          <span class='note'><?php _e('Delete all the metadata associated with missing (non-existing) images. Keep in mind there is no undo!','regenerate-thumbnails-advanced'); ?></span>
+          <label for="del_leftover_metadata">
+            <input type="checkbox" name="del_leftover_metadata" id="del_leftover_metadata" value="1" />
+            <span><?php _e('Remove non-existent images','regenerate-thumbnails-advanced'); ?></span>
+          </label>
+          <div class='note'>
+            <p><?php _e('If the main image does not exist, remove this image, thumbnails and metadata','regenerate-thumbnails-advanced'); ?></p>
+            <p><?php _e('For removing images that are gone on disk, but still in media library', 'regenerate-thumbnails-advanced'); ?></p>
+        </div>
       </div>
     </div>
   </div>

@@ -124,15 +124,35 @@
       width: 150px;
       display: inline-block;
       margin-right: 15px;
+    //  margin-left: 15px;
       padding: 0 15px;
       font-weight: bold;
       vertical-align: top;
       line-height: 15px;
+      position:relative;
+      input
+      {
+        vertical-align: middle;
+        display: inline-block;
+        line-height: 35px;
+        position: absolute;
+        margin-top: 2px;
+    //    margin-right: 25px;
+      }
+      span
+      {
+        display: inline-block;
+        margin-left: 25px;
+      }
     }
     .note
     {
       font-size: 12px;
       margin-left: 15px;
+      p
+      {
+        margin-top: 0;
+      }
     }
   }
 
@@ -298,9 +318,32 @@
     }
   }
 
-  // low in the tree, to override most.
-  /*.rta_hidden
+  .toggle-window
   {
-    display: none !important;
-  } */
-}
+    cursor: pointer;
+    h4 {
+      display: inline-block;
+    }
+     span
+     {
+          font-size: 26px;
+          vertical-align: top;
+          margin-top: 4px;
+    //   float: left;
+     }
+  }
+  .window-up, .window-down
+  {
+    transition: all 500ms linear;
+  }
+  .window-up
+  {
+    opacity: 0;
+  }
+  .window-down
+  {
+    opacity: 100;
+  }
+
+
+} // class rta-admin

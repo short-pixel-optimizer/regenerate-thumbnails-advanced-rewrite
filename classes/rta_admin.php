@@ -25,6 +25,7 @@ class RTA_Admin extends rtaController
 
     private $process_remove_thumbnails = false;
     private $process_delete_leftmetadata = false;
+    private $process_cleanup_metadata = false;
 
     private $process;
 
@@ -170,6 +171,7 @@ class RTA_Admin extends rtaController
             'regenonly_featured' => false,
             'del_associated_thumbs' => false,
             'del_leftover_metadata' => false,
+            'process_clean_metadata' => false,
         );
         //$data == json_decode(html_entity_decode(stripslashes($_POST['genform'])), true);
         $data = array();
@@ -352,6 +354,7 @@ class RTA_Admin extends rtaController
 
         $this->process_remove_thumbnails = $del_thumbs;
         $this->process_delete_leftmetadata = $del_leftover_metadata;
+        $this->process_clean_metadata = isset($form['process_clean_metadata']) ? $form['process_clean_metadata'] : false;
 
         $has_period = (isset($form['period']) && $form['period'] > 0) ? true : false;
         //$is_featured_only = (isset($data['regenonly_featured']) ) ? true : false;
@@ -395,13 +398,11 @@ class RTA_Admin extends rtaController
                   Log::addDebug('Image thumbnails will be cleaned');
                 }
 
-                if ($this->process_delete_leftmetadata)
+              /*  if ($this->process_delete_leftmetadata)
                 {
                   $this->currentImage->setMetaCheck(true);
                   Log::addDebug('Image Metadata Thumbs will be checked');
-                }
-
-              //  Log::addDebug( (array) $this->currentImage );
+                } */
 
                 // If Image doesn't exist at all, remove all metadata.
                 if($this->process_delete_leftmetadata && ! $this->currentImage->exists() )  { // !file_exists($fullsizepath) )
@@ -550,7 +551,7 @@ class RTA_Admin extends rtaController
     public function capture_generate_sizes($full_sizes)
     {
         $do_regenerate_sizes = $this->viewControl->process_image_sizes; // to images to be regenerated.
-        $process_options = $this->viewControl->process_image_options;
+        $process_options = $this->viewControl->process_image_options; // the setting options for each size.
 
         // imageMetaSizes is sizeName => Data based array of WP metadata.
         $imageMetaSizes = $this->currentImage->getCurrentSizes();
@@ -589,7 +590,24 @@ class RTA_Admin extends rtaController
         $do_regenerate_sizes = array_diff($do_regenerate_sizes, $prevent_regen);
         Log::addDebug('Sizes going for regen - ', $do_regenerate_sizes);
 
-        // 6. If unused thumbnails are not set for delete, keep the metadata intact.
+        /* 6. If metadata should be cleansed of undefined sizes, remove them from the imageMetaSizes
+        *   This is for sizes that are -undefined- in total by system sizes.
+        */
+        if ($this->process_clean_metadata)
+        {
+            $system_sizes = $this->viewControl->system_image_sizes;
+
+            $not_in_system = array_diff( array_keys($imageMetaSizes), array_keys($system_sizes) );
+            if (count($not_in_system) > 0)
+              Log::addDebug('Cleaning not in system', $not_in_system);
+
+            foreach($not_in_system as $index => $unset)
+            {
+              unset($imageMetaSizes[$unset]);
+            }
+        }
+
+        // 7. If unused thumbnails are not set for delete, keep the metadata intact.
         if (! $this->process_remove_thumbnails)
         {
           $other_meta = array_diff( array_keys($imageMetaSizes), $do_regenerate_sizes, $prevent_regen);
