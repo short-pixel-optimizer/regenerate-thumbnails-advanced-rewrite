@@ -9,6 +9,7 @@ class rtaAdminController extends rtaController
   protected $custom_image_sizes = array();
   protected $process_image_sizes = false;
   protected $process_image_options = array();
+  protected $system_image_sizes = array();
   protected $jpeg_quality = 90;
 
   protected $cropOptions;
@@ -59,6 +60,7 @@ class rtaAdminController extends rtaController
     else
       $this->process_image_options = array();
 
+     $this->system_image_sizes = $this->getImageSizes();
   }
 
   private function getDefaultOptions()
@@ -191,7 +193,7 @@ class rtaAdminController extends rtaController
 
   /** Returns system wide defined image sizes plus our custom sizes
   *
-  * This function is exclusively meant for display / view purposes
+  *
   */
   public function getImageSizes()
   {
