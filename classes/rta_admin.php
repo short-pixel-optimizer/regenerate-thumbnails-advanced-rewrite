@@ -1,6 +1,8 @@
 <?php
 namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
+use \ReThumbAdvanced\Notices\NoticeController as Notice;
+
 /**
  * Class that will hold functionality for admin side
  *
@@ -28,6 +30,7 @@ class RTA_Admin extends rtaController
     private $process_cleanup_metadata = false;
 
     private $process;
+    private $currentImage;
 
     //Admin side starting point. Will call appropriate admin side hooks
     public function __construct() {
@@ -83,6 +86,30 @@ class RTA_Admin extends rtaController
         }
     }
 
+    public function regenerate_single_image($attach_id)
+    {
+        $form = $this->getFormData();
+        $form['posts_per_page'] = -1;
+        $form['attach_id'] = $attach_id;
+
+        if ($this->start_process($form))
+        {
+          $this->regenerate_thumbnails();
+        }
+
+        foreach($this->process->status as $statusName => $statusItem)
+        {
+            if ($statusItem['error'])
+              Notice::addError($statusItem['message']);
+            elseif ($statusItem['status'] == 1)
+              Notice::addSuccess(__('Image thumbnails regenerated', 'regenerate-thumbnails-advanced'));
+            else
+              Notice::addNormal($statusItem['message']);
+        }
+
+        $this->end_process();
+    }
+
     public function getQueryDate($period)
     {
       $date = false;
@@ -124,7 +151,7 @@ class RTA_Admin extends rtaController
 
       $query_args = array(
           'post_type' => 'attachment',
-          'post_mime_type' => 'image',
+      //    'post_mime_type' => 'image', // @todo Crashed images can have no mime_type.
           'posts_per_page' => $posts_per_page,
           'post_status' => 'any',
           'offset' => $offset,
@@ -160,6 +187,11 @@ class RTA_Admin extends rtaController
           return false; // no thumbnails, nothing to process
       }
 
+      if (isset($data['attach_id']))
+      {
+        $query_args['p'] = $data['attach_id'];
+      }
+
       return $query_args;
     }
 
@@ -173,9 +205,10 @@ class RTA_Admin extends rtaController
             'del_leftover_metadata' => false,
             'process_clean_metadata' => false,
         );
-        //$data == json_decode(html_entity_decode(stripslashes($_POST['genform'])), true);
+
         $data = array();
-        parse_str($_POST['genform'], $data);
+        $form = isset($_POST['genform']) ? $_POST['genform'] : '';
+        parse_str($form, $data);
 
         return wp_parse_args($data, $defaults);
     }
@@ -430,8 +463,6 @@ class RTA_Admin extends rtaController
                         copy($backup, $fullsizepath);
                     }
 
-                    //$original_meta = wp_get_attachment_metadata($image_id);
-
                     add_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
 
                     $new_metadata = wp_generate_attachment_metadata($image_id, $fullsizepath);
@@ -450,8 +481,9 @@ class RTA_Admin extends rtaController
                       $this->add_status('error_metadata', array('name' => basename($filename_only) ));
                     }
                     else if (empty($new_metadata)) {
-                        $filename_only = wp_get_attachment_url($image_id);
+                        $filename_only = $this->currentImage->getUri();
                       //  $logstatus = '<b>'.basename($filename_only).'</b> is missing';
+                        Log::addDebug('File missing - New metadata returned empty', array($new_metadata, $filename_only,$fullsizepath ));
                         $this->add_status('file_missing', array('name' => basename($filename_only) ));
                         /*$error[] = array('offset' => ($offset + 1), 'error' => $error, 'logstatus' => $logstatus, 'imgUrl' => $filename_only,  'period' => $period); */
                     } else {
@@ -476,9 +508,9 @@ class RTA_Admin extends rtaController
                     //$logstatus = 'Processed';
                     $filename_only = wp_get_attachment_thumb_url($image_id);
                 } else {
-                    $filename_only = wp_get_attachment_url($image_id);
+                    $filename_only = $this->currentImage->getUri();
                     //$logstatus = '<b>'.basename($filename_only).'</b> is missing or not an image file';
-
+                    Log::addDebug('File missing - Current Image reported as not an image', array($fullsizepath) );
                     $this->add_status('file_missing', array('name' => basename($filename_only)) );
 
                     /*$error[] = array('offset' => ($offset + 1), 'error' => $error, 'logstatus' => $logstatus, 'imgUrl' => $filename_only, 'startTime' => $data['startTime'], 'fromTo' => $data['fromTo'], 'type' => $process_type, 'period' => $period); */

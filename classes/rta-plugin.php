@@ -1,6 +1,7 @@
 <?php
 namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
+use \ReThumbAdvanced\Notices\NoticeController as Notice;
 
 
 // load runtime.
@@ -15,10 +16,12 @@ class rtaPlugin
   public function __construct()
   {
       $log = Log::getInstance();
-      $uploaddir =wp_upload_dir();
-      if (isset($uploaddir['basedir']))
-        $log->setLogPath($uploaddir['basedir'] . "/rta_log");
-
+      if (Log::debugIsActive()) // upload dir can be expensive, so only do this when log is actually active.
+      {
+        $uploaddir =wp_upload_dir();
+        if (isset($uploaddir['basedir']))
+          $log->setLogPath($uploaddir['basedir'] . "/rta_log");
+      }
       $this->initRuntime();
 
       add_action( 'after_setup_theme', array( $this, 'add_custom_sizes' ) );
@@ -68,6 +71,45 @@ class rtaPlugin
 
     //add_filter( 'image_size_names_choose', array( $this, 'rta_image_custom_sizes' ), 10, 1 );
     add_action( 'wp_ajax_rta_save_image_sizes', array($this->admin,'view_generate_thumbnails_save' ) );
+
+    add_filter('media_row_actions', array($this,'add_media_action'), 10, 2);
+    add_action( 'add_meta_boxes', function () { add_meta_box('rta-link', __('Regenerate Thumbnails', 'enable-media-replace'), array($this, 'regenerate_meta_box'), 'attachment', 'side', 'low'); }  );
+
+    $this->check_media_action();
+    //add_action('upload.php', array($this, 'check_media_action'), 10);
+
+    $notices = Notice::getInstance();
+
+    // Enqueue notices
+    add_action('admin_notices', array($notices, 'admin_notices')); // previous page / init time
+    add_action('admin_footer', array($notices, 'admin_notices')); // fresh notices between init - end
+
+  }
+
+  public function check_media_action()
+  {
+        if (isset($_GET['regen_action']) && $_GET['regen_action'] == 'regenerate_image_thumbnail')
+        {
+          $attach_id = intval($_GET['attachment_id']);
+          if (! wp_verify_nonce($_GET['_wpnonce'], 'regenerate_image_thumbnail'))
+          {
+            Notice::addError(__('Incorrect nonce','regenerate-thumbnails-advanced'));
+          }
+          elseif ($attach_id <= 0)
+          {
+            Notice::addError(__('No Attachment ID found, not regenerating','regenerate-thumbnails-advanced'));
+          }
+          else {
+            $result = $this->admin->regenerate_single_image($attach_id);
+
+          }
+
+          $sendback = remove_query_arg( array('attachment_id', 'regen_action', '_wpnonce') );
+        //  exit($sendback);
+          wp_redirect($sendback);
+          exit();
+
+        }
 
   }
 
@@ -143,5 +185,43 @@ class rtaPlugin
       }
   }
 
+  private function getRegenerateLink()
+  {
+             //  $url = admin_url( "upload.php");
+
+  }
+
+  public function add_media_action( $actions, $post) {
+
+  $action = 'regenerate_image_thumbnail';
+
+    $url = add_query_arg(array(
+        'regen_action' => $action,
+        'attachment_id' => $post->ID,
+    ));
+
+
+    $editurl = wp_nonce_url( $url, $action );
+    $link = "href=\"$editurl\"";
+
+    $newaction[$action] = '<a ' . $link . ' aria-label="' . esc_attr(__("Regenerate Thumbnails", "regenerate-thumbnails-advanced")) . '" rel="permalink">' . esc_html(__("Regenerate Thumbnails", "regenerate-thumbnails-advanced")) . '</a>';
+
+    return array_merge($actions,$newaction);
+  }
+
+  public function regenerate_meta_box($post)
+  {
+    $action = 'regenerate_image_thumbnail';
+
+      $url = add_query_arg(array(
+          'regen_action' => $action,
+          'attachment_id' => $post->ID,
+      ));
+
+    $editurl = wp_nonce_url( $url, $action );
+    $link = "href=\"$editurl\"";
+
+    echo "<p><a class='button-secondary' $link>" . esc_html__("Regenerate Thumbnails", "regenerate-thumbnails-advanced") . "</a></p>";
+  }
 
 }

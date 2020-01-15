@@ -26,17 +26,30 @@ class rtaImage
   {
       $this->id = $image_id;
 
-      $this->filePath = get_attached_file($image_id);
+      if (function_exists('wp_get_original_image_path')) // WP 5.3+
+        $this->filePath = wp_get_original_image_path($image_id);
+      else
+        $this->filePath = get_attached_file($image_id);
       $this->fileDir = trailingslashit(pathinfo($this->filePath,  PATHINFO_DIRNAME));
-      $this->fileUri = wp_get_attachment_thumb_url($image_id);
+
+      if (function_exists('wp_get_original_image_url')) // WP 5.3+
+        $this->fileUri = wp_get_original_image_url($image_id);
+      else
+        $this->fileUri = wp_get_attachment_url($image_id);
 
       if (!file_exists($this->filePath))
         $this->does_exist = false;
 
-      if (! file_is_displayable_image($this->filePath))
+      if (! file_is_displayable_image($this->filePath)) // this is based on getimagesize
           $this->is_image = false;
 
       $this->metadata = wp_get_attachment_metadata($image_id);
+
+      $is_image_mime = wp_attachment_is('image', $image_id); // this is based on post mime.
+      if (! $is_image_mime && $this->is_image )
+      {
+        $this->fixMimeType($image_id);
+      }
 
   }
 
@@ -212,6 +225,19 @@ class rtaImage
   public function setMetaCheck($bool)
   {
     $this->do_metacheck = $bool;
+  }
+
+  public function fixMimeType($image_id)
+  {
+      $post = get_post($image_id);
+
+      if ($post->post_mime_type == '')
+      {
+        $mime = wp_get_image_mime($this->filePath);
+        $post->post_mime_type = $mime;
+        Log::addDebug('Fixing File Mime for ' . $this->filePath . ' new MIME - ' . $mime);
+        wp_update_post($post);
+      }
   }
 
 
