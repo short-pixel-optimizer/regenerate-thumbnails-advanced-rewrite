@@ -55,11 +55,15 @@ The script stops but it will resume after you open the settings page of the plug
 
 == Changelog ==
 
-= 2.2 =
+= 2.2-DEV06 =
 
+* Fixes for WP5.3 and scaled images
+* Option in media library to regenerate just one image
+* Will check for post_mime_type in posts and fix it when it's empty.
 * Reworked and improved the process interface
 * Cookie-based processing removed, now keeps progress as a server setting
-* Internal processes optimized. 
+* Internal processes optimized.
+* Fixed - Logger doesn't call wp_upload_dir when not debugging
 
 = 2.1.0 =
 
