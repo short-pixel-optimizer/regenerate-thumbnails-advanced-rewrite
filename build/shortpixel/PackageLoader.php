@@ -50,21 +50,29 @@ class PackageLoader
     {
         $dir = $this->dir;
         // Foreach namespace specified in the composer, load the given classes
+
         foreach ($namespaces as $namespace => $classpaths) {
             if (!is_array($classpaths)) {
                 $classpaths = array($classpaths);
             }
             spl_autoload_register(function ($classname) use ($namespace, $classpaths, $dir, $psr4) {
+
                 // Check if the namespace matches the class we are looking for
                 if (preg_match("#^".preg_quote($namespace)."#", $classname)) {
                     // Remove the namespace from the file path since it's psr4
                     if ($psr4) {
                         $classname = str_replace($namespace, "", $classname);
                     }
-                    $filename = preg_replace("#\\\\#", "", $classname).".php";
+
+                  //  $filename = preg_replace("#\\\\#", "", $classname).".php";
+                    // This is fix for nested classes which were losing a /
+                    $filename = ltrim($classname .'.php', '\\');
+                    $filename = str_replace('\\','/', $filename);
+
 
                     foreach ($classpaths as $classpath) {
                       $fullpath = trailingslashit($dir) . trailingslashit($classpath) .$filename;
+
                         if (file_exists($fullpath)) {
                             include_once $fullpath;
                         }

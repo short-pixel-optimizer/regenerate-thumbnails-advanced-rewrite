@@ -89,6 +89,7 @@ rtaJS.prototype.checkSubmitReady = function()
 rtaJS.prototype.initProcess = function()
 {
   process = rta_data.process;
+  console.log(process);
 
   if (process.running)
     this.in_process = process.running;
@@ -99,8 +100,13 @@ rtaJS.prototype.initProcess = function()
   if (process.total)
     this.total = process.total;
 
-   if (this.in_process)
-    this.resumeProcess();
+
+   if (process.running || process.preparing)
+   {
+       this.resumeProcess();
+  }
+
+
 }
 
 rtaJS.prototype.selectAll = function(e)
@@ -162,6 +168,11 @@ rtaJS.prototype.startProcess = function (e)
       },
       error: function(response)
       {
+        var status = new Object;
+        status.id = -1;
+        status.message = rta_data.strings.status_fatal;
+        status.error = true;
+        self.add_status([status]);
         self.finishProcess();
       }
   });

@@ -133,6 +133,7 @@ class rtaPlugin
                           'status_resume' => __("Interrupted process resumed", 'regenerate-thumbnails-advanced'),
                           'status_start' => __('New Process started', 'regenerate-thumbnails-advanced'),
                           'status_finish' => __('Process finished','regenerate-thumbnails-advanced' ),
+                          'status_fatal' => __('A fatal error occured!', 'regenerate-thumbnails-advanced'), 
                           ),
                           'blog_id' => get_current_blog_id(),
                           'process' => $this->admin->get_json_process(),

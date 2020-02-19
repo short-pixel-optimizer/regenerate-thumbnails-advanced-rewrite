@@ -38,20 +38,8 @@ class RTA_Admin extends rtaController
 
       //  do_action('rta_before_admin', $this );
         //All admin side code will go here
-        $this->process = $this->get_process();
-        if ($this->process === false) // no saved state.
-        {
-          $process = new \stdClass;  // format of process.
-          $process->total = 0;
-          $process->current = 0;
-          $process->formData = null;
-          $process->running = false;
-          $process->status = array(); //array('error' => false, 'status' => null, 'message' => null);
-
-          $this->process = $process;
-        }
+        $this->process = new Process(); //$this->get_process();
         //add_filter( 'plugin_action_links_' . plugin_basename(RTA_PLUGIN_FILE), array($this, 'generate_plugin_links'));//for plugin settings page
-
       //  do_action('rta_after_admin', $this );
     }
 
@@ -114,32 +102,35 @@ class RTA_Admin extends rtaController
     {
       $date = false;
       $args = false;
+      $now = time();
+
       switch (intval($period)) {
           case self::PERIOD_ALL:
-              break;
+          break;
           case self::PERIOD_DAY:
             $date = '-1 day';
-            $args = array('after' => '1 day ago', 'before' => 'tomorrow');
+
+            $args = array('after' => '1 day ago', 'before' => 'tomorrow', 'startstamp' => $now - DAY_IN_SECONDS, 'endstamp' => $now);
       break;
           case self::PERIOD_WEEK:
             $date = '-1 week';
-            $args = array('after' => '1 week ago', 'before' => 'tomorrow');
+            $args = array('after' => '1 week ago', 'before' => 'tomorrow', 'startstamp' => $now - WEEK_IN_SECONDS, 'endstamp' => $now);
             break;
           case self::PERIOD_MONTH:
             $date = '-1 month';
-            $args = array('after' => '1 month ago', 'before' => 'tomorrow');
+            $args = array('after' => '1 month ago', 'before' => 'tomorrow', 'startstamp' => $now - MONTH_IN_SECONDS, 'endstamp' => $now);
             break;
         case self::PERIOD_3MONTH:
             $date = '-3 month';
-            $args = array('after' => '3 months ago', 'before' => 'tomorrow');
+            $args = array('after' => '3 months ago', 'before' => 'tomorrow', 'startstamp' => $now - (3* MONTH_IN_SECONDS), 'endstamp' => $now);
         break;
         case self::PERIOD_6MONTH:
             $date = '-6 month';
-            $args = array('after' => '6 months ago', 'before' => 'tomorrow');
+            $args = array('after' => '6 months ago', 'before' => 'tomorrow', 'startstamp' => $now - (6* MONTH_IN_SECONDS), 'endstamp' => $now);
             break;
         case self::PERIOD_YEAR:
             $date = '-1 year';
-            $args = array('after' => '1 year ago', 'before' => 'tomorrow');
+            $args = array('after' => '1 year ago', 'before' => 'tomorrow', 'startstamp' => $now - YEAR_IN_SECONDS, 'endstamp' => $now);
         break;
       }
       $result = array('date' => $date, 'args' => $args);
@@ -214,125 +205,6 @@ class RTA_Admin extends rtaController
     }
 
     // Seperate function for ajax, to clean main function clean of json and exists.
-    public function ajax_start_process()
-    {
-      if (isset($_POST['genform']))
-      {
-          $form = $this->getFormData();
-      }
-      else {
-      //  $this->jsonResponse(array('error' => true, 'logstatus' => __("No Form Data was send", 'message' => "Site error, No Data"));
-        exit();
-      }
-
-      $nonce = isset($_POST['gen_nonce']) ? $_POST['gen_nonce'] : false;
-      if (! wp_verify_nonce($nonce, 'rta_regenerate_thumbnails'))
-      {
-            $this->add_status('no_nonce');
-            $this->jsonResponse($this->get_json_process());
-            exit();
-      }
-
-      $result = $this->start_process($form);
-      $this->jsonResponse($this->get_json_process());
-
-      exit();
-
-    }
-
-    /** Starts a new generate process. Queries the totals based on form input
-    * @param $form Array with FormData
-    * @return boolean true if all went ok, false if error occured
-    * Status and errors can be gotten from process attribute.
-    */
-    public function start_process($form)
-    {
-
-        $posts_per_page = -1; // all
-        $offset = 0; // all
-
-    //    $post_count = 0;
-  /*      $process = new \stdClass;
-        $process->total = 0;
-        $process->current = 0; */
-        $this->process->formData = $form;
-        $this->process->current = 0;
-
-        Log::addDebug('Start Process FormData', $form);
-        $query_args = $this->getThumbQueryArgs($form, $posts_per_page, $offset);
-
-        if ($query_args === false) // zero result situation.
-        {
-           $this->add_status('no_images');
-           $this->end_process();
-           return false;
-        }
-
-        $the_query = new \WP_Query($query_args);
-
-
-        Log::addDebug('Start Process Start with args', $query_args);
-        $count = $the_query->found_posts;
-        $this->process->total = $count;
-
-        if ($count == 0)
-        {
-            $this->add_status('no_images');
-            $this->end_process();
-            return false;
-        }
-
-
-        wp_reset_query();
-        wp_reset_postdata();
-
-        // This is something legacy .  @todo remove at some point.
-        delete_option('rta_get_all_files');
-
-        $this->save_process($this->process);
-        return true;
-
-    }
-
-    protected function save_process($process)
-    {
-        $p = clone $process; // passed by reference, want to keep it in current scope.
-        unset($p->status); // don't save status.
-        update_option('rta_image_process', $p, false);
-    }
-
-    protected function get_process()
-    {
-       $process = get_option('rta_image_process', false);
-       if (! is_object($process))
-        return false;
-
-       $process->status = array(); // process is saved without it.
-       if ($process->current == $process->total)
-       {
-         return false; // don't consider a done process a process
-       }
-       return $process; // if false, no process running. If object, running process there.
-    }
-
-    protected function end_process()
-    {
-        $this->process->running = false;
-        delete_option('rta_image_process');
-    }
-
-    // retrieve JS friendly overview, if we are in process and if yes, what are we doing here.
-    public function get_json_process()
-    {
-        //$json = array('running' => false);
-
-        $json['running'] = $this->process->running;
-        $json['current'] = $this->process->current;
-        $json['total'] = $this->process->total;
-        $json['status'] = $this->process->status;
-        return $json;
-    }
-
     protected function add_status($name, $args = array() )
     {
       $status = array('error' => true, 'message' => __('Unknown Error occured', 'regenerate-thumbnails-advanced'), 'status' => 0);
@@ -545,6 +417,67 @@ class RTA_Admin extends rtaController
 
         return true;
     }
+
+    public function ajax_start_process()
+    {
+      $nonce = isset($_POST['gen_nonce']) ? $_POST['gen_nonce'] : false;
+      if (! wp_verify_nonce($nonce, 'rta_regenerate_thumbnails'))
+      {
+            $this->add_status('no_nonce');
+            $this->jsonResponse($this->get_json_process());
+            exit();
+      }
+
+      if (isset($_POST['genform']))
+      {
+          $form = $this->getFormData();
+
+          $this->process->setRemoveThumbnails($form['del_associated_thumbs']);
+          $this->process->setDeleteLeftMeta($form['del_leftover_metadata']);
+          $this->process->setCleanMetadata($form['process_clean_metadata']);
+          $this->process->setOnlyFeatured($form['regeonly_featured']);
+
+          $periods = $this->getQueryDate($form['period']);
+          if ($period['date'] !== false)
+          {
+            $startstamp = $period['args']['startstamp'];
+            $endstamp = $period['args']['endstamp'];
+            $this->process->setTime($startstamp, $endstamp);
+          }
+
+          $this->process->start();
+
+      }
+      else {
+      //  $this->jsonResponse(array('error' => true, 'logstatus' => __("No Form Data was send", 'message' => "Site error, No Data"));
+        exit();
+      }
+
+      //$result = $this->start_process($form);
+      wp_send_json($this->get_json_process());
+
+      //exit();
+
+    }
+
+    public function ajax_process_continue()
+    {
+
+    }
+
+    // retrieve JS friendly overview, if we are in process and if yes, what are we doing here.
+    public function get_json_process()
+    {
+        //$json = array('running' => false);
+        $json = array();
+        $json['running'] = $this->process->get('running');
+        $json['preparing'] = $this->process->get('preparing');
+        $json['done'] = $this->process->get('done');
+        $json['total'] = $this->process->get('items');
+        $json['status'] = $this->process->get('status');
+        return $json;
+    }
+
 
     public function ajax_regenerate_thumbnails()
     {

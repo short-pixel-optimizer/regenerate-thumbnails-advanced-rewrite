@@ -78,7 +78,6 @@
     .rta-admin .option > label input {
       vertical-align: middle;
       display: inline-block;
-      line-height: 35px;
       position: absolute;
       margin-top: 2px; }
     .rta-admin .option > label span {

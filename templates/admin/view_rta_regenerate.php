@@ -41,7 +41,9 @@
             <span><?php _e('Clean unknown metadata', 'regenerate-thumbnails-advanced'); ?></span>
          </label>
 
-         <span class='note'><?php _e('Clean old metadata not defined in system sizes. Use after removing plugins / themes with old definitions. Will not remove thumbnails from disk', 'regenerate-thumbnails-advanced') ?>
+         <div class='note'>
+           <p><?php _e('Clean old metadata not defined in system sizes. Use after removing plugins / themes with old definitions. Will not remove thumbnails from disk', 'regenerate-thumbnails-advanced') ?></p>
+         </div>
       </div>
 
 
@@ -50,10 +52,12 @@
             <input type="checkbox" name="del_associated_thumbs" id="del_associated_thumbs" value="1" />
             <span><?php _e('Delete Unselected Thumbnails','regenerate-thumbnails-advanced'); ?></span>
           </label>
-          <span class='note'><?php _e('Delete thumbnails and metadata not selected in the settings. Will delete thumbnails from disk - be sure they are not in use.  ','regenerate-thumbnails-advanced'); ?></span>
+          <div class='note'><p><?php _e('Delete thumbnails and metadata not selected in the settings. Will delete thumbnails from disk - be sure they are not in use.  ','regenerate-thumbnails-advanced'); ?></p></div>
       </div>
       <div class='warning inline rta-notice rta_hidden' id='warn-delete-items'>
       <div class='icon dashicons-info dashicons'></div>
+
+
       <p><?php _e('Not selected thumbnails will be removed from your site. Check your settings if this is intentional.'); ?></p>
 
       <p class='small'><?php _e('Regenerate Thumbnails Advanced will not prevent new media uploads from generating removed sizes', 'regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></span></p>
@@ -69,8 +73,9 @@
             <p><?php _e('For removing images that are gone on disk, but still in media library', 'regenerate-thumbnails-advanced'); ?></p>
         </div>
       </div>
+
     </div>
-  </div>
+  </div> <!-- container -->
 </section>
 
 <section class='form_controls'>
