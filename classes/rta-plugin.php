@@ -18,7 +18,7 @@ class rtaPlugin
       $log = Log::getInstance();
       if (Log::debugIsActive()) // upload dir can be expensive, so only do this when log is actually active.
       {
-        $uploaddir =wp_upload_dir();
+        $uploaddir = wp_upload_dir(null, false, false);
         if (isset($uploaddir['basedir']))
           $log->setLogPath($uploaddir['basedir'] . "/rta_log");
       }
@@ -122,9 +122,15 @@ class rtaPlugin
       wp_register_style( 'rta_css_admin', RTA_PLUGIN_URL.'css/rta-admin-view.css', array(), RTA_PLUGIN_VERSION );
       wp_register_style( 'rta_css_admin_progress', RTA_PLUGIN_URL.'css/rta-admin-progress.css', array('rta_css_admin'), RTA_PLUGIN_VERSION );
 
-
+      $admin_url = admin_url( 'admin-ajax.php' );
+      if (Log::isManualDebug() )
+      {
+        $logLevel = Log::getLogLevel();
+        $admin_url = admin_url('admin-ajax.php?SHORTPIXEL_DEBUG=' . $logLevel);
+      }
+      
       wp_localize_script( 'rta_js', 'rta_data', array(
-                          'ajaxurl' => admin_url( 'admin-ajax.php' ),
+                          'ajaxurl' => $admin_url,
                           'nonce_savesizes' => wp_create_nonce('rta_save_image_sizes'),
                           'nonce_generate' => wp_create_nonce('rta_regenerate_thumbnails'),
                           'strings' => array(

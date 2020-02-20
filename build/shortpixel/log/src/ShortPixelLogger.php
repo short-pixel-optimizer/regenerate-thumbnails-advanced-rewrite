@@ -137,7 +137,6 @@ namespace ReThumbAdvanced\ShortPixelLogger;
      {
        return;
      }
-
      // Check where to log to.
      if ($this->logPath === false)
      {
