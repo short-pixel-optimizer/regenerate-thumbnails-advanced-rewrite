@@ -6,13 +6,10 @@
 .rta_ajax_loader{display: none;border: 16px solid #f3f3f3;border-top: 16px solid #0173ab;border-radius: 50%;width: 30px;height: 30px;animation: spin 2s linear infinite;margin:0px auto;}
 .rta_ajax_loader_folder{width: 3px;height: 3px;position: absolute;border: 7px solid #ccc;border-top: 7px solid #0173ab;margin-top: -17px;}
 @keyframes spin {0% { transform: rotate(0deg); }100% { transform: rotate(360deg); }}
-.rta_wait_loader{background: url("../images/ajax-loader.gif") no-repeat left top;padding-left: 20px;display:none; }
 .rta_hidden{display: none;}
 .rta_text_field_60{width: 100px;}
 .rta_error_link{font-size: 16px;font-weight: bold;text-decoration: underline !important;}
-.CircularProgressbar {
-    width: 100%;
-}
+
 svg:not(:root) {
     overflow: hidden;
 }
@@ -23,20 +20,7 @@ img {
     display: inline-block;
     width: 200px;
 }
-.CircularProgressbar .CircularProgressbar-trail {
-    stroke: #d6d6d6;
-}
-.CircularProgressbar .CircularProgressbar-path {
-    stroke: #3e98c7;
-    stroke-linecap: round;
-    transition: stroke-dashoffset 0.5s ease 0s;
-}
-.CircularProgressbar .CircularProgressbar-text {
-    fill: #3e98c7;
-    font-size: 20px;
-    dominant-baseline: middle;
-    text-anchor: middle;
-}
+
 #rtaContent .cpbParent .images {
     border: 1px solid #cecece;
     padding: 0px 15px 15px 15px;

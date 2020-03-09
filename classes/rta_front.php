@@ -1,4 +1,5 @@
 <?php
+namespace ReThumbAdvanced;
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
@@ -13,19 +14,14 @@
  * @since      File available since Release 1.0.0
 */
 
-class RTA_Front extends RTA
+class RTA_Front
 {
     //Front side starting point. Will call appropriate front side hooks
     public function __construct() {
-
-        do_action('rta_before_front', $this );
         //All front side code will go here
-
-        add_action( 'after_setup_theme', array( $this, 'rta_after_theme_setup' ) );
         add_filter( 'image_size_names_choose', array( $this, 'rta_image_size_names_choose' ), 10, 1 );
         add_filter( 'jpeg_quality', array( $this, 'rta_jpeg_quality' ),10, 1);
-
-        do_action('rta_after_front', $this );
+        do_action('rta_after_front_init');
     }
 
     public function rta_jpeg_quality( $quality ) {
@@ -63,28 +59,5 @@ class RTA_Front extends RTA
         return $new_sizes;
     }
 
-    public function rta_after_theme_setup() {
-
-        $rta_image_sizes = get_option( 'rta_image_sizes', false);
-        if (! $rta_image_sizes)
-          return $rta_image_sizes;
-
-        $image_sizes = isset($rta_image_sizes['image_sizes']) && is_array($rta_image_sizes['image_sizes']) ? $rta_image_sizes['image_sizes'] : array();
-
-        if(count($image_sizes) > 0 && count($image_sizes['name']) > 0){
-            for($i=0;$i<sizeof($image_sizes['name']);$i++){
-                $crop = false;
-                if($image_sizes['cropping'][$i]=='no_cropped'){
-                    $crop = false;
-                }elseif($image_sizes['cropping'][$i]=='cropped') {
-                    $crop = true;
-                }else{
-                    $crop = explode("_", $image_sizes['cropping'][$i]);
-                }
-                add_image_size( $image_sizes['name'][$i], $image_sizes['width'][$i], $image_sizes['height'][$i], $crop );
-            }
-        }
-    }
+    
 }
-
-$rta_front = new RTA_Front();

@@ -1,4 +1,7 @@
 <?php
+namespace ReThumbAdvanced;
+use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
+
 
 class rtaImage
 {
@@ -7,6 +10,7 @@ class rtaImage
   protected $is_image = true;
   protected $does_exist = true;
   protected $do_cleanup =false;
+  protected $do_metacheck = false;
 
   protected $filePath;
   protected $fileUri;
@@ -22,17 +26,30 @@ class rtaImage
   {
       $this->id = $image_id;
 
-      $this->filePath = get_attached_file($image_id);
+      if (function_exists('wp_get_original_image_path')) // WP 5.3+
+        $this->filePath = wp_get_original_image_path($image_id);
+      else
+        $this->filePath = get_attached_file($image_id);
       $this->fileDir = trailingslashit(pathinfo($this->filePath,  PATHINFO_DIRNAME));
-      $this->fileUri = wp_get_attachment_thumb_url($image_id);
+
+      if (function_exists('wp_get_original_image_url')) // WP 5.3+
+        $this->fileUri = wp_get_original_image_url($image_id);
+      else
+        $this->fileUri = wp_get_attachment_url($image_id);
 
       if (!file_exists($this->filePath))
         $this->does_exist = false;
 
-      if (! file_is_displayable_image($this->filePath))
+      if (! file_is_displayable_image($this->filePath)) // this is based on getimagesize
           $this->is_image = false;
 
       $this->metadata = wp_get_attachment_metadata($image_id);
+
+      $is_image_mime = wp_attachment_is('image', $image_id); // this is based on post mime.
+      if (! $is_image_mime && $this->is_image )
+      {
+        $this->fixMimeType($image_id);
+      }
 
   }
 
@@ -61,6 +78,20 @@ class rtaImage
 
       $result = array();
 
+      if ($this->do_metacheck && isset($updated_meta['sizes']))
+      {
+        Log::addDebug('Do metaCheck now for ' . $this->id);
+        foreach($updated_meta['sizes'] as $size => $sizedata)
+        {
+           $thumbfile = $this->getDir() . $sizedata['file'];
+           if (! file_exists($thumbfile))
+           {
+             Log::addDebug('Thumbfile not existing. Unsetting this size', array($size, $thumbfile, $this->id));
+             unset($updated_meta['sizes'][$size]);
+           }
+        }
+      }
+
       $result['update'] = wp_update_attachment_metadata($this->id, $updated_meta);
       $this->metadata = wp_get_attachment_metadata($this->id);
 
@@ -73,7 +104,7 @@ class rtaImage
   }
 
   /** This function tries to find related thumbnails to the current image. If there are not in metadata after our process, assume cleanup.
-  *
+  * This removed thumbnail files.
   * See ShortPixel Image Optimiser's findThumbs method
   **
   **/
@@ -189,6 +220,24 @@ class rtaImage
   public function setCleanUp($clean)
   {
     $this->do_cleanup = $clean;
+  }
+
+  public function setMetaCheck($bool)
+  {
+    $this->do_metacheck = $bool;
+  }
+
+  public function fixMimeType($image_id)
+  {
+      $post = get_post($image_id);
+
+      if ($post->post_mime_type == '')
+      {
+        $mime = wp_get_image_mime($this->filePath);
+        $post->post_mime_type = $mime;
+        Log::addDebug('Fixing File Mime for ' . $this->filePath . ' new MIME - ' . $mime);
+        wp_update_post($post);
+      }
   }
 
 

@@ -1,8 +1,9 @@
 <?php
+namespace ReThumbAdvanced;
 /*
 Plugin Name: Regenerate Thumbnails Advanced
 Description: Regenerate thumbnails fast and easy while removing unused thumbnails of existing images; very useful when changing a theme.
-Version: 2.1.0
+Version: 2.2.0
 Author: ShortPixel
 Author URI: https://shortpixel.com/
 License: GPLv2 or later
@@ -16,23 +17,25 @@ if ( !function_exists( 'add_action' ) ) {
     exit;
 }
 
-define( 'RTA_PLUGIN_VERSION', '2.1.0');
+define( 'RTA_PLUGIN_VERSION', '2.2.0');
 define( 'RTA_PLUGIN_PATH', plugin_dir_path(__FILE__) );
 define( 'RTA_PLUGIN_URL', plugin_dir_url(__FILE__) );
 define( 'RTA_SITE_BASE_URL',  rtrim(get_bloginfo('url'),"/")."/");
 define( 'RTA_PLUGIN_FILE', __FILE__);
 define( 'RTA_LANG_DIR', dirname( plugin_basename(__FILE__) ).'/languages' );
 
-require_once(RTA_PLUGIN_PATH . 'includes/rta_class.php');
-require_once(RTA_PLUGIN_PATH .'rta_admin.php');
+// define ('RTA_DEBUG', true); // for wp-config
+
+require_once(RTA_PLUGIN_PATH . 'build/shortpixel/autoload.php');
+require_once(RTA_PLUGIN_PATH . 'classes/rta_controller.php');
+require_once(RTA_PLUGIN_PATH . 'classes/rta-plugin.php');
+/*require_once(RTA_PLUGIN_PATH .'rta_admin.php');
 require_once(RTA_PLUGIN_PATH .'rta_front.php');
 require_once(RTA_PLUGIN_PATH . 'classes/rta_admin_controller.php');
-require_once(RTA_PLUGIN_PATH . 'classes/rta_image.php');
+require_once(RTA_PLUGIN_PATH . 'classes/rta_image.php'); */
 
-$rta = new RTA(); // start runtime
-
-// define ('RTA_DEBUG', true);
+$rta = new rtaPlugin(); // start runtime
 
 
-register_activation_hook( __FILE__, array( 'RTA', 'rta_install' ) );
-register_deactivation_hook( __FILE__, array( 'RTA', 'rta_uninstall' ) );
+//register_activation_hook( __FILE__, array( 'RTA', 'rta_install' ) );
+//register_deactivation_hook( __FILE__, array( 'RTA', 'rta_uninstall' ) );

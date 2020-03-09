@@ -1,6 +1,7 @@
 <?php
+namespace ReThumbAdvanced;
 
-class rtaAdminController
+class rtaAdminController extends rtaController
 {
   protected $controller;
 
@@ -8,13 +9,15 @@ class rtaAdminController
   protected $custom_image_sizes = array();
   protected $process_image_sizes = false;
   protected $process_image_options = array();
+  protected $system_image_sizes = array();
   protected $jpeg_quality = 90;
 
   protected $cropOptions;
 
   public function __construct($controller)
   {
-        wp_enqueue_style( 'rta_css_admin', RTA_PLUGIN_URL.'css/rta-admin-view.css', array(), RTA_PLUGIN_VERSION );
+        wp_enqueue_style( 'rta_css_admin');
+        wp_enqueue_style( 'rta_css_admin_progress');
 
         $this->controller = $controller;
 
@@ -38,7 +41,8 @@ class rtaAdminController
 
   protected function setOptionData()
   {
-    $options = get_option('rta_image_sizes');
+    $options = get_option('rta_image_sizes', $this->getDefaultOptions() );
+
     if (isset($options['image_sizes']) && is_array($options['image_sizes']))
       $this->custom_image_sizes = $options['image_sizes'];
 
@@ -56,17 +60,33 @@ class rtaAdminController
     else
       $this->process_image_options = array();
 
+     $this->system_image_sizes = $this->getImageSizes();
+  }
+
+  private function getDefaultOptions()
+  {
+    $standard_sizes = array( 'thumbnail', 'medium', 'medium_large', 'large' ); // directly from media.php, hardcoded there.
+    $process_image_options = array();
+    foreach($standard_sizes as $name)
+    {
+      $process_image_options[$name] = array('overwrite_files' => false);
+    }
+    $options = array();
+    $options['process_image_sizes'] = $standard_sizes;
+    $options['process_image_options'] = $process_image_options;
+
+    return $options;
   }
 
   public function show()
   {
-    $html = $this->controller->rta_load_template( "rta_generate_thumbnails", "admin", array('view' => $this) );
+    $html = $this->load_template( "rta_generate_thumbnails", "admin", array('view' => $this) );
     echo $html;
   }
 
   public function loadChildTemplate($name)
   {
-    $html = $this->controller->rta_load_template($name, 'admin', array('view' => $this ));
+    $html = $this->load_template($name, 'admin', array('view' => $this ));
     echo $html;
   }
 
@@ -173,7 +193,7 @@ class rtaAdminController
 
   /** Returns system wide defined image sizes plus our custom sizes
   *
-  * This function is exclusively meant for display / view purposes
+  *
   */
   public function getImageSizes()
   {
@@ -233,7 +253,7 @@ class rtaAdminController
         <label> <input type='checkbox' id='regenerate_sizes[$i]' name='regenerate_sizes[$i]' value='$value' $checked>
           " .  ucfirst($size) . "</label>
       </span>";
-      $output .= "<span class='options $hidden'><label><input value='1' type='checkbox' $checked_keep name='keep_" . $value . "'> " . __('Keep existing', 'regenerate-thumbnails-advanced') . "</label></span>";
+      $output .= "<span class='options $hidden'><label><input value='1' type='checkbox' $checked_keep name='keep_" . $value . "'> " . __('Don\'t redo existing', 'regenerate-thumbnails-advanced') . "</label></span>";
       $output .= "</div>";
 
       $i++;
