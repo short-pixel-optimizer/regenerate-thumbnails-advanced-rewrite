@@ -31,6 +31,7 @@ class RTA_Admin extends rtaController
 
     private $process;
     private $currentImage;
+    private $image_posts_to_delete = array();
 
     //Admin side starting point. Will call appropriate admin side hooks
     public function __construct() {
@@ -40,6 +41,7 @@ class RTA_Admin extends rtaController
         //All admin side code will go here
         $this->process = new Process(); //$this->get_process();
         //add_filter( 'plugin_action_links_' . plugin_basename(RTA_PLUGIN_FILE), array($this, 'generate_plugin_links'));//for plugin settings page
+
       //  do_action('rta_after_admin', $this );
     }
 
@@ -50,7 +52,7 @@ class RTA_Admin extends rtaController
      * @param $image_posts_to_delete
      * TODO Remove this pass by reference.
      */
-    function rta_del_leftover_metadata($image_id, $fullsizepath, &$image_posts_to_delete) {
+    /*function rta_del_leftover_metadata($image_id, $fullsizepath) {
         $original_meta = wp_get_attachment_metadata($image_id);
         $allSizesMissing = true;
         $someSizesMissing = false;
@@ -68,11 +70,11 @@ class RTA_Admin extends rtaController
             }
         }
         if($allSizesMissing) {
-            $image_posts_to_delete[] = $image_id;
+            $this->image_posts_to_delete[] = $image_id;
         } elseif($someSizesMissing) {
             wp_update_attachment_metadata($image_id, $original_meta);
         }
-    }
+    } */
 
     public function regenerate_single_image($attach_id)
     {
@@ -204,7 +206,7 @@ class RTA_Admin extends rtaController
         return wp_parse_args($data, $defaults);
     }
 
-    // Seperate function for ajax, to clean main function clean of json and exists.
+
     protected function add_status($name, $args = array() )
     {
       $status = array('error' => true, 'message' => __('Unknown Error occured', 'regenerate-thumbnails-advanced'), 'status' => 0);
@@ -284,7 +286,7 @@ class RTA_Admin extends rtaController
 
         if ($the_query->have_posts()) {
 
-            $image_posts_to_delete = array();
+
 
             // The process runs just 1 image per run here.
             while ($the_query->have_posts()) {
@@ -311,9 +313,9 @@ class RTA_Admin extends rtaController
 
                 // If Image doesn't exist at all, remove all metadata.
                 if($this->process_delete_leftmetadata && ! $this->currentImage->exists() )  { // !file_exists($fullsizepath) )
-                    $this->rta_del_leftover_metadata($image_id, $fullsizepath, $image_posts_to_delete);
-                    Log::addDebug('Image did not exist. Removing leftover metadata');
-                    continue; //the main image is missing, nothing to regenerate.
+                    //$this->rta_del_leftover_metadata($image_id, $fullsizepath);
+                    $this->image_posts_to_delete[] = $image_id;
+                  //  Log::addDebug('Image did not exist. Removing leftover metadata');
                 }
 
                 if (isset($data['mediaID'])){
@@ -336,10 +338,13 @@ class RTA_Admin extends rtaController
                     }
 
                     add_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
+                    // RTA should never touch source files. This happens when redoing scaling. This would also be problematic in combination with optmisers. Disable scaling when doing thumbs.
+                    add_filter('big_image_size_threshold', array($this, 'disable_scaling'));
 
                     $new_metadata = wp_generate_attachment_metadata($image_id, $fullsizepath);
 
                     remove_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
+                    remove_filter('big_image_size_threshold', array($this, 'disable_scaling'));
 
                     Log::addDebug('New Attachment metadata generated');
                     //restore the optimized main image
@@ -393,7 +398,9 @@ class RTA_Admin extends rtaController
 
             } // Post Loop
 
-            foreach($image_posts_to_delete as $to_delete) {
+
+            foreach($this->image_posts_to_delete as $to_delete) {
+                Log::addDebug('Deleting post ' . $to_delete);
                 wp_delete_post($to_delete, true);
             }
         }
@@ -511,6 +518,11 @@ class RTA_Admin extends rtaController
         $this->jsonResponse($this->get_json_process());
         exit();
 
+    }
+
+    public function disable_scaling()
+    {
+       return false;
     }
 
     public function capture_generate_sizes($full_sizes)

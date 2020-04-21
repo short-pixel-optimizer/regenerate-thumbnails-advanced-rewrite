@@ -41,9 +41,7 @@
             <span><?php _e('Clean unknown metadata', 'regenerate-thumbnails-advanced'); ?></span>
          </label>
 
-         <div class='note'>
-           <p><?php _e('Clean old metadata not defined in system sizes. Use after removing plugins / themes with old definitions. Will not remove thumbnails from disk', 'regenerate-thumbnails-advanced') ?></p>
-         </div>
+         <div class='note'><p><?php _e('Clean old metadata not defined in system sizes. Use after removing plugins / themes with old definitions. Will not remove thumbnails from disk', 'regenerate-thumbnails-advanced') ?></p></div>
       </div>
 
 
@@ -69,7 +67,7 @@
             <span><?php _e('Remove non-existent images','regenerate-thumbnails-advanced'); ?></span>
           </label>
           <div class='note'>
-            <p><?php _e('If the main image does not exist, remove this image, thumbnails and metadata','regenerate-thumbnails-advanced'); ?></p>
+            <p><?php _e('If the main image does not exist, removes this image, thumbnails and metadata','regenerate-thumbnails-advanced'); ?></p>
             <p><?php _e('For removing images that are gone on disk, but still in media library', 'regenerate-thumbnails-advanced'); ?></p>
         </div>
       </div>
