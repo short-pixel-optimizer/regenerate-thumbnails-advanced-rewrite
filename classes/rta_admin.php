@@ -247,7 +247,6 @@ class RTA_Admin extends rtaController
     */
     public function start_process($form)
     {
-
         $posts_per_page = -1; // all
         $offset = 0; // all
 

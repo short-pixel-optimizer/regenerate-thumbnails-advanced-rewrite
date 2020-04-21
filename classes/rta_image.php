@@ -104,7 +104,7 @@ class rtaImage
   }
 
   /** This function tries to find related thumbnails to the current image. If there are not in metadata after our process, assume cleanup.
-  * This removed thumbnail files.
+  * This removes thumbnail files.
   * See ShortPixel Image Optimiser's findThumbs method
   **
   **/
