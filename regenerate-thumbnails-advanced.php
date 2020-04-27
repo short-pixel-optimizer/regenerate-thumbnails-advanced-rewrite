@@ -28,13 +28,10 @@ define( 'RTA_LANG_DIR', dirname( plugin_basename(__FILE__) ).'/languages' );
 require_once(RTA_PLUGIN_PATH . 'build/shortpixel/autoload.php');
 require_once(RTA_PLUGIN_PATH . 'classes/rta_controller.php');
 require_once(RTA_PLUGIN_PATH . 'classes/rta-plugin.php');
-/*require_once(RTA_PLUGIN_PATH .'rta_admin.php');
-require_once(RTA_PLUGIN_PATH .'rta_front.php');
-require_once(RTA_PLUGIN_PATH . 'classes/rta_admin_controller.php');
-require_once(RTA_PLUGIN_PATH . 'classes/rta_image.php'); */
+
 
 $rta = new rtaPlugin(); // start runtime
 
-
-//register_activation_hook( __FILE__, array( 'RTA', 'rta_install' ) );
-//register_deactivation_hook( __FILE__, array( 'RTA', 'rta_uninstall' ) );
+register_uninstall_hook(RTA_PLUGIN_FILE, array('rtaInstall', 'uninstall'));
+register_activation_hook(RTA_PLUGIN_FILE, array('rtaInstall', 'activate'));
+register_deactivation_hook(RTA_PLUGIN_FILE, array('rtaInstall', 'deactivate'));

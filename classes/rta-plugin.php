@@ -34,6 +34,12 @@ class rtaPlugin
 
   }
 
+  public static function namespaceit($name)
+  {
+    return '\ReThumbAdvanced\\'  . $name;
+  }
+
+
   public function initRuntime()
   {
   //  $plugin_path = plugin_dir_path(SHORTPIXEL_PLUGIN_FILE);
@@ -128,7 +134,7 @@ class rtaPlugin
         $logLevel = Log::getLogLevel();
         $admin_url = admin_url('admin-ajax.php?SHORTPIXEL_DEBUG=' . $logLevel);
       }
-      
+
       wp_localize_script( 'rta_js', 'rta_data', array(
                           'ajaxurl' => $admin_url,
                           'nonce_savesizes' => wp_create_nonce('rta_save_image_sizes'),
@@ -139,7 +145,7 @@ class rtaPlugin
                           'status_resume' => __("Interrupted process resumed", 'regenerate-thumbnails-advanced'),
                           'status_start' => __('New Process started', 'regenerate-thumbnails-advanced'),
                           'status_finish' => __('Process finished','regenerate-thumbnails-advanced' ),
-                          'status_fatal' => __('A fatal error occured!', 'regenerate-thumbnails-advanced'), 
+                          'status_fatal' => __('A fatal error occured!', 'regenerate-thumbnails-advanced'),
                           ),
                           'blog_id' => get_current_blog_id(),
                           'process' => $this->admin->get_json_process(),
