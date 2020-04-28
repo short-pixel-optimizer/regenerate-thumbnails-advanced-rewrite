@@ -70,6 +70,9 @@
         </div>
       </div>
 
+        <a href="https://help.shortpixel.com/article/233-quick-guide-to-using-regenerate-thumbnails-advanced-settings"
+           class="shortpixel-help-link" target="_blank">
+            <span class="dashicons dashicons-editor-help"></span>Read more</a>
     </div>
   </div> <!-- container -->
 </section>
