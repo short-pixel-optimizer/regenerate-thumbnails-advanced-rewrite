@@ -16,6 +16,12 @@ svg:not(:root) {
 img {
     vertical-align: middle;
 }
+
+.dashicons-editor-help {
+    text-decoration: none;
+    margin-top: -1px;
+}
+
 #rtaContent .cpbParent .CircularProgressbar {
     display: inline-block;
     width: 200px;
