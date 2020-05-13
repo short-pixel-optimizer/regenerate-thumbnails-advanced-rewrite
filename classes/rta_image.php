@@ -53,6 +53,94 @@ class rtaImage
 
   }
 
+  public function regenerate()
+  {
+    if (RTA()->process()->doRemoveThumbnails())
+    {
+      $this->setCleanUp(true);
+      Log::addDebug('Image thumbnails will be cleaned');
+    }
+
+    if(RTA()->process()->doDeleteLeftMeta() && ! $this->exists() )  {
+
+        Log::addDebug('Deleting post ' . $this->id);
+        wp_delete_post($this->id, true);
+
+    }
+
+    if ($this->isImage() ) {
+
+        @set_time_limit(900);
+        do_action('shortpixel-thumbnails-before-regenerate', $this->id);
+
+        //use the original main image if exists
+        $backup = apply_filters('shortpixel_get_backup', $this->getPath() );
+        if($backup && $backup !== $this->filePath) {
+            Log::addDebug('Retrieving SPIO backups for process');
+            copy($this->getPath(), $backup . "_optimized_" . $this->id);
+            copy($backup, $this->getPath());
+        }
+
+        add_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
+        // RTA should never touch source files. This happens when redoing scaling. This would also be problematic in combination with optimisers. Disable scaling when doing thumbs.
+        add_filter('big_image_size_threshold', array($this, 'disable_scaling'));
+
+        $new_metadata = wp_generate_attachment_metadata($this->id, $this->filePath);
+
+        remove_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
+        remove_filter('big_image_size_threshold', array($this, 'disable_scaling'));
+
+        Log::addDebug('New Attachment metadata generated');
+        //restore the optimized main image
+        if($backup && $backup !== $this->filePath) {
+            rename($backup . "_optimized_" . $this->id, $this->filePath);
+        }
+
+        //get the attachment name
+        if (is_wp_error($new_metadata)) {
+
+          RTA()->ajax()->add_status('error_metadata', array('name' => basename($this->filePath) ));
+        }
+        else if (empty($new_metadata)) {
+
+            Log::addDebug('File missing - New metadata returned empty', array($new_metadata, $this->fileUri,$this->filePath ));
+            RTA()->ajax()->add_status('file_missing', array('name' => basename($this->fileUri) ));
+
+        } else {
+
+            // going for the save.
+            $original_meta = $this->getMetaData();
+            $result = $this->saveNewMeta($new_metadata); // this here calls the regeneration.
+            Log::addDebug('Result :', $result);
+
+            $is_a_bulk = true; // we are sending multiple images.
+            $regenSizes = isset($new_metadata['sizes']) ? $new_metadata['sizes'] : array();
+
+            // Do not send if nothing was regenerated, otherwise SP thinks all needs to be redone
+            if (count($regenSizes) > 0)
+            {
+              do_action('shortpixel-thumbnails-regenerated', $this->id, $original_meta, $regenSizes, $is_a_bulk);
+            }
+            $last_success_url = $this->fileUri;
+
+        }
+      //  $imageUrl = $this->fileUri;
+        //$logstatus = 'Processed';
+      //  $thumb = wp_get_attachment_thumb_url($this->id);
+        RTA()->ajax()->add_status('regenerate_success', array('thumb' => $last_success_url));
+
+    } else {
+      //  $filename_only = $this->currentImage->getUri();
+        //$logstatus = '<b>'.basename($filename_only).'</b> is missing or not an image file';
+        Log::addDebug('File missing - Current Image reported as not an image', array($this->filePath) );
+        RTA()->ajax()->add_status('file_missing', array('name' => basename($this->fileUri)) );
+
+        /*$error[] = array('offset' => ($offset + 1), 'error' => $error, 'logstatus' => $logstatus, 'imgUrl' => $filename_only, 'startTime' => $data['startTime'], 'fromTo' => $data['fromTo'], 'type' => $process_type, 'period' => $period); */
+    }
+
+    return true;
+  }
+
   // Todo before doing this, function to remove thumbnails need to run somehow, without killing all.
   public function saveNewMeta($updated_meta)
   {
@@ -102,6 +190,98 @@ class rtaImage
 
       return $result;
   }
+
+  public function disable_scaling()
+  {
+     return false;
+  }
+
+  public function capture_generate_sizes($full_sizes)
+  {
+      $do_regenerate_sizes = RTA()->admin()->getOption('process_image_sizes'); // $this->viewControl->process_image_sizes; // to images to be regenerated.
+      $process_options = RTA()->admin()->getOption('process_image_options'); // $this->viewControl->process_image_options; // the setting options for each size.
+
+      // imageMetaSizes is sizeName => Data based array of WP metadata.
+      $imageMetaSizes = $this->getCurrentSizes();
+
+      $prevent_regen = array();
+      foreach($do_regenerate_sizes as $rsize)
+      {
+        // 1. Check if size exists, if not, needs generation anyhow.
+        if (! isset($imageMetaSizes[$rsize]))
+        {
+          Log::addDebug("Image Meta size setting missing - $rsize ");
+          continue;
+        }
+
+        // 2. Check meta info (file) from the current meta info we have.
+        $metaSize = $imageMetaSizes[$rsize];
+        $overwrite = isset($process_options[$rsize]['overwrite_files']) ? $process_options[$rsize]['overwrite_files'] : false; // 3. Check if we keep or overwrite.
+
+         if (! $overwrite)
+         {
+          // thumbFile is RELATIVE. So find dir via main image.
+           $thumbFile = $this->getDir() . $metaSize['file'];
+           //Log::addDebug('Preventing overwrite of - ' . $thumbFile);
+           if (file_exists($thumbFile)) // 4. Check if file is really there
+           {
+              $prevent_regen[] = $rsize;
+              // Add to current Image the metaSize since it will be dropped by the metadata redoing.
+              Log::addDebug('File exists on ' . $rsize . ' ' . $thumbFile . '  - skipping regen - prevent overwrite');
+              $this->addPersistentMeta($rsize, $metaSize);
+           }
+         }
+      }
+
+
+      // 5. Drop the 'not to be' regen. images from the sizes so it will not process.
+      $do_regenerate_sizes = array_diff($do_regenerate_sizes, $prevent_regen);
+      Log::addDebug('Sizes going for regen - ', $do_regenerate_sizes);
+
+      /* 6. If metadata should be cleansed of undefined sizes, remove them from the imageMetaSizes
+      *   This is for sizes that are -undefined- in total by system sizes.
+      */
+      if (RTA()->process()->doCleanMetadata())
+      {
+          $system_sizes = RTA()->admin()->getOption('system_image_sizes'); //$this->viewControl->system_image_sizes;
+
+          $not_in_system = array_diff( array_keys($imageMetaSizes), array_keys($system_sizes) );
+          if (count($not_in_system) > 0)
+            Log::addDebug('Cleaning not in system', $not_in_system);
+
+          foreach($not_in_system as $index => $unset)
+          {
+            unset($imageMetaSizes[$unset]);
+          }
+      }
+
+      // 7. If unused thumbnails are not set for delete, keep the metadata intact.
+      if (! RTA()->process()->doRemoveThumbnails() )
+      {
+        $other_meta = array_diff( array_keys($imageMetaSizes), $do_regenerate_sizes, $prevent_regen);
+        if (count($other_meta) > 0)
+          Log::addDebug('Image sizes not selected, but not up for deletion', $other_meta);
+
+        foreach($other_meta as $size)
+        {
+           if (isset($imageMetaSizes[$size]))
+             $this->addPersistentMeta($size, $imageMetaSizes[$size]);
+        }
+      }
+
+      $returned_sizes = array();
+      foreach($full_sizes as $key => $data)
+      {
+          if (in_array($key, $do_regenerate_sizes))
+          {
+            $returned_sizes[$key] = $data;
+          }
+      }
+
+      $this->setRegeneratedSizes($do_regenerate_sizes);
+      return $returned_sizes;
+  }
+
 
   /** This function tries to find related thumbnails to the current image. If there are not in metadata after our process, assume cleanup.
   * This removes thumbnail files.
@@ -239,6 +419,5 @@ class rtaImage
         wp_update_post($post);
       }
   }
-
 
 }

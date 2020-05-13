@@ -3,7 +3,7 @@ namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
 use \ReThumbAdvanced\Notices\NoticeController as Notice;
 
-use \ShortPixel\ShortQ as ShortQ;
+use \ReThumbAdvanced\ShortQ as ShortQ;
 
 class RTAInstall
 {
@@ -12,14 +12,15 @@ class RTAInstall
     public static function uninstall()
     {
 
-      $shortQ = new ShortQ\ShortQ(Process::RTA_SLUG);
-      $q = $shortQ->getQueue(Process::RTAQ_NAME);
+      $process = new Process();
+      $q = $process->getQueue();
       $q->uninstall();
     }
 
   /** Handler on activation */
     public static function activate()
     {
+      
     }
 
   /** Handler on deactivate */

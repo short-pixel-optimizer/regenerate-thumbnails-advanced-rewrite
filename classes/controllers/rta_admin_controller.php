@@ -3,23 +3,23 @@ namespace ReThumbAdvanced;
 
 class rtaAdminController extends rtaController
 {
-  protected $controller;
+  //protected $controller;
 
   /** Settings saved in the option table. Being set on construct. Refreshed on save */
-  protected $custom_image_sizes = array();
+/*  protected $custom_image_sizes = array();
   protected $process_image_sizes = false;
   protected $process_image_options = array();
   protected $system_image_sizes = array();
-  protected $jpeg_quality = 90;
+  protected $jpeg_quality = 90; */
 
   protected $cropOptions;
 
-  public function __construct($controller)
+  public function __construct()
   {
         wp_enqueue_style( 'rta_css_admin');
         wp_enqueue_style( 'rta_css_admin_progress');
 
-        $this->controller = $controller;
+      //  $this->controller = $controller;
 
         $this->cropOptions = array(
             'no_cropped' => __('No','regenerate-thumbnails-advanced'),
@@ -35,58 +35,32 @@ class rtaAdminController extends rtaController
             'right_bottom' => __('Right bottom','regenerate-thumbnails-advanced'),
         );
 
-        $this->setOptionData();
+      //  $this->setOptionData();
 
   }
 
-  protected function setOptionData()
-  {
-    $options = get_option('rta_image_sizes', $this->getDefaultOptions() );
 
-    if (isset($options['image_sizes']) && is_array($options['image_sizes']))
-      $this->custom_image_sizes = $options['image_sizes'];
-
-    if (isset($options['jpeg_quality']))
-      $this->jpeg_quality = $options['jpeg_quality'];
-
-    if (isset($options['process_image_sizes']) && is_array($options['process_image_sizes']))
-      $this->process_image_sizes = $options['process_image_sizes'];
-    else
-      $this->process_image_sizes = array();
-
-
-    if (isset($options['process_image_options']) && is_array($options['process_image_options']) )
-        $this->process_image_options = $options['process_image_options'];
-    else
-      $this->process_image_options = array();
-
-     $this->system_image_sizes = $this->getImageSizes();
-  }
-
-  private function getDefaultOptions()
-  {
-    $standard_sizes = array( 'thumbnail', 'medium', 'medium_large', 'large' ); // directly from media.php, hardcoded there.
-    $process_image_options = array();
-    foreach($standard_sizes as $name)
-    {
-      $process_image_options[$name] = array('overwrite_files' => false);
-    }
-    $options = array();
-    $options['process_image_sizes'] = $standard_sizes;
-    $options['process_image_options'] = $process_image_options;
-
-    return $options;
-  }
 
   public function show()
   {
-    $html = $this->load_template( "rta_generate_thumbnails", "admin", array('view' => $this) );
+    $view = new \stdClass;
+
+    $html = $this->load_template( "rta_generate_thumbnails", "admin", array('view' => $view) );
     echo $html;
   }
 
   public function loadChildTemplate($name)
   {
-    $html = $this->load_template($name, 'admin', array('view' => $this ));
+    $view = new \stdClass;
+    if ($name == 'view_rta_settings')
+    {
+      $view->custom_image_sizes = RTA()->admin()->getOption('custom_image_sizes');
+      $view->process_image_sizes = RTA()->admin()->getOption('process_image_sizes');
+      $view->process_image_options = RTA()->admin()->getOption('process_image_options');
+      $view->jpeg_quality = RTA()->admin()->getOption('jpeg_quality');
+    }
+
+    $html = $this->load_template($name, 'admin', array('view' => $view ));
     echo $html;
   }
 
@@ -105,6 +79,7 @@ class rtaAdminController extends rtaController
     return $output;
   }
 
+/*
   public function __get($name)
   {
     if (isset($this->{$name}))
@@ -112,7 +87,7 @@ class rtaAdminController extends rtaController
       return $this->{$name};
     }
     return false;
-  }
+  } */
 
   /** Save thumbnail settings.
   *
@@ -182,7 +157,8 @@ class rtaAdminController extends rtaController
       $option['process_image_options'] = $size_options;
 
       update_option( 'rta_image_sizes', $option );
-      $this->setOptionData();
+      //$this->setOptionData();
+      RTA()->admin()->resetOptionData();
 
       $newsizes = $this->generateImageSizeOptions($sizes);
       $jsonResponse = array( 'error' => $error, 'message' => '', 'new_image_sizes' => $newsizes );
@@ -191,40 +167,6 @@ class rtaAdminController extends rtaController
 
   }
 
-  /** Returns system wide defined image sizes plus our custom sizes
-  *
-  *
-  */
-  public function getImageSizes()
-  {
-    global $_wp_additional_image_sizes;
-
-    $option = get_option('rta_image_sizes');
-    $our_image_sizes = isset($option['image_sizes']) ? $option['image_sizes']: array();
-
-    $imageSizes = array();
-    foreach ( get_intermediate_image_sizes() as $_size )
-    {
-       if ( strpos($_size, 'rta_') === false)
-        $imageSizes[$_size] = $_size;
-    }
-
-    // put our defined images manually, to properly update when sizes /names change.
-    if (isset($our_image_sizes['pname']))
-    {
-      for($i = 0; $i < count($our_image_sizes['pname']); $i++ )
-      {
-        $int_name = $our_image_sizes['name'][$i];
-        $name = $our_image_sizes['pname'][$i];
-        if (strlen($name) == 0) // can't since name is tied to what it gives back to the process
-            $name = $int_name;
-
-        $imageSizes[$int_name] = $name;
-      }
-    }
-    return $imageSizes;
-
-  }
 
   public function generateImageSizeOptions($checked_ar = false)
   {
@@ -232,10 +174,13 @@ class rtaAdminController extends rtaController
     $i = 0;
     $check_all = ($checked_ar === false) ? true : false;
 
-    $process_options = $this->process_image_options;
+    //$process_options = $this->process_image_options;
+    $process_options = RTA()->admin()->getOption('process_image_options');
+
+    $system_image_sizes = RTA()->admin()->getOption('system_image_sizes');
 
     // size here is a name, value is how the name is found in the system (in interface, the technical name)
-    foreach($this->getImageSizes() as $value =>  $size):
+    foreach($system_image_sizes as $value => $size):
 
       //if ($check_all)
         //$checked = 'checked';
@@ -257,6 +202,7 @@ class rtaAdminController extends rtaController
       $output .= "</div>";
 
       $i++;
+
     endforeach;
     return $output;
   }

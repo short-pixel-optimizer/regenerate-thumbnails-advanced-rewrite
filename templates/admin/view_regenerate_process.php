@@ -4,7 +4,7 @@
 
     <div class="rta_progress two-panel-wrap">
       <div class="images rta_thumbnail_view rta_panel_off">
-          <h5><?php _e('Regenerated image:','regenerate-thumbnails-advanced'); ?></h5>
+          <h4><?php _e('Last Regenerated Image:','regenerate-thumbnails-advanced'); ?></h4>
           <div class='thumbnail'> <img src="" alt=""> </div>
       </div>
         <div class='rta_progress_view rta_panel_off'>

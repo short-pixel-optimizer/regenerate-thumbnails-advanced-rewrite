@@ -3,17 +3,19 @@ jQuery(document).ready(function($){
 function rtaJS() {};
 
 rtaJS.prototype = {
-  offset: 0,
-  total:  0,
+  //offset: 0,
+  process: false,
   is_interrupted_process: false, // was the process killed by reload earlier?
   in_process: false, // currently pushing it through.
   is_stopped: false,
-  formcookie: null,
   is_saved: true,
+  status: []
 }
+
 
 rtaJS.prototype.init = function()
 {
+  this.setStatusCodes();
   this.initProcess();
   this.checkSubmitReady();
 
@@ -37,7 +39,6 @@ rtaJS.prototype.init = function()
   // Warnings, errors and such.
   $(document).on('change', 'input[name="del_associated_thumbs"]', $.proxy(this.toggleDeleteItems,this));
   $(document).on('change', 'input[name^="regenerate_sizes"]', $.proxy(this.toggleDeleteItems,this));
-  //this.formcookie = this.get_form_cookie();
   this.toggleDeleteItems();
 
   $(document).on('change', '.rta-settings-wrap input, .rta-settings-wrap select', $.proxy(this.show_save_indicator, this) );
@@ -45,6 +46,12 @@ rtaJS.prototype.init = function()
 
   $('.toggle-window').on('click', $.proxy(this.toggleWindow, this));
 
+}
+
+/** Status codes need to sync with Ajax Controller */
+rtaJS.prototype.setStatusCodes = function()
+{
+  //  this.status[
 }
 
 // function to check if admin screen can start a new job.
@@ -90,16 +97,17 @@ rtaJS.prototype.initProcess = function()
 {
   process = rta_data.process;
   console.log(process);
+  this.process = process;
 
   if (process.running)
     this.in_process = process.running;
 
-  if (process.current)
-    this.offset = process.current;
+  /*if (process.current)
+      this.offset = process.current;
 
   if (process.total)
     this.total = process.total;
-
+ */
 
    if (process.running || process.preparing)
    {
@@ -128,7 +136,6 @@ rtaJS.prototype.startProcess = function (e)
 {
   e.preventDefault();
 
-  //this.unset_all_cookies();
   this.resetPanels();
   this.togglePanel('main', true);
   this.togglePanel('loading', true);
@@ -142,7 +149,6 @@ rtaJS.prototype.startProcess = function (e)
   this.in_process = true;
   this.is_stopped = false;
   this.checkSubmitReady();
-  //this.set_form_cookie();
 
   var self = this;
   var form = $('#rtaform_process');
@@ -152,23 +158,24 @@ rtaJS.prototype.startProcess = function (e)
       dataType: 'json',
       url: rta_data.ajaxurl,
       data: {
-              gen_nonce: rta_data.nonce_generate,
-              action: 'rta_start_regenerate',
-      //        type: 'general',
+              nonce: rta_data.nonce_generate,
+              action: 'rta_start_process',
               genform: form.serialize(),
        },
       success: function (response) {
-            self.offset = response.current;
-            self.total = response.total;
+
             if (response.status)
             {
               self.add_status(response.status);
             }
-            self.process();
+            self.process = response;
+            self.doProcess();
       },
-      error: function(response)
+      error: function(xhr, text, error)
       {
         var status = new Object;
+        console.log(xhr); // log response on error.
+
         status.id = -1;
         status.message = rta_data.strings.status_fatal;
         status.error = true;
@@ -191,18 +198,18 @@ rtaJS.prototype.resumeProcess = function()
   status.error = true;
   this.add_status([status]);
 
-  this.process();
+  this.doProcess();
 }
 
 // function for getting the next image in line.
-rtaJS.prototype.process = function()
+rtaJS.prototype.doProcess = function()
 {
     this.togglePanel('loading', false);
 
     if (this.is_stopped)
       return; // escape if process has been stopped.
-    offset = this.offset;
-    total = this.total;
+    //offset = this.offset;
+    //total = this.total;
 
     this.in_process = true;
     this.checkSubmitReady();
@@ -212,63 +219,56 @@ rtaJS.prototype.process = function()
 
     var self = this;
 
-    //var form = this.get_form_cookie();
+    $.ajax({
+        type: 'POST',
+        dataType: 'json',
+        url: rta_data.ajaxurl,
+        data: {
+                nonce: rta_data.nonce_doprocess,
+                action: 'rta_do_process',
+                type: 'submit',
+            //    offset:offset,
+                //genform: JSON.stringify(form),
+        },
+        success: function (response) {
 
-    if(offset < total) {
-        $.ajax({
-            type: 'POST',
-            dataType: 'json',
-            url: rta_data.ajaxurl,
-            data: {
-                    gen_nonce: rta_data.nonce_generate,
-                    action: 'rta_regenerate_thumbnails',
-                    type: 'submit',
-                    offset:offset,
-                    //genform: JSON.stringify(form),
-            },
-            success: function (response) {
-
-                if (response.status)
+            if (response.status)
+            {
+              self.add_status(response.status);
+            }
+            if( response.running || response.preparing ) {
+                /*if(response.logstatus=='Processed') {
+                    this.togglePanel('thumbnail', true);
+                    $(".rta_progress .images img").attr("src",response.imgUrl);
+                } */
+                self.process = response;
+                if (! self.is_stopped)
                 {
-                  self.add_status(response.status);
+                //  self.offset = response.current;
+                  setTimeout(function(){ self.doProcess(); },500);
                 }
-                if( response.current <= total ) {
-                    /*if(response.logstatus=='Processed') {
-                        this.togglePanel('thumbnail', true);
-                        $(".rta_progress .images img").attr("src",response.imgUrl);
-                    } */
-                    if (! self.is_stopped)
-                    {
-                  //    self.set_process_cookie(response.offset,total);
-                      self.offset = response.current;
-                      setTimeout(function(){ self.process(); },400);
-                    }
-                }else{
-                //    self.set_cookie("rta_image_processed",$(".rta_progress .images img").attr("src"));
-                    //this.show_buttons();
-                //    self.show_errorlink(true);
-                }
+            }else{
 
-            },
-            error: function (response) {
+            }
 
-              var status = new Object;
-              status.id = -1;
-              status.message = response.status + ' ' + response.statusText + ' :: ' + self.offset;
-              status.error = true;
-              self.add_status([status]);
+        },
+        error: function (response) {
 
-              self.offset++;
-              if( self.offset <= total ) {
-                self.process();  // continue if we still can.
-              }
-            },
-        });
-    }else{
-      //  this.set_cookie("rta_image_processed",$(".rta_progress .images img").attr("src"));
+          var status = new Object;
+          status.id = -1;
+          status.message = response.status + ' ' + response.statusText + ' :: ';
+          status.error = true;
+          self.add_status([status]);
+
+          setTimeout(function(){ self.process(); },1000);
+
+        },
+    });
+
+
         //this.show_buttons();
-        this.finishProcess();
-    }
+    //    this.finishProcess();
+
 
 }
 
@@ -319,7 +319,7 @@ rtaJS.prototype.processStoppable = function()
           dataType: 'json',
           url: rta_data.ajaxurl,
           data: {
-                  gen_nonce: rta_data.nonce_generate,
+                  nonce: rta_data.nonce_generate,
                   action: 'rta_stop_process',
                   type: 'submit',
           },
@@ -328,6 +328,7 @@ rtaJS.prototype.processStoppable = function()
               {
                 self.add_status(response.status);
               }
+              self.process = false;
               self.finishProcess();
               self.togglePanel('loading', false);
 
@@ -340,13 +341,20 @@ rtaJS.prototype.processStoppable = function()
 
     rtaJS.prototype.updateProgress = function(percentage_done) {
 
-        var offset = parseInt(this.offset);
-        var total = parseInt(this.total);
+        if (! this.process)
+          return;
 
-        if (offset == 0 && total > 0)
+        var items = parseInt(this.process.items);
+        var done = parseInt(this.process.done);
+        var total = (items + done);
+        var errors = this.process.errors;
+        //var offset = parseInt(this.offset);
+        //var total = parseInt(this.total);
+
+        if (done == 0 && total > 0)
           percentage_done = 0;
         else if (total > 0)
-          percentage_done = Math.round( (offset/total) * 100);
+          percentage_done = Math.round( (done/total) * 100);
         else
           percentage_done = 100;
 
@@ -357,16 +365,9 @@ rtaJS.prototype.processStoppable = function()
         $(".CircularProgressbar-path").css("stroke-dashoffset",total_circle+"px");
         $(".CircularProgressbar-text").html(percentage_done+"%");
 
-        $('.progress-count .current').text(offset);
+        $('.progress-count .current').text(done);
         $('.progress-count .total').text(total);
-        /*f(!$(".rta_progress").is(":visible")) {
 
-            this.show_wait(false);
-            $('.rta_progress').removeClass('rta_hidden');
-            $('.stop-process').removeClass('rta_hidden');
-            $(".rta_progress").slideDown();
-            $(".rta_progress").css('display', 'inline-block');
-        } */
     }
 
     rtaJS.prototype.togglePanel = function(name, show)
@@ -450,6 +451,7 @@ rtaJS.prototype.processStoppable = function()
                 else
                   item_class = '';
 
+                  // @todo Move these to named constants.
                 if(item.status == 1) // status 1 is successfully regenerated  thumbnail with URL in message.
                 {
                   this.showThumb(item.message);

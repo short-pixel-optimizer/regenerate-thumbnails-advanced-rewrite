@@ -7,11 +7,12 @@ use \ReThumbAdvanced\Notices\NoticeController as Notice;
 // load runtime.
 class rtaPlugin
 {
+  protected static $instance;
 
   protected $paths = array('classes', 'classes/controllers');
 
   protected $front;
-  protected $admin;
+  //protected $admin;
 
   public function __construct()
   {
@@ -26,12 +27,21 @@ class rtaPlugin
 
       add_action( 'after_setup_theme', array( $this, 'add_custom_sizes' ) );
       add_action( 'init', array( $this, 'init' ) );
-      add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ), 10 );
+    //  add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ), 10 );
 
       add_action( 'admin_menu', array( $this, 'admin_menus' ) );
 
       add_filter( 'plugin_action_links_' . plugin_basename(RTA_PLUGIN_FILE), array($this, 'generate_plugin_links'));//for plugin settings page
 
+      Log::addTemp('Plugin Construct (RTA)');
+  }
+
+  public static function getInstance()
+  {
+     if (is_null(self::$instance))
+      self::$instance = new rtaPlugin();
+
+     return self::$instance;
   }
 
   public static function namespaceit($name)
@@ -42,7 +52,7 @@ class rtaPlugin
 
   public function initRuntime()
   {
-  //  $plugin_path = plugin_dir_path(SHORTPIXEL_PLUGIN_FILE);
+
     foreach($this->paths as $short_path)
     {
       $directory_path = realpath(RTA_PLUGIN_PATH . $short_path);
@@ -68,15 +78,10 @@ class rtaPlugin
     load_plugin_textdomain( 'regenerate-thumbnails-advanced', FALSE, RTA_LANG_DIR );
 
     $this->front = new RTA_Front();
-    $this->admin = new RTA_Admin();
+  //  $this->admin = new RTA_Admin();
 
-    //add_action( 'admin_menu', array( $this, 'rta_admin_menus' ) );
-    add_action( 'wp_ajax_rta_regenerate_thumbnails', array( $this->admin, 'ajax_regenerate_thumbnails') );
-    add_action( 'wp_ajax_rta_start_regenerate', array($this->admin, 'ajax_start_process') );
-    add_action( 'wp_ajax_rta_stop_process', array($this->admin, 'ajax_rta_stop_process'));
-
-    //add_filter( 'image_size_names_choose', array( $this, 'rta_image_custom_sizes' ), 10, 1 );
-    add_action( 'wp_ajax_rta_save_image_sizes', array($this->admin,'view_generate_thumbnails_save' ) );
+    $ajax = ajaxController::getInstance(); //init
+    $ajax->init();
 
     add_filter('media_row_actions', array($this,'add_media_action'), 10, 2);
     add_action( 'add_meta_boxes', function () { add_meta_box('rta-link', __('Regenerate Thumbnails', 'enable-media-replace'), array($this, 'regenerate_meta_box'), 'attachment', 'side', 'low'); }  );
@@ -90,6 +95,21 @@ class rtaPlugin
     add_action('admin_notices', array($notices, 'admin_notices')); // previous page / init time
     add_action('admin_footer', array($notices, 'admin_notices')); // fresh notices between init - end
 
+  }
+
+  public function ajax()
+  {
+     return ajaxController::getInstance();
+  }
+
+  public function process()
+  {
+    return Process::getInstance();
+  }
+
+  public function admin()
+  {
+    return RTA_Admin::getInstance();
   }
 
   public function check_media_action()
@@ -106,15 +126,12 @@ class rtaPlugin
             Notice::addError(__('No Attachment ID found, not regenerating','regenerate-thumbnails-advanced'));
           }
           else {
-            $result = $this->admin->regenerate_single_image($attach_id);
-
+            $result = RTA()->admin()->regenerate_single_image($attach_id);
           }
 
           $sendback = remove_query_arg( array('attachment_id', 'regen_action', '_wpnonce') );
-        //  exit($sendback);
           wp_redirect($sendback);
           exit();
-
         }
 
   }
@@ -123,7 +140,7 @@ class rtaPlugin
   public function enqueue_scripts() {
 
       //wp_enqueue_script( 'jquery' );
-      wp_register_script( 'rta_js', RTA_PLUGIN_URL.'js/rta.js', array( 'jquery' ), RTA_PLUGIN_VERSION );
+      wp_register_script('rta_js', RTA_PLUGIN_URL.'js/rta.js', array( 'jquery' ), RTA_PLUGIN_VERSION );
       wp_register_style( 'rta_css', RTA_PLUGIN_URL.'css/rta.css', array(), RTA_PLUGIN_VERSION );
       wp_register_style( 'rta_css_admin', RTA_PLUGIN_URL.'css/rta-admin-view.css', array(), RTA_PLUGIN_VERSION );
       wp_register_style( 'rta_css_admin_progress', RTA_PLUGIN_URL.'css/rta-admin-progress.css', array('rta_css_admin'), RTA_PLUGIN_VERSION );
@@ -138,7 +155,8 @@ class rtaPlugin
       wp_localize_script( 'rta_js', 'rta_data', array(
                           'ajaxurl' => $admin_url,
                           'nonce_savesizes' => wp_create_nonce('rta_save_image_sizes'),
-                          'nonce_generate' => wp_create_nonce('rta_regenerate_thumbnails'),
+                          'nonce_doprocess' => wp_create_nonce('rta_do_process'), // continue
+                          'nonce_generate' => wp_create_nonce('rta_generate'), // start / stop
                           'strings' => array(
                           'confirm_delete' => __('Are you sure you want to delete this image size?', 'regenerate-thumbnails-advanced'),
                           'confirm_stop' => __("This will stop the regeneration process. You want to stop?", 'regenerate-thumbnails-advanced' ),
@@ -148,7 +166,7 @@ class rtaPlugin
                           'status_fatal' => __('A fatal error occured!', 'regenerate-thumbnails-advanced'),
                           ),
                           'blog_id' => get_current_blog_id(),
-                          'process' => $this->admin->get_json_process(),
+                          'process' => $this->ajax()->get_json_process(),
                           ));
 
       do_action('rta_enqueue_scripts');
@@ -168,10 +186,11 @@ class rtaPlugin
   }
 
   public function view_generate_thumbnails() {
+      $this->enqueue_scripts();
       wp_enqueue_style('rta_css');
       wp_enqueue_script('rta_js');
       //$rta_image_sizes = get_option( 'rta_image_sizes' );
-      $view = new rtaAdminController($this);
+      $view = new rtaAdminController();
       $view->show();
   }
 

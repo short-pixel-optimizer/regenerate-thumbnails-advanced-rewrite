@@ -2,8 +2,10 @@
 namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
 //use ReThumbAdvanced\ShortQ;
+//use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
+//use \ReThumbAdvanced\Notices\NoticeController as Notice;
 
-use \ShortPixel\ShortQ as ShortQ;
+use \ReThumbAdvanced\ShortQ as ShortQ;
 
 /** Class Process
 * This class functions as glue between ShortQ and RTA. Responsible for enqueuing and process monitoring.
@@ -15,13 +17,13 @@ class Process
   const RTAQ_NAME = 'rtaq';
   const RTA_SLUG = 'rta';
 
-  //private $process;
+  protected static $instance;
 
   protected $total = 0;
   protected $current = 0;
   //protected $running = false;
   //protected $is_queued = false;
-  protected $status; // notifications.
+  //protected $status; // notifications.
 
   // options.
   protected $startstamp = -1;
@@ -32,30 +34,40 @@ class Process
   protected $clean_metadata = false;
 
   protected $query_prepare_limit = 1000; // amount of records to enqueue per go.
-  protected $query_chunk_size = 100;
+  protected $run_start = 0;
+  protected $run_limit = 0;
+//  protected $query_chunk_size = 100;
 
   protected $q;
+  protected $process_name = 'rta_image_process';
 
   public function __construct()
   {
-      //$p = new ShortQ\Queue\Queue();
-      $shortQ = new ShortQ\ShortQ(self::RTA_SLUG);
+    //  $f = new FuQ\ShortQ();
+//$shortQ = new ShortQ\ShortQ('karp');
+//$shortq = new ShortQ\Item('f');
+$shortq = new ShortQ\ShortQ('f');
+      $shortQ = new \ReThumbAdvanced\ShortQ\ShortQ(self::RTA_SLUG);
       $this->q = $shortQ->getQueue(self::RTAQ_NAME);
 
-      $this->status = $this->q->getStatus();
+      $process = $this->get_process();
+      if ($process !== false)
+        $this->set_process($process);
 
-      // we need to do something
-    /*  if ($status->get('items') > 0)
-      {
-          if ($status->get('running'))
-            $this->doProcess();
-          if($status->get('preparing'))
-          {
-            $this->addQueue();
-          }
-      } */
+      $this->q->setOption('numitems', 3);
+  }
 
-//$this->q = $shortQ->getQueue(self::RTAQ_NAME);
+  public static function getInstance()
+  {
+     if (is_null(self::$instance))
+       self::$instance = new Process();
+
+      return self::$instance;
+  }
+
+  public function getQueue()
+  {
+      return $this->q;
   }
 
   public function setTime($start, $end)
@@ -69,9 +81,20 @@ class Process
     $this->remove_thumbnails = $bool;
   }
 
+  public function doRemoveThumbnails()
+  {
+    return $this->remove_thumbnails;
+  }
+
+
   public function setDeleteLeftMeta($bool)
   {
     $this->delete_leftmetadata = $bool;
+  }
+
+  public function doDeleteLeftMeta()
+  {
+    return $this->delete_leftmetadata;
   }
 
   public function setCleanMetadata($bool)
@@ -79,21 +102,19 @@ class Process
     $this->clean_metadata = $bool;
   }
 
+  public function doCleanMetadata()
+  {
+     return $this->clean_metadata;
+  }
+
   public function setOnlyFeatured($bool)
   {
     $this->only_featured = $bool;
   }
 
-
-  public function get($name)
+  public function get($name = false)
   {
-      return $this->status->get($name);
-    /* if (isset($this->{$name}))
-     {
-       return $this->$name;
-     }
-     else
-      return null; */
+      return $this->q->getStatus($name);
   }
 
   /** Starts a new generate process. Queries the totals based on form input
@@ -103,21 +124,80 @@ class Process
   */
   public function start()
   {
-      delete_option('rta_get_all_files');
+      $this->end_process(); // reset all before starting.
       $this->save_process();
-      $result = $this->prepare();
+      $this->q->setStatus('preparing', true);
+  }
+
+  public function end()
+  {
+     $this->end_process();
+  }
+
+  // Chain function to limit runtimes in seconds..
+  public function limitTime($limit = 6)
+  {
+      if ($this->run_limit == 0)
+      {
+          $this->run_start = time();
+          $this->run_limit = time() + $limit;
+      }
+
+      Log::addTemp('START' . $this->run_start . ' LIMIT'  . $this->run_limit);
+      if ($this->run_start <= $this->run_limit)
+      {
+          return true;
+      }
+      else
+      {
+         $this->run_limit = 0;
+         $this->run_start = 0;
+      }
+      Log::addTemp('CUT OUT -> START' . $this->run_start . ' LIMIT'  . $this->run_limit);
+      return false;
+  }
+
+  public function prepare()
+  {
+      $result = 0;
+      $i = 0;
+      while( $this_result = $this->runEnqueue()  )
+      {
+          if (! $this->limitTime() )
+          {
+            Log::addDebug('Prepare went over time, breaking');
+            break;
+          }
+
+          if ($i >= 50)
+          {
+            exit('Prepare loop went over maximum count!');
+            Log::addError('Fatal error on preparation. Hanging loop detected');
+          }
+
+          $result += $this_result;
+          $i++;
+      }
+
+      if ($this_result == false)
+      {
+         $this->q->setStatus('preparing', false);
+         $this->q->setStatus('running', true);
+         Log::addDebug('Preparing done, Starting run status');
+      }
+
       return $result;
   }
 
-  public function continue()
+  public function getItems()
   {
-
+     return $this->q->dequeue();
   }
 
-  protected function prepare()
+  protected function runEnqueue()
   {
      global $wpdb;
-     $lastId = $this->q->get('last_id');
+     $lastId = $this->q->getStatus('last_item_id');
 
      $query = 'SELECT ID FROM ' . $wpdb->posts . ' where post_type = %s ';
      $prepare = array('attachment');
@@ -142,21 +222,23 @@ class Process
      {
        $query .= ' and ID < %d'; // note the reverse here, due to order!
        $prepare[] = $lastId;
+       Log::addDebug('Adding Last ID' . $lastId);
      }
-
-      $query .= ' limit %d ';
-      $prepare = $this->query_prepare_limit;
-
 
      $query .= ' order by ID DESC ';
 
-     $sql = $wpdb->prepare($query, $prepare);
+     $query .= ' limit %d ';
+     $prepare[] = $this->query_prepare_limit;
 
+     $sql = $wpdb->prepare($query, $prepare);
      $result = $wpdb->get_results($sql);
+     $resultCount = count($result);
 
     // $chunks =
      $items = array();
 
+     Log::addTemp('SQL', $sql);
+     Log::addTemp('Query Result', $result);
      foreach($result as $index => $row)
      {
           $items[] = array('id' => $row->ID, 'value' => '');
@@ -165,39 +247,49 @@ class Process
      $this->q->addItems($items);
      $this->q->enqueue();
 
+    // Log::addTemp('Query Result Count: ' . $count);
+     /** Keep looping preparing ( possible query limit reached ) until no new items are forthcoming. */
+     if ($resultCount > 0)
+      return $resultCount;
+
+     return false;
+
   }
 
+  protected function get_process()
+  {
+     $process = get_option($this->process_name, false);
+     return $process;
+  }
+
+  protected function set_process($process)
+  {
+     foreach($process as $name => $value)
+     {
+        $this->{$name} = $value;
+     }
+  }
 
   protected function save_process()
   {
-      /*$p = clone $this; // passed by reference, want to keep it in current scope.
-      unset($p->status); // don't save status.
-      unset($p->q); // don't save the Queue */
       $data = array('startstamp' => $this->startstamp, 'endstamp' => $this->endstamp, 'only_featured' => $this->only_featured,
-                  'remove_thumbnails' => $this->remove_thumbnails, 'delete_leftmetadata' => $this->delete_leftmetadata, 'clean_metadata' => $this->clean_metadata, 'query_prepare_limit' => $query_prepare_limit,
+                  'remove_thumbnails' => $this->remove_thumbnails, 'delete_leftmetadata' => $this->delete_leftmetadata, 'clean_metadata' => $this->clean_metadata, 'query_prepare_limit' => $this->query_prepare_limit,
 
-                  );
-      update_option('rta_image_process', $data, false);
+                );
+      update_option($this->process_name, $data, false);
   }
-
-/*  protected function get_process()
-  {
-     $process = get_option('rta_image_process', false);
-     if (! is_object($process))
-      return false;
-
-     //$process->status = array(); // process is saved without it.
-     if ($process->current == $process->total)
-     {
-       return false; // don't consider a done process a process
-     }
-     return $process; // if false, no process running. If object, running process there.
-  } */
 
   protected function end_process()
   {
-      //$this->process->running = false;
-      delete_option('rta_image_process');
+      $this->q->resetQueue();
+      delete_option($this->process_name);
   }
+
+  public function UninstallPlugin()
+  {
+    $this->end_process();
+    $this->q->uninstall();
+  }
+
 
 } // process class

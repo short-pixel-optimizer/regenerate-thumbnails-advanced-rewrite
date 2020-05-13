@@ -37,7 +37,7 @@
                             <span> <input type="number" min="0" name="image_sizes[height][]" class="image_sizes_height tiny" value="<?php echo $image_sizes['height'][$i];?>" placeholder="<?php _e('Height','regenerate-thumbnails-advanced'); ?>" /> px </span>
 
                             <span>  <select name="image_sizes[cropping][]" class="image_sizes_cropping">
-                              <?php echo $view->cropOptions($image_sizes['cropping'][$i]); ?>
+                              <?php echo $this->cropOptions($image_sizes['cropping'][$i]); ?>
                               </select>
                             </span>
 
@@ -54,7 +54,7 @@
                             <span><input type="number" name="image_sizes[width][]" class="image_sizes_width tiny" value="" placeholder="<?php _e('Width','regenerate-thumbnails-advanced'); ?>" /> px </span>
                             <span> <input type="number" name="image_sizes[height][]" class="image_sizes_height tiny" value="" placeholder="<?php _e('Height','regenerate-thumbnails-advanced'); ?>" /> px </span>
                             <span><select name="image_sizes[cropping][]" class="image_sizes_cropping">
-                              <?php echo $view->cropOptions(); ?>
+                              <?php echo $this->cropOptions(); ?>
                               </select>
                             </span>
                             <span>
@@ -75,7 +75,7 @@
       <div class='option'>
         <label><?php _e('Regenerate these thumbnails:', 'regenerate-thumbnails-advanced') ?></label>
         <div class='checkbox-list'>
-            <?php echo $view->generateImageSizeOptions($view->process_image_sizes); ?>
+            <?php echo $this->generateImageSizeOptions($view->process_image_sizes); ?>
         </div>
         <div class='select-options'><span class='select' data-action='select' data-target='regenerate_sizes'><?php _e('Select All', 'regenerate-thumbnails-advanced'); ?></span>
           <span class='deselect' data-action='deselect' data-target='regenerate_sizes'><?php _e('Deselect All', 'regenerate-thumbnails-advanced'); ?></span>

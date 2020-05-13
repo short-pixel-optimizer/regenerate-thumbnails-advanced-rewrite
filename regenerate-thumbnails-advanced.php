@@ -23,14 +23,17 @@ define( 'RTA_SITE_BASE_URL',  rtrim(get_bloginfo('url'),"/")."/");
 define( 'RTA_PLUGIN_FILE', __FILE__);
 define( 'RTA_LANG_DIR', dirname( plugin_basename(__FILE__) ).'/languages' );
 
-// define ('RTA_DEBUG', true); // for wp-config
-
 require_once(RTA_PLUGIN_PATH . 'build/shortpixel/autoload.php');
 require_once(RTA_PLUGIN_PATH . 'classes/rta_controller.php');
 require_once(RTA_PLUGIN_PATH . 'classes/rta-plugin.php');
 
+function RTA()
+{
+  //$rta = new rtaPlugin(); // start runtime
+  return rtaPlugin::getInstance();
+}
 
-$rta = new rtaPlugin(); // start runtime
+RTA();
 
 register_uninstall_hook(RTA_PLUGIN_FILE, array('rtaInstall', 'uninstall'));
 register_activation_hook(RTA_PLUGIN_FILE, array('rtaInstall', 'activate'));
