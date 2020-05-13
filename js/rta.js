@@ -9,15 +9,23 @@ rtaJS.prototype = {
   in_process: false, // currently pushing it through.
   is_stopped: false,
   is_saved: true,
+  is_debug: false,  // use sparingly
   status: []
 }
 
 
 rtaJS.prototype.init = function()
 {
+  if (rta_data.is_debug == 1)
+  {
+      this.is_debug= true;
+      console.log(rta_data); // let's go.
+  }
+
   this.setStatusCodes();
   this.initProcess();
   this.checkSubmitReady();
+
 
   $('.select, .deselect').on('click', $.proxy(this.selectAll, this));
   $(document).on('change','input, select', $.proxy(this.checkSubmitReady, this));
@@ -96,7 +104,9 @@ rtaJS.prototype.checkSubmitReady = function()
 rtaJS.prototype.initProcess = function()
 {
   process = rta_data.process;
-  console.log(process);
+  if (this.is_debug)
+    console.log(process);
+
   this.process = process;
 
   if (process.running)
@@ -174,7 +184,8 @@ rtaJS.prototype.startProcess = function (e)
       error: function(xhr, text, error)
       {
         var status = new Object;
-        console.log(xhr); // log response on error.
+        if (this.is_debug)
+          console.log(xhr); // log response on error.
 
         status.id = -1;
         status.message = rta_data.strings.status_fatal;
@@ -248,7 +259,7 @@ rtaJS.prototype.doProcess = function()
                   setTimeout(function(){ self.doProcess(); },500);
                 }
             }else{
-
+                self.finishProcess(); // done, or so.
             }
 
         },

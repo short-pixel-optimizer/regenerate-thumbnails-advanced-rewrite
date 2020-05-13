@@ -167,6 +167,7 @@ class rtaPlugin
                           ),
                           'blog_id' => get_current_blog_id(),
                           'process' => $this->ajax()->get_json_process(),
+                          'is_debug' => (Log::debugIsActive()) ? 1 : 0,
                           ));
 
       do_action('rta_enqueue_scripts');

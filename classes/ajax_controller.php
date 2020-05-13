@@ -255,6 +255,9 @@ class ajaxController
 
       if ($process->get('finished') == true)
       {
+         if ($process->get('done') == 0) // if Q is finished with 0 done, it was empty.
+           $this->add_status('no_images');
+
          $this->jsonResponse($this->get_json_process());
       }
    }
