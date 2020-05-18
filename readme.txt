@@ -57,7 +57,7 @@ The script stops but it will resume after you open the settings page of the plug
 
 = 2.3 =
 
-* New - Added regenerate thumbnails button in
+* New - Added regenerate thumbnails button in edit-attachment screen
 * Fixed - Crash when regenerating image from edit media
 * Fixed - Queries for large amount of images should not timeout
 * Class loader moved to PSR-4
