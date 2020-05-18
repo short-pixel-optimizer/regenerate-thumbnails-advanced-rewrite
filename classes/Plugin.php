@@ -2,10 +2,10 @@
 namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
 use \ReThumbAdvanced\Notices\NoticeController as Notice;
-
+use \ReThumbAdvanced\Controllers\AdminController as AdminController;
 
 // load runtime.
-class rtaPlugin
+class Plugin
 {
   protected static $instance;
 
@@ -23,7 +23,7 @@ class rtaPlugin
         if (isset($uploaddir['basedir']))
           $log->setLogPath($uploaddir['basedir'] . "/rta_log");
       }
-      $this->initRuntime();
+    //  $this->initRuntime();
 
       add_action( 'after_setup_theme', array( $this, 'add_custom_sizes' ) );
       add_action( 'init', array( $this, 'init' ) );
@@ -39,7 +39,7 @@ class rtaPlugin
   public static function getInstance()
   {
      if (is_null(self::$instance))
-      self::$instance = new rtaPlugin();
+      self::$instance = new Plugin();
 
      return self::$instance;
   }
@@ -50,7 +50,7 @@ class rtaPlugin
   }
 
 
-  public function initRuntime()
+  /*public function initRuntime()
   {
 
     foreach($this->paths as $short_path)
@@ -70,17 +70,16 @@ class rtaPlugin
         }
       }
     }
-  }
+  } */
 
   // load textdomain, init.
   public function init()
   {
     load_plugin_textdomain( 'regenerate-thumbnails-advanced', FALSE, RTA_LANG_DIR );
 
-    $this->front = new RTA_Front();
-  //  $this->admin = new RTA_Admin();
+    $this->front = new Front();
 
-    $ajax = ajaxController::getInstance(); //init
+    $ajax = AjaxController::getInstance(); //init
     $ajax->init();
 
     add_filter('media_row_actions', array($this,'add_media_action'), 10, 2);
@@ -99,7 +98,7 @@ class rtaPlugin
 
   public function ajax()
   {
-     return ajaxController::getInstance();
+     return AjaxController::getInstance();
   }
 
   public function process()
@@ -109,7 +108,7 @@ class rtaPlugin
 
   public function admin()
   {
-    return RTA_Admin::getInstance();
+    return Admin::getInstance();
   }
 
   public function check_media_action()
@@ -191,7 +190,7 @@ class rtaPlugin
       wp_enqueue_style('rta_css');
       wp_enqueue_script('rta_js');
       //$rta_image_sizes = get_option( 'rta_image_sizes' );
-      $view = new rtaAdminController();
+      $view = new AdminController();
       $view->show();
   }
 

@@ -24,17 +24,20 @@ define( 'RTA_PLUGIN_FILE', __FILE__);
 define( 'RTA_LANG_DIR', dirname( plugin_basename(__FILE__) ).'/languages' );
 
 require_once(RTA_PLUGIN_PATH . 'build/shortpixel/autoload.php');
-require_once(RTA_PLUGIN_PATH . 'classes/rta_controller.php');
-require_once(RTA_PLUGIN_PATH . 'classes/rta-plugin.php');
+//require_once(RTA_PLUGIN_PATH . 'classes/rta_controller.php');
+require_once(RTA_PLUGIN_PATH . 'classes/Plugin.php');
+
+$loader = new Build\PackageLoader();
+$loader->setComposerFile(RTA_PLUGIN_PATH . 'classes/plugin.json');
+$loader->load(RTA_PLUGIN_PATH);
 
 function RTA()
 {
-  //$rta = new rtaPlugin(); // start runtime
-  return rtaPlugin::getInstance();
+  return Plugin::getInstance();
 }
 
 RTA();
 
-register_uninstall_hook(RTA_PLUGIN_FILE, array('rtaInstall', 'uninstall'));
-register_activation_hook(RTA_PLUGIN_FILE, array('rtaInstall', 'activate'));
-register_deactivation_hook(RTA_PLUGIN_FILE, array('rtaInstall', 'deactivate'));
+register_uninstall_hook(RTA_PLUGIN_FILE, array('Install', 'uninstall'));
+register_activation_hook(RTA_PLUGIN_FILE, array('Install', 'activate'));
+register_deactivation_hook(RTA_PLUGIN_FILE, array('Install', 'deactivate'));

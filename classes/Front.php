@@ -14,7 +14,7 @@ namespace ReThumbAdvanced;
  * @since      File available since Release 1.0.0
 */
 
-class RTA_Front
+class Front
 {
     //Front side starting point. Will call appropriate front side hooks
     public function __construct() {
@@ -59,5 +59,5 @@ class RTA_Front
         return $new_sizes;
     }
 
-    
+
 }

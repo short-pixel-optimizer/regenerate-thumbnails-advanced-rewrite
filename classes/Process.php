@@ -1,10 +1,6 @@
 <?php
 namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
-//use ReThumbAdvanced\ShortQ;
-//use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
-//use \ReThumbAdvanced\Notices\NoticeController as Notice;
-
 use \ReThumbAdvanced\ShortQ as ShortQ;
 
 /** Class Process
@@ -43,10 +39,6 @@ class Process
 
   public function __construct()
   {
-    //  $f = new FuQ\ShortQ();
-//$shortQ = new ShortQ\ShortQ('karp');
-//$shortq = new ShortQ\Item('f');
-$shortq = new ShortQ\ShortQ('f');
       $shortQ = new \ReThumbAdvanced\ShortQ\ShortQ(self::RTA_SLUG);
       $this->q = $shortQ->getQueue(self::RTAQ_NAME);
 

@@ -1,8 +1,8 @@
 <?php
-namespace ReThumbAdvanced;
+namespace ReThumbAdvanced\Controllers;
 
 // Main Controller
-class rtaController
+class Controller
 {
 
   /** @todo not sur why this is such a complicated function */

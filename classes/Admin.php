@@ -12,7 +12,7 @@ use \ReThumbAdvanced\Notices\NoticeController as Notice;
  * @author     ShortPixel
 */
 
-class RTA_Admin extends rtaController
+class Admin
 {
     /*private $process_remove_thumbnails = false;
     private $process_delete_leftmetadata = false;
@@ -35,7 +35,7 @@ class RTA_Admin extends rtaController
     {
        if (! isset(self::$instance))
        {
-          self::$instance = new RTA_Admin();
+          self::$instance = new Admin();
        }
 
        return self::$instance;
@@ -134,7 +134,7 @@ class RTA_Admin extends rtaController
         $form['posts_per_page'] = -1;
         $form['attach_id'] = $attach_id;
 */
-        $image = new rtaImage($attach_id);
+        $image = new Image($attach_id);
         $image->regenerate();
 
         /*if ($this->start_process($form))

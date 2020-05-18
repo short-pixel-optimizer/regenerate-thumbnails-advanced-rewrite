@@ -3,7 +3,7 @@ namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
 
 
-class rtaImage
+class Image
 {
   protected $id;
 

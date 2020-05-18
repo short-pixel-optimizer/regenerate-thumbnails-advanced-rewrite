@@ -1,7 +1,8 @@
 <?php
-namespace ReThumbAdvanced;
+namespace ReThumbAdvanced\Controllers;
+use function ReThumbAdvanced\RTA;
 
-class rtaAdminController extends rtaController
+class AdminController extends Controller
 {
   //protected $controller;
 

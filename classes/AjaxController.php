@@ -1,9 +1,10 @@
 <?php
 namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
+use \ReThumbAdvanced\Controllers\AdminController as AdminController;
 
 // For communication with the Javascripting.
-class ajaxController
+class AjaxController
 {
    protected static $instance;
    protected $status; // /for the status.s
@@ -248,7 +249,7 @@ class ajaxController
           foreach($items as $item)
           {
             $item_id = $item->item_id;
-            $image = new rtaImage($item_id);
+            $image = new Image($item_id);
             $status = $image->regenerate();
           }
       }
@@ -278,7 +279,7 @@ class ajaxController
    public function view_generate_thumbnails_save()
    {
      $json = true;
-     $view = new rtaAdminController($this);
+     $view = new AdminController($this);
      $response = $view->save_image_sizes();
 
      if ($json)

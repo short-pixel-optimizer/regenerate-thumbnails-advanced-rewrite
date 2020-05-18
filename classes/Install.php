@@ -5,7 +5,7 @@ use \ReThumbAdvanced\Notices\NoticeController as Notice;
 
 use \ReThumbAdvanced\ShortQ as ShortQ;
 
-class RTAInstall
+class Install
 {
 
   /** The handler when user completely uninstalls the plugin */
@@ -20,7 +20,7 @@ class RTAInstall
   /** Handler on activation */
     public static function activate()
     {
-      
+
     }
 
   /** Handler on deactivate */
