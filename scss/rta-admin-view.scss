@@ -6,6 +6,8 @@
   {
     display: flex;
     justify-content: space-between;
+    margin-bottom: 20px;
+
     @include breakpoint(0,1600px)
     {
       flex-direction: column-reverse;
@@ -75,12 +77,8 @@
 
   .rta-regenerate-wrap, .rta-settings-wrap
   {
-    //width: 50%; float: left;
     flex: 1;
-    //min-height: 600px;
-    margin-bottom: 20px;
     position: relative;
-    //max-width: 49%;
     padding: 0 15px;
     background: #fff;
   }
@@ -343,6 +341,27 @@
   .window-down
   {
     opacity: 100;
+  }
+
+  .rta-ad
+  {
+    background: #fff;
+    border: 1px solid #eee;
+    padding: 16px;
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    .img-wrapper {
+    //  float: left;
+      margin-right: 25px;
+    }
+    h3, p { margin: 6px 0; }
+    a {
+       font-size: 16px;
+       font-weight: 700;
+       text-decoration: underline;
+    }
+
   }
 
 

@@ -1,3 +1,7 @@
+<?php
+namespace ReThumbAdvanced;
+?>
+
 <div class='wrap'> <!-- this wrap to keep notices and other scum out of the interface -->
   <h1><?php _e('Regenerate Thumbnails Advanced','regenerate-thumbnails-advanced'); ?></h1>
 
@@ -13,7 +17,7 @@
         <?php $this->loadChildTemplate('view_rta_settings'); ?>
       </div>
     </div>
-
+    <?php $this->loadChildTemplate('view_ad');  ?>
     <?php $this->loadChildTemplate('view_regenerate_process'); ?>
 </div> <!-- rta admin wrap. -->
 

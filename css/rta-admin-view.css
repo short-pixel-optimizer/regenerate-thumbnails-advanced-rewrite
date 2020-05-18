@@ -1,6 +1,7 @@
 .rta-admin .two-panel-wrap {
   display: flex;
-  justify-content: space-between; }
+  justify-content: space-between;
+  margin-bottom: 20px; }
   @media (max-width: 1600px) {
     .rta-admin .two-panel-wrap {
       flex-direction: column-reverse; }
@@ -42,7 +43,6 @@
     border-color: #ff0000; }
 .rta-admin .rta-regenerate-wrap, .rta-admin .rta-settings-wrap {
   flex: 1;
-  margin-bottom: 20px;
   position: relative;
   padding: 0 15px;
   background: #fff; }
@@ -84,7 +84,6 @@
       display: inline-block;
       margin-left: 25px; }
   .rta-admin .option .note {
-    font-size: 12px;
     margin-left: 15px; }
     .rta-admin .option .note p {
       margin-top: 0; }
@@ -204,3 +203,18 @@
   opacity: 0; }
 .rta-admin .window-down {
   opacity: 100; }
+.rta-admin .rta-ad {
+  background: #fff;
+  border: 1px solid #eee;
+  padding: 16px;
+  margin: 20px 0;
+  display: flex;
+  align-items: center; }
+  .rta-admin .rta-ad .img-wrapper {
+    margin-right: 25px; }
+  .rta-admin .rta-ad h3, .rta-admin .rta-ad p {
+    margin: 6px 0; }
+  .rta-admin .rta-ad a {
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: underline; }

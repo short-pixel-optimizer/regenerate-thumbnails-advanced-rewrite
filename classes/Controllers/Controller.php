@@ -30,4 +30,9 @@ class Controller
 
       return $html;
   }
+
+  public function getURL($path)
+  {
+      return plugins_url($path, RTA_PLUGIN_FILE); 
+  }
 } // class

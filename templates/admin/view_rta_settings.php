@@ -1,3 +1,6 @@
+<?php
+namespace ReThumbAdvanced;
+?>
 
 <form method="POST" name="rta_settings_form" id="rta_settings_form" enctype="multipart/form-data">
 <section class='image_sizes'>
