@@ -32,8 +32,6 @@ class Plugin
       add_action( 'admin_menu', array( $this, 'admin_menus' ) );
 
       add_filter( 'plugin_action_links_' . plugin_basename(RTA_PLUGIN_FILE), array($this, 'generate_plugin_links'));//for plugin settings page
-
-      Log::addTemp('Plugin Construct (RTA)');
   }
 
   public static function getInstance()

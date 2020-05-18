@@ -135,7 +135,6 @@ class Process
           $this->run_limit = time() + $limit;
       }
 
-      Log::addTemp('START' . $this->run_start . ' LIMIT'  . $this->run_limit);
       if ($this->run_start <= $this->run_limit)
       {
           return true;
@@ -145,7 +144,6 @@ class Process
          $this->run_limit = 0;
          $this->run_start = 0;
       }
-      Log::addTemp('CUT OUT -> START' . $this->run_start . ' LIMIT'  . $this->run_limit);
       return false;
   }
 
@@ -229,8 +227,6 @@ class Process
     // $chunks =
      $items = array();
 
-     Log::addTemp('SQL', $sql);
-     Log::addTemp('Query Result', $result);
      foreach($result as $index => $row)
      {
           $items[] = array('id' => $row->ID, 'value' => '');
@@ -239,7 +235,6 @@ class Process
      $this->q->addItems($items);
      $this->q->enqueue();
 
-    // Log::addTemp('Query Result Count: ' . $count);
      /** Keep looping preparing ( possible query limit reached ) until no new items are forthcoming. */
      if ($resultCount > 0)
       return $resultCount;

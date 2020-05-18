@@ -50,14 +50,11 @@ class AjaxController
      // For settings page
      add_action( 'wp_ajax_rta_save_image_sizes', array($this,'view_generate_thumbnails_save' ) );
 
-     Log::addTemp('Init Ajax Functions');
    }
 
    public function add_status($name, $args = array() )
    {
      $status = array('error' => true, 'message' => __('Unknown Error occured', 'regenerate-thumbnails-advanced'), 'status' => 0);
-
-     Log::addTemp('Args passed', $args);
 
      $defaults =  array(
          'name' => false,
@@ -120,21 +117,17 @@ class AjaxController
          break;
      }
 
-     Log::addtemp('STATUS', $status);
      if (isset($status['mask']))
      {
-      // Log::addTemp('ARGS', $args);
        $mask = $status['mask'];
        foreach($mask as $mname)
        {
-          Log::addTemp("Finding $mname in ", $args);
           if ( isset($args[$mname]) )
           {
           //  $status['message'] = str_replace('%s', $args[$name], $status['message'], 1);
               $value = $args[$mname];
               $pos = strpos($status['message'], '%s');
-              Log::addTemp('Replace POS', $pos);
-              Log::addTemp('Value' . $value);
+
               if ($pos !== false) {
                 $status['message'] = substr_replace($status['message'], $value, $pos, strlen('%s'));
               } // substr_replace($haystack, $replace, $pos, strlen($needle))
@@ -235,7 +228,6 @@ class AjaxController
    {
       // check if preparing, or running
       $process = RTA()->process();
-      Log::addTemp('Process Hitting', $process->get());
       if ($process->get('preparing') == true)  // prepare loop
       {
          $count = $process->prepare();
