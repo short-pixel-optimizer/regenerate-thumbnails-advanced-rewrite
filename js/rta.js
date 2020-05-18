@@ -68,8 +68,8 @@ rtaJS.prototype.checkSubmitReady = function()
   processReady = true;
 
   inputs = $('input[name^="regenerate_sizes"]:checked');
-  if (inputs.length == 0)
-    processReady = false;
+/*  if (inputs.length == 0)
+    processReady = false; */
 
   if (this.in_process || ! this.is_saved)
     processReady = false;
