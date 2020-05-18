@@ -55,7 +55,15 @@ The script stops but it will resume after you open the settings page of the plug
 
 == Changelog ==
 
-= 2.2-DEV06 =
+= 2.3 =
+
+* New - Added regenerate thumbnails button in
+* Fixed - Crash when regenerating image from edit media
+* Fixed - Queries for large amount of images should not timeout
+* Class loader moved to PSR-4
+* New system for queueing
+
+= 2.2 =
 
 * Fixes for WP5.3 and scaled images
 * Option in media library to regenerate just one image

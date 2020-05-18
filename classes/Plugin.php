@@ -26,7 +26,7 @@ class Plugin
     //  $this->initRuntime();
 
       add_action( 'after_setup_theme', array( $this, 'add_custom_sizes' ) );
-      add_action( 'init', array( $this, 'init' ) );
+      add_action( 'admin_init', array( $this, 'init' ) );
     //  add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ), 10 );
 
       add_action( 'admin_menu', array( $this, 'admin_menus' ) );
@@ -82,6 +82,7 @@ class Plugin
 
     add_filter('media_row_actions', array($this,'add_media_action'), 10, 2);
     add_action( 'add_meta_boxes', function () { add_meta_box('rta-link', __('Regenerate Thumbnails', 'enable-media-replace'), array($this, 'regenerate_meta_box'), 'attachment', 'side', 'low'); }  );
+    add_filter('attachment_fields_to_edit', array($this, 'attachment_editor'), 10, 2);
 
     $this->check_media_action();
     //add_action('upload.php', array($this, 'check_media_action'), 10);
@@ -215,43 +216,73 @@ class Plugin
       }
   }
 
-  private function getRegenerateLink()
-  {
-             //  $url = admin_url( "upload.php");
-
-  }
-
   public function add_media_action( $actions, $post) {
 
-  $action = 'regenerate_image_thumbnail';
-
-    $url = add_query_arg(array(
-        'regen_action' => $action,
-        'attachment_id' => $post->ID,
-    ));
-
-
-    $editurl = wp_nonce_url( $url, $action );
+    $editurl = $this->getRegenerateLink($post->ID);
     $link = "href=\"$editurl\"";
+    $action = 'regenerate_image_thumbnail';
+
 
     $newaction[$action] = '<a ' . $link . ' aria-label="' . esc_attr(__("Regenerate Thumbnails", "regenerate-thumbnails-advanced")) . '" rel="permalink">' . esc_html(__("Regenerate Thumbnails", "regenerate-thumbnails-advanced")) . '</a>';
 
     return array_merge($actions,$newaction);
   }
 
-  public function regenerate_meta_box($post)
+  /** Generates a link to single regen images.
+  * @param $post_id int Image Post Post ID
+  * @param $url String URL to base link on, otherwise current uRL will be used
+  */
+  private function getRegenerateLink($post_id, $url = '')
   {
     $action = 'regenerate_image_thumbnail';
 
       $url = add_query_arg(array(
           'regen_action' => $action,
-          'attachment_id' => $post->ID,
-      ));
+          'attachment_id' => $post_id,
+      ), $url);
 
     $editurl = wp_nonce_url( $url, $action );
+    return $editurl;
+
+  }
+
+
+  public function regenerate_meta_box($post)
+  {
+    $editurl = $this->getRegenerateLink($post->ID);
     $link = "href=\"$editurl\"";
 
     echo "<p><a class='button-secondary' $link>" . esc_html__("Regenerate Thumbnails", "regenerate-thumbnails-advanced") . "</a></p>";
   }
+
+  /** Adding a button to the attachements view popup */
+  public function attachment_editor($form_fields, $post)
+  {
+      $screen = null;
+      if (function_exists('get_current_screen'))
+      {
+        $screen = get_current_screen();
+
+        if(! is_null($screen) && $screen->id == 'attachment') // hide on edit attachment screen.
+          return $form_fields;
+      }
+
+      $url = admin_url('upload.php');
+      $url = add_query_arg('item', $post->ID, $url);
+
+      $editurl = $this->getRegenerateLink($post->ID, $url);
+
+      $link = "href=\"$editurl\"";
+      $form_fields["regenerate-thumbnails-advanced"] = array(
+              "label" => esc_html__("Regenerate Thumbnails", "enable-media-replace"),
+              "input" => "html",
+              "html" => "<p><a class='button-secondary' $link>" . esc_html__("Regenerate Thumbnails", "enable-media-replace") . "</a></p>"
+            );
+
+      return $form_fields;
+  }
+
+
+
 
 }

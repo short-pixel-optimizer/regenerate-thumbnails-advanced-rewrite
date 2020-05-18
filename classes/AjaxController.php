@@ -238,13 +238,18 @@ class AjaxController
       if ($process->get('running') == true)
       {
           $items = $process->getItems();
-          foreach($items as $item)
+
+          if ($items)
           {
-            $item_id = $item->item_id;
-            $image = new Image($item_id);
-            $status = $image->regenerate();
+            foreach($items as $item)
+            {
+              $item_id = $item->item_id;
+              $image = new Image($item_id);
+              $status = $image->regenerate();
+            }
           }
       }
+
 
       if ($process->get('finished') == true)
       {

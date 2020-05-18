@@ -272,11 +272,6 @@ class Process
       delete_option($this->process_name);
   }
 
-  public function UninstallPlugin()
-  {
-    $this->end_process();
-    $this->q->uninstall();
-  }
 
 
 } // process class
