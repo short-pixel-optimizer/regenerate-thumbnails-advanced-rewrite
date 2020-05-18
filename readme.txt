@@ -61,7 +61,7 @@ The script stops but it will resume after you open the settings page of the plug
 * Fixed - Crash when regenerating image from edit media
 * Fixed - Queries for large amount of images should not timeout
 * Class loader moved to PSR-4
-* New system for queueing
+* New system for queuing
 
 = 2.2 =
 

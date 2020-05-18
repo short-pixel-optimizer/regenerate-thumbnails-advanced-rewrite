@@ -27,7 +27,20 @@ class Image
       $this->id = $image_id;
 
       if (function_exists('wp_get_original_image_path')) // WP 5.3+
+      {
         $this->filePath = wp_get_original_image_path($image_id);
+        /** When this function returns false it's possible the post_mime_type in wp_posts table got corrupted. If the file is displayable image,
+        * attempt to fix this issue, then reget the item for further processing */
+        if ($this->filePath === false)
+        {
+          $this->filePath = get_attached_file($image_id);
+          if (file_is_displayable_image($this->filePath))
+          {
+            $this->fixMimeType($image_id);
+            $this->filePath = wp_get_original_image_path($image_id);
+          }
+        }
+      }
       else
         $this->filePath = get_attached_file($image_id);
       $this->fileDir = trailingslashit(pathinfo($this->filePath,  PATHINFO_DIRNAME));
@@ -45,12 +58,12 @@ class Image
 
       $this->metadata = wp_get_attachment_metadata($image_id);
 
-      $is_image_mime = wp_attachment_is('image', $image_id); // this is based on post mime.
+  /*    $is_image_mime = wp_attachment_is('image', $image_id); // this is based on post mime.
       if (! $is_image_mime && $this->is_image )
       {
         $this->fixMimeType($image_id);
       }
-
+*/
   }
 
   public function regenerate()
@@ -131,7 +144,6 @@ class Image
 
     } else {
       //  $filename_only = $this->currentImage->getUri();
-        //$logstatus = '<b>'.basename($filename_only).'</b> is missing or not an image file';
         Log::addDebug('File missing - Current Image reported as not an image', array($this->filePath) );
         RTA()->ajax()->add_status('file_missing', array('name' => basename($this->fileUri)) );
 
