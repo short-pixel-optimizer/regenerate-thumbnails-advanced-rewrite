@@ -8,13 +8,17 @@
     justify-content: space-between;
     margin-bottom: 20px;
 
-    @include breakpoint(0,1600px)
-    {
-      flex-direction: column-reverse;
-      .rta-settings-wrap
+    &.settings-panels {
+      @include breakpoint(0,1200px)
       {
-        width: 95%;
-        max-width: none;
+        flex-direction: column-reverse;
+        .rta-settings-wrap, .rta-regenerate-wrap
+        {
+          width: 100%;
+          max-width: none;
+          margin: 14px 0;
+        }
+
       }
     }
   }
@@ -79,18 +83,21 @@
   {
     flex: 1;
     position: relative;
-    padding: 0 15px;
+    padding: 0 0 0 15px;
     background: #fff;
+
   }
 
   .rta-regenerate-wrap
   {
-    max-width: 35%;
+    //max-width: 35%;
+    margin-right: 8px;
   }
 
   .rta-settings-wrap
   {
-    max-width: 60%;
+    //max-width: 60%;
+    flex: 2;
   }
 
   %button
@@ -141,6 +148,8 @@
       {
         display: inline-block;
         margin-left: 25px;
+        line-height: 20px;
+
       }
     }
     .note
@@ -189,20 +198,52 @@
   .table
   {
     //flex-wrap: wrap;
-    table-layout: fixed;
-    display: table;
+  //  table-layout: fixed;
+    display: flex;
+    //grid-template-columns: 3fr 2fr 2fr 4fr 2fr 2fr; // 120px 95px 95px repeat(3, 2fr);
+  //  grid-template-rows: 50px;
+  //  grid-gap: 1rem;
+    flex-direction: column;
     border-spacing: 10px 0;
     border: 1px solid #eee;
     word-wrap: normal;
     white-space: nowrap;
 
     .header, .row {
-      width: 100%;
-      display: table-row;
 
-      input.image_sizes_pname { max-width: 180px; }
+     display: flex;
 
-      span { display: table-cell;  padding: 5px;
+
+      input.image_sizes_pname { max-width: 110px; }
+      input.image_sizes_name {
+         font-size: 10px;
+         border: 0;
+         background: unset;
+         margin: 0;
+         padding: 0;
+       }
+
+      span {
+    //      display: inline-block;
+          padding: 5px;
+          //min-width: 100px;
+          flex-basis: 100px;
+          &:nth-of-type(1)
+          {
+              flex-basis: 120px;
+          }
+          &:nth-of-type(4)
+          {
+            flex-basis: 150px;
+          }
+          button
+          {
+            padding: 0;
+            background: unset;
+            border: 0;
+            box-shadow: none;
+            span { color: #ff0000; }
+          }
         //min-width: 100px;
       }
     }
@@ -262,7 +303,16 @@
     {
       display: flex;
       flex: 1;
-      .note { flex: 2; }
+      .note { flex: 2; display: inline-block; }
+    }
+    @include breakpoint(0,1500px)
+    {
+      .option
+      {
+        flex-wrap:wrap;
+        label { width: 100%; }
+        .note { width: 100%; margin: 4px 0;  }
+      }
     }
   }
 

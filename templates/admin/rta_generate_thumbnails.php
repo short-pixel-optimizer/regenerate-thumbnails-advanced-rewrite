@@ -7,7 +7,7 @@ namespace ReThumbAdvanced;
 
 <div class="rta-admin-wrap rta-admin wrap">
 
-    <div class='two-panel-wrap'>
+    <div class='two-panel-wrap settings-panels'>
       <div class='rta-regenerate-wrap'>
         <h2><?php _e('Regenerate Options', 'regenerate-thumbnails-advanced') ?></h2>
         <?php $this->loadChildTemplate('view_rta_regenerate'); ?>

@@ -13,15 +13,15 @@ namespace ReThumbAdvanced;
         $headershow = (count($image_sizes) == 0) ? ' rta_hidden' : '';
         ?>
 
-              <div class='header flex <?php echo $headershow ?>'>
+              <div class='header  <?php echo $headershow ?>'>
 
-                          <span><b><?php _e('Image Size Public Name','regenerate-thumbnails-advanced'); ?></b></span>
+                          <span><b><?php _e('Public Name','regenerate-thumbnails-advanced'); ?></b></span>
                           <span><b><?php _e('Max. Width','regenerate-thumbnails-advanced'); ?></b></span>
                           <span><b><?php _e('Max. Height','regenerate-thumbnails-advanced'); ?></b></span>
                           <span><b><?php _e('Cropping','regenerate-thumbnails-advanced'); ?></b></span>
                           <span><b><?php _e('Image Size Name','regenerate-thumbnails-advanced'); ?></b></span>
                           <span>&nbsp;</span>
-                </div>
+              </div>
 
                       <?php
                       if (isset($image_sizes['name'])){
@@ -31,9 +31,9 @@ namespace ReThumbAdvanced;
                         $rowid = uniqid();
 
                       ?>
-                      <div id="<?php echo $rowid;?>" class='row'>
+                    <div id="<?php echo $rowid;?>" class='row'>
 
-                            <span><input type="text" name="image_sizes[pname][]" class="image_sizes_pname" value="<?php echo $image_sizes['pname'][$i];?>" placeholder="<?php _e('Image Size Public Name','regenerate-thumbnails-advanced'); ?>" /></span>
+                            <span><input type="text" name="image_sizes[pname][]" class="image_sizes_pname" value="<?php echo $image_sizes['pname'][$i];?>" placeholder="<?php _e('Name','regenerate-thumbnails-advanced'); ?>" /></span>
 
                             <span><input type="number" min="0" name="image_sizes[width][]" class="image_sizes_width tiny" value="<?php echo $image_sizes['width'][$i];?>" placeholder="<?php _e('Width','regenerate-thumbnails-advanced'); ?>" /> px </span>
 
@@ -44,16 +44,17 @@ namespace ReThumbAdvanced;
                               </select>
                             </span>
 
-                            <span>
+                            <span >
                               <input type="text" readonly name="image_sizes[name][]" class="image_sizes_name" value="<?php echo $image_sizes['name'][$i];?>" placeholder="<?php _e('Image Size name','regenerate-thumbnails-advanced'); ?>" />
+
                             </span>
                             <span>
-                              <input type="button" name="btn_remove_image_size_row" value="<?php _e('Remove','regenerate-thumbnails-advanced'); ?>" class="btn_remove_row" />
+                                  <button class="btn_remove_row" type="button" name="btn_remove_image_size_row"><span class='dashicons dashicons-no'>&nbsp;</span></button>
                             </span>
-                      </div> <!-- row -->
+                    </div>  <!-- row -->
                       <?php }}?>
                       <div class='row proto'>
-                            <span><input type="text" name="image_sizes[pname][]" class="image_sizes_pname" value="" placeholder="<?php _e('Image Size Public Name','regenerate-thumbnails-advanced'); ?>" /></span>
+                            <span><input type="text" name="image_sizes[pname][]" class="image_sizes_pname" value="" placeholder="<?php _e('Name','regenerate-thumbnails-advanced'); ?>" /></span>
                             <span><input type="number" name="image_sizes[width][]" class="image_sizes_width tiny" value="" placeholder="<?php _e('Width','regenerate-thumbnails-advanced'); ?>" /> px </span>
                             <span> <input type="number" name="image_sizes[height][]" class="image_sizes_height tiny" value="" placeholder="<?php _e('Height','regenerate-thumbnails-advanced'); ?>" /> px </span>
                             <span><select name="image_sizes[cropping][]" class="image_sizes_cropping">
@@ -61,10 +62,11 @@ namespace ReThumbAdvanced;
                               </select>
                             </span>
                             <span>
-                              <input type="text" readonly name="image_sizes[name][]" class="image_sizes_name" value="" placeholder="<?php _e('Image Size name','regenerate-thumbnails-advanced'); ?>" />
+                              <input type="text" readonly  name="image_sizes[name][]" class="image_sizes_name" value="" placeholder="<?php _e('Image Size name','regenerate-thumbnails-advanced'); ?>" />
                             </span>
                             <span>
-                              <input type="button" name="btn_remove_image_size_row" value="<?php _e('Remove','regenerate-thumbnails-advanced'); ?>" class="btn_remove_row" />
+                                <button class="btn_remove_row" type="button" name="btn_remove_image_size_row"><span class='dashicons dashicons-no'>&nbsp;</span></button>
+
                             </span>
                       </div> <!-- row -->
           </div> <!-- table -->

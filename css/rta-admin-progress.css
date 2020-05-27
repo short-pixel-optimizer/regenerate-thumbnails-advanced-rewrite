@@ -46,14 +46,34 @@ section.regenerate {
         section.regenerate .rta_progress .images .thumbnail img {
           max-width: 500px;
           max-height: 500px; }
+    @media (max-width: 1200px) {
+      section.regenerate .rta_progress .images {
+        min-height: 300px;
+        width: 100%; }
+        section.regenerate .rta_progress .images .thumbnail img {
+          opacity: 0.5;
+          max-width: 100%;
+          overflow: hidden; }
+      section.regenerate .rta_progress .rta_progress_view {
+        width: 200px;
+        height: 220px;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin-left: -100px;
+        margin-top: -120px; } }
   section.regenerate .rta_status_box {
     width: 35%;
+    min-width: 300px;
     border-left: 1px solid #ccc;
-    position: relative; }
+    position: relative;
+    z-index: 10; }
     section.regenerate .rta_status_box .rta_wait_loader {
       margin-top: 35px;
       padding-left: 20px;
-      opacity: 0; }
+      opacity: 0;
+      position: relative;
+      z-index: 1; }
       section.regenerate .rta_status_box .rta_wait_loader .dashicons {
         animation: wait-spin 2000ms infinite linear;
         animation-play-state: running;

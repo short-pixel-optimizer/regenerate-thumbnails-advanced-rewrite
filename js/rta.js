@@ -321,7 +321,7 @@ rtaJS.prototype.processStoppable = function()
 
   rtaJS.prototype.stopProcess = function()
   {
-    if (confirm(rta_data.strings.confirm_stop))
+    if (window.confirm(rta_data.strings.confirm_stop))
     {
       this.is_stopped = true;
 
@@ -507,7 +507,7 @@ rtaJS.prototype.processStoppable = function()
         var row = $('.row.proto').clone();
         $(row).attr('id', uniqueId);
         $(row).removeClass('proto');
-        container.append(row.css('display', 'table-row') );
+        container.append(row); // row.css('display', 'flex') 
 
         container.find('.header').removeClass('rta_hidden');
     }
@@ -522,7 +522,7 @@ rtaJS.prototype.processStoppable = function()
     rtaJS.prototype.update_thumb_name = function(rowid) {
         if($("#"+rowid).length) {
             var old_name = $("#"+rowid+" .image_sizes_name").val();
-            var name = "rta_thumb";//$("#"+rowid+" .image_sizes_name").val();
+            var name = "rta_thumb";
             var width = $("#"+rowid+" .image_sizes_width").val();
             var height = $("#"+rowid+" .image_sizes_height").val();
             var cropping = $("#"+rowid+" .image_sizes_cropping").val();

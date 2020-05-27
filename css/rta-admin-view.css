@@ -2,12 +2,13 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: 20px; }
-  @media (max-width: 1600px) {
-    .rta-admin .two-panel-wrap {
+  @media (max-width: 1200px) {
+    .rta-admin .two-panel-wrap.settings-panels {
       flex-direction: column-reverse; }
-      .rta-admin .two-panel-wrap .rta-settings-wrap {
-        width: 95%;
-        max-width: none; } }
+      .rta-admin .two-panel-wrap.settings-panels .rta-settings-wrap, .rta-admin .two-panel-wrap.settings-panels .rta-regenerate-wrap {
+        width: 100%;
+        max-width: none;
+        margin: 14px 0; } }
 .rta-admin h2 {
   font-size: 26px;
   padding-left: 8px; }
@@ -44,12 +45,12 @@
 .rta-admin .rta-regenerate-wrap, .rta-admin .rta-settings-wrap {
   flex: 1;
   position: relative;
-  padding: 0 15px;
+  padding: 0 0 0 15px;
   background: #fff; }
 .rta-admin .rta-regenerate-wrap {
-  max-width: 35%; }
+  margin-right: 8px; }
 .rta-admin .rta-settings-wrap {
-  max-width: 60%; }
+  flex: 2; }
 .rta-admin button, .rta-admin .btn_add_more {
   color: white;
   background: #00bcd4;
@@ -82,7 +83,8 @@
       margin-top: 2px; }
     .rta-admin .option > label span {
       display: inline-block;
-      margin-left: 25px; }
+      margin-left: 25px;
+      line-height: 20px; }
   .rta-admin .option .note {
     margin-left: 15px; }
     .rta-admin .option .note p {
@@ -105,20 +107,36 @@
   padding: 5px 6px;
   margin-left: 25px; }
 .rta-admin .table {
-  table-layout: fixed;
-  display: table;
+  display: flex;
+  flex-direction: column;
   border-spacing: 10px 0;
   border: 1px solid #eee;
   word-wrap: normal;
   white-space: nowrap; }
   .rta-admin .table .header, .rta-admin .table .row {
-    width: 100%;
-    display: table-row; }
+    display: flex; }
     .rta-admin .table .header input.image_sizes_pname, .rta-admin .table .row input.image_sizes_pname {
-      max-width: 180px; }
+      max-width: 110px; }
+    .rta-admin .table .header input.image_sizes_name, .rta-admin .table .row input.image_sizes_name {
+      font-size: 10px;
+      border: 0;
+      background: unset;
+      margin: 0;
+      padding: 0; }
     .rta-admin .table .header span, .rta-admin .table .row span {
-      display: table-cell;
-      padding: 5px; }
+      padding: 5px;
+      flex-basis: 100px; }
+      .rta-admin .table .header span:nth-of-type(1), .rta-admin .table .row span:nth-of-type(1) {
+        flex-basis: 120px; }
+      .rta-admin .table .header span:nth-of-type(4), .rta-admin .table .row span:nth-of-type(4) {
+        flex-basis: 150px; }
+      .rta-admin .table .header span button, .rta-admin .table .row span button {
+        padding: 0;
+        background: unset;
+        border: 0;
+        box-shadow: none; }
+        .rta-admin .table .header span button span, .rta-admin .table .row span button span {
+          color: #ff0000; }
   .rta-admin .table .row.proto, .rta-admin .table .rta_hidden {
     display: none; }
 .rta-admin .flex {
@@ -158,7 +176,16 @@
     display: flex;
     flex: 1; }
     .rta-admin .cleanup-wrapper .option .note {
-      flex: 2; }
+      flex: 2;
+      display: inline-block; }
+  @media (max-width: 1500px) {
+    .rta-admin .cleanup-wrapper .option {
+      flex-wrap: wrap; }
+      .rta-admin .cleanup-wrapper .option label {
+        width: 100%; }
+      .rta-admin .cleanup-wrapper .option .note {
+        width: 100%;
+        margin: 4px 0; } }
 .rta-admin .warning-removal {
   position: relative;
   text-decoration: line-through; }
