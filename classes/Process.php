@@ -195,12 +195,12 @@ class Process
      if ($this->startstamp > -1)
      {
        $query .= ' AND post_date >= %s ';
-       $prepare[] = date("Y-m-d", $this->startstamp);
+       $prepare[] = date("Y-m-d H:i:s", $this->startstamp);
      }
      if ($this->endstamp > -1)
      {
        $query .= ' AND post_date <= %s ';
-       $prepare[] = date("Y-m-d", $this->endstamp);
+       $prepare[] = date("Y-m-d H:i:s", $this->endstamp);
      }
 
      if ($this->only_featured)
@@ -221,6 +221,7 @@ class Process
      $prepare[] = $this->query_prepare_limit;
 
      $sql = $wpdb->prepare($query, $prepare);
+     Log::addTemp('Preparing SQL' . $sql);
      $result = $wpdb->get_results($sql);
      $resultCount = count($result);
 

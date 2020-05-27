@@ -246,10 +246,16 @@ class Plugin
 
   }
 
-
+  /** The metabox in edit attachment view */
   public function regenerate_meta_box($post)
   {
-    $editurl = $this->getRegenerateLink($post->ID);
+    $url = admin_url('post.php');
+    if (isset($_GET['post']))
+      $url = add_query_arg('post', intval($_GET['post']), $url);
+    if (isset($_GET['action']))
+      $url = add_query_arg('action', sanitize_text_field($_GET['action']), $url);
+
+    $editurl = $this->getRegenerateLink($post->ID, $url);
     $link = "href=\"$editurl\"";
 
     echo "<p><a class='button-secondary' $link>" . esc_html__("Regenerate Thumbnails", "regenerate-thumbnails-advanced") . "</a></p>";

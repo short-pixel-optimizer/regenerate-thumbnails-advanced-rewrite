@@ -95,12 +95,20 @@ section.regenerate
        //display:none;
        .dashicons {
          animation: wait-spin 2000ms infinite linear;
+         animation-play-state: running;
          width: 35px;
          height: 35px;
          font-size: 35px;
          float: left;
          margin-right: 30px;
 
+       }
+       &.rta_panel_off // don't run when not visible.
+       {
+         .dashicons
+         {
+           animation-play-state: paused;
+         }
        }
     }
     .rta_notices

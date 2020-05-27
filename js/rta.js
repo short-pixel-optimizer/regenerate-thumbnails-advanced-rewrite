@@ -121,7 +121,8 @@ rtaJS.prototype.initProcess = function()
 
    if (process.running || process.preparing)
    {
-       this.resumeProcess();
+      this.updateProgress();
+      this.resumeProcess();
   }
 
 
@@ -179,6 +180,7 @@ rtaJS.prototype.startProcess = function (e)
               self.add_status(response.status);
             }
             self.process = response;
+            self.updateProgress();
             self.doProcess();
       },
       error: function(xhr, text, error)
@@ -224,7 +226,7 @@ rtaJS.prototype.doProcess = function()
 
     this.in_process = true;
     this.checkSubmitReady();
-    this.updateProgress();
+
     this.togglePanel('progress', true);
     this.processStoppable();
 
@@ -242,17 +244,18 @@ rtaJS.prototype.doProcess = function()
                 //genform: JSON.stringify(form),
         },
         success: function (response) {
+            if (typeof response.items !== 'undefined') // return is a process var..
+            {
+              self.process = response;
+              self.updateProgress();
+            }
 
             if (response.status)
             {
               self.add_status(response.status);
             }
             if( response.running || response.preparing ) {
-                /*if(response.logstatus=='Processed') {
-                    this.togglePanel('thumbnail', true);
-                    $(".rta_progress .images img").attr("src",response.imgUrl);
-                } */
-                self.process = response;
+
                 if (! self.is_stopped)
                 {
                 //  self.offset = response.current;

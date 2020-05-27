@@ -115,10 +115,8 @@ class Image
           RTA()->ajax()->add_status('error_metadata', array('name' => basename($this->filePath) ));
         }
         else if (empty($new_metadata)) {
-
             Log::addDebug('File missing - New metadata returned empty', array($new_metadata, $this->fileUri,$this->filePath ));
             RTA()->ajax()->add_status('file_missing', array('name' => basename($this->fileUri) ));
-
         } else {
 
             // going for the save.
@@ -143,11 +141,21 @@ class Image
         RTA()->ajax()->add_status('regenerate_success', array('thumb' => $last_success_url));
 
     } else {
-      //  $filename_only = $this->currentImage->getUri();
-        Log::addDebug('File missing - Current Image reported as not an image', array($this->filePath) );
-        RTA()->ajax()->add_status('file_missing', array('name' => basename($this->fileUri)) );
 
-        /*$error[] = array('offset' => ($offset + 1), 'error' => $error, 'logstatus' => $logstatus, 'imgUrl' => $filename_only, 'startTime' => $data['startTime'], 'fromTo' => $data['fromTo'], 'type' => $process_type, 'period' => $period); */
+          $debug_filename = (strlen($this->fileUri) > 0) ? $this->fileUri : $this->filePath;
+          if ($this->does_exist) // Existing files, not image, can be attachments, zipfiles, pdf etc. Fail silently.
+          {
+            $mime = get_post_mime_type($this->id);
+            if (strpos($mime, 'image') !== false)
+              RTA()->ajax()->add_status('not_image', array('name' => $name));
+          }
+          else
+          {
+            Log::addDebug('File missing - Current Image reported as not an image', array($this->filePath) );
+            RTA()->ajax()->add_status('file_missing', array('name' => basename($debug_filename)) );
+          }
+
+          return false; 
     }
 
     return true;
@@ -248,7 +256,7 @@ class Image
 
       // 5. Drop the 'not to be' regen. images from the sizes so it will not process.
       $do_regenerate_sizes = array_diff($do_regenerate_sizes, $prevent_regen);
-      Log::addDebug('Sizes going for regen - ', $do_regenerate_sizes);
+      Log::addDebug('Sizes going for regen - ' . count($do_regenerate_sizes) );
 
       /* 6. If metadata should be cleansed of undefined sizes, remove them from the imageMetaSizes
       *   This is for sizes that are -undefined- in total by system sizes.

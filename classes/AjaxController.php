@@ -95,6 +95,11 @@ class AjaxController
             $status['mask'] = array('name');
             $status['status'] = self::ERROR_NOFILE;
          break;
+         case 'not_image':
+            $status['message'] = __('<b>%s</b> skipped. MimeType is an image, but reports non-displayable', 'regenerate-thumbnails-advanced');
+            $status['status']  = self::ERROR_NOFILE;
+            $status['mask'] = array('name');
+         break;
          case 'error_metadata':
            $status['message'] = __('<b>%s</b> failed on metadata. Possible issue with image', 'regenerate-thumbnails-advanced');
            $status['mask'] = array('name');

@@ -56,11 +56,14 @@ section.regenerate {
       opacity: 0; }
       section.regenerate .rta_status_box .rta_wait_loader .dashicons {
         animation: wait-spin 2000ms infinite linear;
+        animation-play-state: running;
         width: 35px;
         height: 35px;
         font-size: 35px;
         float: left;
         margin-right: 30px; }
+      section.regenerate .rta_status_box .rta_wait_loader.rta_panel_off .dashicons {
+        animation-play-state: paused; }
     section.regenerate .rta_status_box .rta_notices ul.statuslist {
       max-height: 350px;
       overflow-y: auto;
