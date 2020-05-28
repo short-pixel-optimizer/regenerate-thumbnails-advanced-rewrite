@@ -29,12 +29,12 @@ namespace ReThumbAdvanced;
               <text class="CircularProgressbar-text" x="50" y="50">0%</text>
               <text class="progress-count" x="50" y="70"><tspan class='current'>0</tspan> / <tspan class='total'>0</tspan></text>
           </svg>
-          <button class='button stop-process' disabled><?php _e('Stop Process', 'regenerate-thumbnails-advanced') ?></button>
        </div>
     </div>
 
     <div class="rta_status_box">
       <button class='button stop-process' disabled><?php _e('Stop Process', 'regenerate-thumbnails-advanced') ?></button>
+
         <div class="rta_notices rta_panel_off">
             <ul class="statuslist">
             </ul>
@@ -48,8 +48,6 @@ namespace ReThumbAdvanced;
         </div>
 
     </div>
-
-
 
     <?php
       $plugins = get_plugins();

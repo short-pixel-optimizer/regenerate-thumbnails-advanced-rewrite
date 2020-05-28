@@ -226,9 +226,6 @@ rtaJS.prototype.doProcess = function()
 
     this.in_process = true;
     this.checkSubmitReady();
-    this.updateProgress();
-    this.togglePanel('progress', true);
-    this.processStoppable();
 
     this.togglePanel('progress', true);
     this.processStoppable();
@@ -286,21 +283,6 @@ rtaJS.prototype.doProcess = function()
         //this.show_buttons();
     //    this.finishProcess();
 
-
-}
-
-// check if progress is stoppable  and activate stop process button, or not.
-rtaJS.prototype.processStoppable = function()
-{
-   var stoppable = false;
-
-    if (this.in_process)
-        stoppable = true;
-
-    if (stoppable)
-      $('.stop-process').prop('disabled', false);
-    else
-      $('.stop-process').prop('disabled', true);
 
 }
 

@@ -139,6 +139,7 @@ class NoticeController //extends ShortPixelController
   public function getNoticesForDisplay()
   {
       $newNotices = array();
+
       foreach(self::$notices as $notice)
       {
           if ($notice->isDismissed()) // dismissed never displays.
