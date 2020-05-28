@@ -1,4 +1,6 @@
-
+<?php
+namespace ReThumbAdvanced;
+?>
 
 <form method="post" name="rtaform_process" id="rtaform_process" class="frm_rta" enctype="multipart/form-data">
 <section class='period'>
@@ -54,6 +56,8 @@
       </div>
       <div class='warning inline rta-notice rta_hidden' id='warn-delete-items'>
       <div class='icon dashicons-info dashicons'></div>
+
+
       <p><?php _e('Not selected thumbnails will be removed from your site. Check your settings if this is intentional.'); ?></p>
 
       <p class='small'><?php _e('Regenerate Thumbnails Advanced will not prevent new media uploads from generating removed sizes', 'regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></span></p>
@@ -70,13 +74,15 @@
         </div>
       </div>
 
+        <a href="https://help.shortpixel.com/article/233-quick-guide-to-using-regenerate-thumbnails-advanced-settings" target="_blank">
+            <span class="dashicons dashicons-editor-help"></span>Read more</a>
     </div>
   </div> <!-- container -->
 </section>
 
 <section class='form_controls'>
   <div class='container'>
-    <button type='submit' disabled class='rta_regenerate disabled'><?php _e('Regenerate', 'regenerate-thumbnails-advanced'); ?></button>
+    <button type='submit' disabled class='rta_regenerate disabled'><span class='dashicons dashicons-controls-play'>&nbsp;</span> <?php _e('Regenerate', 'regenerate-thumbnails-advanced'); ?></button>
     <p class='save_note rta_hidden'><?php _e('Save your settings first','regenerate-thumbnails-advanced'); ?></p>
   </div>
 </section>

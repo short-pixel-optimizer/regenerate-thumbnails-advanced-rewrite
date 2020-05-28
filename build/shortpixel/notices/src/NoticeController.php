@@ -65,8 +65,6 @@ class NoticeController //extends ShortPixelController
   {
     $notices = get_option($this->notice_option, false);
     $cnotice = (is_array($notices)) ? count($notices) : 0;
-    if ($cnotice > 0)
-      Log::addDebug('Notice Control - #num notices' . $cnotice);
 
     if ($notices !== false && is_array($notices))
     {
@@ -90,7 +88,7 @@ class NoticeController //extends ShortPixelController
         foreach(self::$notices as $nitem)
         {
           if ($nitem->message == $notice->message && $nitem->code == $notice->code) // same message.
-            return $notice; // return the notice with the same message.
+            return $nitem; // return the notice with the same message.
         }
       }
       self::$notices[] = $notice;
@@ -141,6 +139,7 @@ class NoticeController //extends ShortPixelController
   public function getNoticesForDisplay()
   {
       $newNotices = array();
+
       foreach(self::$notices as $notice)
       {
           if ($notice->isDismissed()) // dismissed never displays.
@@ -266,7 +265,23 @@ class NoticeController //extends ShortPixelController
 
   }
 
-  public static function makePersistent($notice, $key, $suppress = -1)
+  public static function addDetail($notice, $detail)
+  {
+    $noticeController = self::getInstance();
+    $notice->addDetail($detail);
+
+//   $notice_id = spl_object_id($notice);
+
+    $noticeController->update();
+  }
+
+  /** Make a regular notice persistent across multiple page loads
+  * @param $notice NoticeModel The Notice to make Persistent
+  * @param $key String Identifier of the persistent notice.
+  * @param $suppress Int  When dismissed, time to stay dismissed
+  * @param $callback Function Callable function
+  */
+  public static function makePersistent($notice, $key, $suppress = -1, $callback = null)
   {
      $noticeController = self::getInstance();
      $existing = $noticeController->getNoticeByID($key);
@@ -291,7 +306,7 @@ class NoticeController //extends ShortPixelController
      }
      else
      {
-       $notice->setPersistent($key, $suppress); // set this notice persistent.
+       $notice->setPersistent($key, $suppress, $callback); // set this notice persistent.
      }
 
      $noticeController->update();

@@ -1,16 +1,9 @@
 <?php
-namespace ReThumbAdvanced;
-
+namespace ReThumbAdvanced\Controllers;
 
 // Main Controller
-class rtaController
+class Controller
 {
-
-  /** Central function for JSON responses. Can be extended whenever needed */
-  protected function jsonResponse($response)
-  {
-    wp_send_json($response);
-  }
 
   /** @todo not sur why this is such a complicated function */
   public function load_template( $template='', $for='front', $attr=array() ) {
@@ -36,5 +29,10 @@ class rtaController
       $html = apply_filters( 'rta_after_template_html', $html, $template, $for, $attr );
 
       return $html;
+  }
+
+  public function getURL($path)
+  {
+      return plugins_url($path, RTA_PLUGIN_FILE); 
   }
 } // class
