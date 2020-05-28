@@ -147,7 +147,7 @@ class Image
           {
             $mime = get_post_mime_type($this->id);
             if (strpos($mime, 'image') !== false)
-              RTA()->ajax()->add_status('not_image', array('name' => $name));
+              RTA()->ajax()->add_status('not_image', array('name' => $debug_filename));
           }
           else
           {
@@ -155,7 +155,7 @@ class Image
             RTA()->ajax()->add_status('file_missing', array('name' => basename($debug_filename)) );
           }
 
-          return false; 
+          return false;
     }
 
     return true;

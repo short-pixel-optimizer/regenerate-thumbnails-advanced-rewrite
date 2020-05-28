@@ -97,8 +97,8 @@ class AjaxController
          break;
          case 'not_image':
             $status['message'] = __('<b>%s</b> skipped. MimeType is an image, but reports non-displayable', 'regenerate-thumbnails-advanced');
-            $status['status']  = self::ERROR_NOFILE;
             $status['mask'] = array('name');
+            $status['status']  = self::ERROR_NOFILE;
          break;
          case 'error_metadata':
            $status['message'] = __('<b>%s</b> failed on metadata. Possible issue with image', 'regenerate-thumbnails-advanced');
@@ -129,13 +129,12 @@ class AjaxController
        {
           if ( isset($args[$mname]) )
           {
-          //  $status['message'] = str_replace('%s', $args[$name], $status['message'], 1);
               $value = $args[$mname];
               $pos = strpos($status['message'], '%s');
 
               if ($pos !== false) {
                 $status['message'] = substr_replace($status['message'], $value, $pos, strlen('%s'));
-              } // substr_replace($haystack, $replace, $pos, strlen($needle))
+              } 
           }
        }
      }
