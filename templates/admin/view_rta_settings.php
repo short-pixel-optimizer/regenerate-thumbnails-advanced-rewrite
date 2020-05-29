@@ -1,3 +1,6 @@
+<?php
+namespace ReThumbAdvanced;
+?>
 
 <form method="POST" name="rta_settings_form" id="rta_settings_form" enctype="multipart/form-data">
 <section class='image_sizes'>
@@ -10,15 +13,15 @@
         $headershow = (count($image_sizes) == 0) ? ' rta_hidden' : '';
         ?>
 
-              <div class='header flex <?php echo $headershow ?>'>
+              <div class='header  <?php echo $headershow ?>'>
 
-                          <span><b><?php _e('Image Size Public Name','regenerate-thumbnails-advanced'); ?></b></span>
+                          <span><b><?php _e('Public Name','regenerate-thumbnails-advanced'); ?></b></span>
                           <span><b><?php _e('Max. Width','regenerate-thumbnails-advanced'); ?></b></span>
                           <span><b><?php _e('Max. Height','regenerate-thumbnails-advanced'); ?></b></span>
                           <span><b><?php _e('Cropping','regenerate-thumbnails-advanced'); ?></b></span>
                           <span><b><?php _e('Image Size Name','regenerate-thumbnails-advanced'); ?></b></span>
                           <span>&nbsp;</span>
-                </div>
+              </div>
 
                       <?php
                       if (isset($image_sizes['name'])){
@@ -28,40 +31,42 @@
                         $rowid = uniqid();
 
                       ?>
-                      <div id="<?php echo $rowid;?>" class='row'>
+                    <div id="<?php echo $rowid;?>" class='row'>
 
-                            <span><input type="text" name="image_sizes[pname][]" class="image_sizes_pname" value="<?php echo $image_sizes['pname'][$i];?>" placeholder="<?php _e('Image Size Public Name','regenerate-thumbnails-advanced'); ?>" /></span>
+                            <span><input type="text" name="image_sizes[pname][]" class="image_sizes_pname" value="<?php echo $image_sizes['pname'][$i];?>" placeholder="<?php _e('Name','regenerate-thumbnails-advanced'); ?>" /></span>
 
                             <span><input type="number" min="0" name="image_sizes[width][]" class="image_sizes_width tiny" value="<?php echo $image_sizes['width'][$i];?>" placeholder="<?php _e('Width','regenerate-thumbnails-advanced'); ?>" /> px </span>
 
                             <span> <input type="number" min="0" name="image_sizes[height][]" class="image_sizes_height tiny" value="<?php echo $image_sizes['height'][$i];?>" placeholder="<?php _e('Height','regenerate-thumbnails-advanced'); ?>" /> px </span>
 
                             <span>  <select name="image_sizes[cropping][]" class="image_sizes_cropping">
-                              <?php echo $view->cropOptions($image_sizes['cropping'][$i]); ?>
+                              <?php echo $this->cropOptions($image_sizes['cropping'][$i]); ?>
                               </select>
                             </span>
 
-                            <span>
+                            <span >
                               <input type="text" readonly name="image_sizes[name][]" class="image_sizes_name" value="<?php echo $image_sizes['name'][$i];?>" placeholder="<?php _e('Image Size name','regenerate-thumbnails-advanced'); ?>" />
+
                             </span>
                             <span>
-                              <input type="button" name="btn_remove_image_size_row" value="<?php _e('Remove','regenerate-thumbnails-advanced'); ?>" class="btn_remove_row" />
+                                  <button class="btn_remove_row" type="button" name="btn_remove_image_size_row"><span class='dashicons dashicons-no'>&nbsp;</span></button>
                             </span>
-                      </div> <!-- row -->
+                    </div>  <!-- row -->
                       <?php }}?>
                       <div class='row proto'>
-                            <span><input type="text" name="image_sizes[pname][]" class="image_sizes_pname" value="" placeholder="<?php _e('Image Size Public Name','regenerate-thumbnails-advanced'); ?>" /></span>
+                            <span><input type="text" name="image_sizes[pname][]" class="image_sizes_pname" value="" placeholder="<?php _e('Name','regenerate-thumbnails-advanced'); ?>" /></span>
                             <span><input type="number" name="image_sizes[width][]" class="image_sizes_width tiny" value="" placeholder="<?php _e('Width','regenerate-thumbnails-advanced'); ?>" /> px </span>
                             <span> <input type="number" name="image_sizes[height][]" class="image_sizes_height tiny" value="" placeholder="<?php _e('Height','regenerate-thumbnails-advanced'); ?>" /> px </span>
                             <span><select name="image_sizes[cropping][]" class="image_sizes_cropping">
-                              <?php echo $view->cropOptions(); ?>
+                              <?php echo $this->cropOptions(); ?>
                               </select>
                             </span>
                             <span>
-                              <input type="text" readonly name="image_sizes[name][]" class="image_sizes_name" value="" placeholder="<?php _e('Image Size name','regenerate-thumbnails-advanced'); ?>" />
+                              <input type="text" readonly  name="image_sizes[name][]" class="image_sizes_name" value="" placeholder="<?php _e('Image Size name','regenerate-thumbnails-advanced'); ?>" />
                             </span>
                             <span>
-                              <input type="button" name="btn_remove_image_size_row" value="<?php _e('Remove','regenerate-thumbnails-advanced'); ?>" class="btn_remove_row" />
+                                <button class="btn_remove_row" type="button" name="btn_remove_image_size_row"><span class='dashicons dashicons-no'>&nbsp;</span></button>
+
                             </span>
                       </div> <!-- row -->
           </div> <!-- table -->
@@ -75,7 +80,7 @@
       <div class='option'>
         <label><?php _e('Regenerate these thumbnails:', 'regenerate-thumbnails-advanced') ?></label>
         <div class='checkbox-list'>
-            <?php echo $view->generateImageSizeOptions($view->process_image_sizes); ?>
+            <?php echo $this->generateImageSizeOptions($view->process_image_sizes); ?>
         </div>
         <div class='select-options'><span class='select' data-action='select' data-target='regenerate_sizes'><?php _e('Select All', 'regenerate-thumbnails-advanced'); ?></span>
           <span class='deselect' data-action='deselect' data-target='regenerate_sizes'><?php _e('Deselect All', 'regenerate-thumbnails-advanced'); ?></span>
