@@ -258,7 +258,7 @@ class Plugin
     $editurl = $this->getRegenerateLink($post->ID, $url);
     $link = "href=\"$editurl\"";
 
-    echo "<p><a class='button-secondary' $link>" . esc_html__("Regenerate Thumbnails", "regenerate-thumbnails-advanced") . "</a></p>";
+    echo "><a class='button-secondary' $link>" . esc_html__("Regenerate Thumbnails", "regenerate-thumbnails-advanced") . "</a></p>";
   }
 
   /** Adding a button to the attachements view popup */
@@ -282,7 +282,7 @@ class Plugin
       $form_fields["regenerate-thumbnails-advanced"] = array(
               "label" => esc_html__("Regenerate Thumbnails", "enable-media-replace"),
               "input" => "html",
-              "html" => "<p><a class='button-secondary' $link>" . esc_html__("Regenerate Thumbnails", "enable-media-replace") . "</a></p>"
+              "html" => "<a class='button-secondary' $link>" . esc_html__("Regenerate Thumbnails", "enable-media-replace") . "</a>"
             );
 
       return $form_fields;
