@@ -3,9 +3,9 @@ Contributors: ShortPixel
 Donate link: https://www.paypal.me/resizeImage
 Tags: regenerate, thumbnail, thumbnails, thumb, thumbs, easy, media, force regenerate, image, images, pics, date
 Requires at least: 4.0
-Tested up to: 5.2
+Tested up to: 5.4.1
 Requires PHP: 5.3
-Stable tag: 2.1.0
+Stable tag: 2.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -55,22 +55,26 @@ The script stops but it will resume after you open the settings page of the plug
 
 == Changelog ==
 
-= 2.3 =
+= 2.3.0 =
 
-* New - Added regenerate thumbnails button in edit-attachment screen
-* Fixed - Crash when regenerating image from edit media
-* Fixed - Queries for large amount of images should not timeout
-* Class loader moved to PSR-4
-* New system for queuing
+Release date:  23rd May 2020
+* New system for queuing which should be more efficient;
+* New - Added regenerate thumbnails button in edit-attachment screen;
+* Fixed - Crash when regenerating image from edit media;
+* Fixed - Queries for large amount of images should not timeout;
+* Fixes for the responsiveness of the regeneration screen;
+* Class loader moved to PSR-4.
 
-= 2.2 =
+= 2.2.0 =
 
-* Fixes for WP5.3 and scaled images
+Release date: 9th March 2020
+* Reworked and improved the process interface
 * Option in media library to regenerate just one image
 * Will check for post_mime_type in posts and fix it when it's empty.
-* Reworked and improved the process interface
 * Cookie-based processing removed, now keeps progress as a server setting
 * Internal processes optimized.
+* Fixed - WordPress 5.3 image handling and scaled images
+* Fixed - Metadata not being removed in some cases when "Delete Leftover Image Metadata" is checked.
 * Fixed - Logger doesn't call wp_upload_dir when not debugging
 
 = 2.1.0 =
