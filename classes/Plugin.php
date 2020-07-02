@@ -258,7 +258,7 @@ class Plugin
     $editurl = $this->getRegenerateLink($post->ID, $url);
     $link = "href=\"$editurl\"";
 
-    echo "><a class='button-secondary' $link>" . esc_html__("Regenerate Thumbnails", "regenerate-thumbnails-advanced") . "</a></p>";
+    echo "<p><a class='button-secondary' $link>" . esc_html__("Regenerate Thumbnails", "regenerate-thumbnails-advanced") . "</a></p>";
   }
 
   /** Adding a button to the attachements view popup */
