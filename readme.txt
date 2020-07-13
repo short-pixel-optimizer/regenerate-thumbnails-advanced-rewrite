@@ -3,9 +3,9 @@ Contributors: ShortPixel
 Donate link: https://www.paypal.me/resizeImage
 Tags: regenerate, thumbnail, thumbnails, thumb, thumbs, easy, media, force regenerate, image, images, pics, date
 Requires at least: 4.0
-Tested up to: 5.4.1
+Tested up to: 5.4.2
 Requires PHP: 5.3
-Stable tag: 2.3.0
+Stable tag: 2.3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,6 +54,11 @@ The script stops but it will resume after you open the settings page of the plug
 2. Thumbnail regeneration process in action
 
 == Changelog ==
+
+= 2.3.1 =
+
+Release date: July 13th 2020
+* Fix: PHP warning that was displayed on PHP 7.4.x.
 
 = 2.3.0 =
 
