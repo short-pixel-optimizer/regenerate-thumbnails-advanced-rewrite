@@ -1,5 +1,7 @@
 <?php
 namespace ReThumbAdvanced;
+
+
 ?>
 
 <form method="post" name="rtaform_process" id="rtaform_process" class="frm_rta" enctype="multipart/form-data">
