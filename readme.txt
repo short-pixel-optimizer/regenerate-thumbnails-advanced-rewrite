@@ -3,9 +3,9 @@ Contributors: ShortPixel
 Donate link: https://www.paypal.me/resizeImage
 Tags: regenerate, thumbnail, thumbnails, thumb, thumbs, easy, media, force regenerate, image, images, pics, date
 Requires at least: 4.0
-Tested up to: 5.4.2
+Tested up to: 5.5
 Requires PHP: 5.3
-Stable tag: 2.3.1
+Stable tag: 2.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,12 @@ Features:
 Support:
 For support please contact us <a href="https://shortpixel.com/contact">here</a> making sure you mention RTA plugin.
 
+**Other plugins by ShortPixel**
+
+* Image optimization & compression for all the images on your site, including WebP delivery - <a href="https://wordpress.org/plugins/shortpixel-image-optimiser/" target="_blank">ShortPixel Image Optimizer</a>
+* Image optimization & CDN on the fly - <a href="https://wordpress.org/plugins/shortpixel-adaptive-images/" target="_blank">ShortPixel Adaptive Images</a>
+* Easily replace images or files in Media Library - <a href="https://wordpress.org/plugins/enable-media-replace/" target="_blank">Enable Media Replace</a>
+* Make sure you don't have huge images in your Media Library - <a href="https://wordpress.org/plugins/resize-image-after-upload/" target="_blank">Resize Image After Upload</a>
 
 == Installation ==
 
@@ -55,6 +61,11 @@ The script stops but it will resume after you open the settings page of the plug
 
 == Changelog ==
 
+= 2.3.2 =
+
+Release date: August 17th 2020
+* Fix : Regenerate Period now calculates from time set in WordPress to respect timezone settting.
+
 = 2.3.1 =
 
 Release date: July 13th 2020
@@ -62,7 +73,7 @@ Release date: July 13th 2020
 
 = 2.3.0 =
 
-Release date:  23rd May 2020
+Release date:  29th May 2020
 * New system for queuing which should be more efficient;
 * New - Added regenerate thumbnails button in edit-attachment screen;
 * Fixed - Crash when regenerating image from edit media;

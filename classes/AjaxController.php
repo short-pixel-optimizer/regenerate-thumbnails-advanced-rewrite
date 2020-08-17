@@ -134,7 +134,7 @@ class AjaxController
 
               if ($pos !== false) {
                 $status['message'] = substr_replace($status['message'], $value, $pos, strlen('%s'));
-              } 
+              }
           }
        }
      }
@@ -297,7 +297,7 @@ class AjaxController
    protected function getQueryDate($period)
      {
        $now = time();
-       $endstamp = $now;
+       $endstamp = current_time('timestamp');
        switch (intval($period)) {
            case self::PERIOD_ALL:
              $startstamp = 0;
