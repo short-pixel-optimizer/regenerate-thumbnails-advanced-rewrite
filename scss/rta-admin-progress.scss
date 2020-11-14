@@ -109,7 +109,7 @@ section.regenerate
     position: relative;
     z-index: 10;
 
-    .rta_wait_loader
+    .rta_wait_loader, .rta_wait_paused
     {
        margin-top: 35px;
        padding-left: 20px;
@@ -134,6 +134,7 @@ section.regenerate
            animation-play-state: paused;
          }
        }
+
     }
     .rta_notices
     {
@@ -230,15 +231,24 @@ section.regenerate
   }
 
 
-  button.stop-process
+  button.stop-process, button.pause-process
   {
     position: absolute;
     bottom: 10px;
-    left: 15px;
+    right: 15px;
     font-weight: normal;
     text-transform: none;
     padding: 4px 20px;
     font-size: 14px;
+    .dashicons {
+      vertical-align: middle;
+    }
+  }
+  button.pause-process
+  {
+    left: 15px;
+    right: auto;
+    .resume { display: none }
   }
 
 

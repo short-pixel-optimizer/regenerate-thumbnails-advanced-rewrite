@@ -5,7 +5,7 @@ Tags: regenerate, thumbnail, thumbnails, thumb, thumbs, easy, media, force regen
 Requires at least: 4.0
 Tested up to: 5.5
 Requires PHP: 5.3
-Stable tag: 2.3.1
+Stable tag: 2.3.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,6 +54,13 @@ The script stops but it will resume after you open the settings page of the plug
 2. Thumbnail regeneration process in action
 
 == Changelog ==
+
+= 2.3.3 =
+
+* New: Pause Button
+* New: Resuming process from another page now starts paused.
+* New: Added Filter for increasing number of items processed per run
+* Fix: Users optimizing more than 50K images could run into a code loop protection
 
 = 2.3.2 =
 

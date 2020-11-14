@@ -46,7 +46,7 @@ class Process
       if ($process !== false)
         $this->set_process($process);
 
-      $this->q->setOption('numitems', 3);
+      $this->q->setOption('numitems', apply_filters('rta/process/numitems', 3));
   }
 
   public static function getInstance()
@@ -157,12 +157,6 @@ class Process
           {
             Log::addDebug('Prepare went over time, breaking');
             break;
-          }
-
-          if ($i >= 50)
-          {
-            exit('Prepare loop went over maximum count!');
-            Log::addError('Fatal error on preparation. Hanging loop detected');
           }
 
           $result += $this_result;

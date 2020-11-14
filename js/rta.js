@@ -40,6 +40,7 @@ rtaJS.prototype.init = function()
   $(document).on('click', '.table.imagesizes .btn_remove_row', $.proxy(this.remove_image_size_row, this));
   $(document).on('click', '#btn_add_image_size', $.proxy(this.add_image_size_row, this));
   $(document).on('click', '.stop-process', $.proxy(this.stopProcess,this));
+  $(document).on('click', '.pause-process', $.proxy(this.pauseProcess,this));
   $(document).on('click', '.rta_success_box .modal-close', $.proxy(function(e){
           this.togglePanel('success', false);
   }, this));
@@ -125,7 +126,6 @@ rtaJS.prototype.initProcess = function()
       this.resumeProcess();
   }
 
-
 }
 
 rtaJS.prototype.selectAll = function(e)
@@ -150,6 +150,7 @@ rtaJS.prototype.startProcess = function (e)
   this.resetPanels();
   this.togglePanel('main', true);
   this.togglePanel('loading', true);
+
 
   var status = new Object;
   status.id = -1;
@@ -211,7 +212,11 @@ rtaJS.prototype.resumeProcess = function()
   status.error = true;
   this.add_status([status]);
 
-  this.doProcess();
+  this.processStoppable();
+  this.togglePanel('loading', false);
+  this.pauseProcess();
+//  this.doProcess();
+
 }
 
 // function for getting the next image in line.
@@ -274,7 +279,7 @@ rtaJS.prototype.doProcess = function()
           status.error = true;
           self.add_status([status]);
 
-          setTimeout(function(){ self.process(); },1000);
+          setTimeout(function(){ self.doProcess(); },1000);
 
         },
     });
@@ -295,9 +300,15 @@ rtaJS.prototype.processStoppable = function()
         stoppable = true;
 
     if (stoppable)
+    {
       $('.stop-process').prop('disabled', false);
+      $('.pause-process').prop('disabled', false);
+    }
     else
+    {
       $('.stop-process').prop('disabled', true);
+      $('.pause-process').prop('disabled', true);
+    }
 
 }
 
@@ -307,6 +318,7 @@ rtaJS.prototype.processStoppable = function()
     this.is_interrupted_process = false;
 
     this.togglePanel('success', true);
+    this.togglePanel('paused', false);
     this.processStoppable();
     //this.toggleShortPixelNotice(true);
   //  $('.stop-process').addClass('rta_hidden');
@@ -317,6 +329,29 @@ rtaJS.prototype.processStoppable = function()
     this.add_status([status]);
 
     this.checkSubmitReady();
+  }
+
+  // This functions as a toggle
+  rtaJS.prototype.pauseProcess = function()
+  {
+      if (this.is_stopped == false)
+      {
+        this.is_stopped = true;
+        $('.pause-process .pause').css('display', 'none');
+        $('.pause-process .resume').css('display', 'inline');
+        this.togglePanel('paused', true);
+
+      }
+      else if (this.is_stopped == true)
+      {
+        this.is_stopped = false;
+        $('.pause-process .pause').css('display', 'inline');
+        $('.pause-process .resume').css('display', 'none');
+        var self = this;
+        this.togglePanel('paused', false);
+        setTimeout(function(){ self.doProcess(); },500);
+      }
+
   }
 
   rtaJS.prototype.stopProcess = function()
@@ -396,6 +431,9 @@ rtaJS.prototype.processStoppable = function()
         case 'loading':
           panel = ".rta_wait_loader";
         break;
+        case 'paused':
+          panel = ".rta_wait_paused";
+        break;
         case 'progress':
           panel = '.rta_progress_view';
         break;
@@ -441,6 +479,7 @@ rtaJS.prototype.processStoppable = function()
     rtaJS.prototype.resetPanels = function()
     {
       this.togglePanel('loading', false);
+      this.togglePanel('paused', false);
       this.togglePanel('progress', false);
       this.togglePanel('thumbnail', false);
       this.togglePanel('success', false);
@@ -507,7 +546,7 @@ rtaJS.prototype.processStoppable = function()
         var row = $('.row.proto').clone();
         $(row).attr('id', uniqueId);
         $(row).removeClass('proto');
-        container.append(row); // row.css('display', 'flex') 
+        container.append(row); // row.css('display', 'flex')
 
         container.find('.header').removeClass('rta_hidden');
     }
