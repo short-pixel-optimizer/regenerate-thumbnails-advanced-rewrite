@@ -33,11 +33,12 @@ interface Queue
   public function addItems($items);
   public function enqueue();
   public function withOrder($items, $order); // chained method for adding items with an order. Returns Queue Object
-  public function dequeue();
+  public function dequeue($args = array());
 
   /** Functions for async processing. Process should return item_id, put them on done or fail. */
   public function itemDone(Item $item);
   public function itemFailed(Item $item, $fatal = false);
+  public function getItem($item_id);
 
   // return status object, for app to check what is going on.
   public function getStatus();
@@ -46,6 +47,9 @@ interface Queue
 
   public function hasItems();
   public function itemCount();
+
+  // reset, start fresh
+  public function resetQueue();
 
   //public function setDataProvider($DataProvider); // DataProvider Object
   public function uninstall();

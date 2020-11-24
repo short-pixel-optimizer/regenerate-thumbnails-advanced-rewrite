@@ -33,7 +33,7 @@ class MysqlDataProvider implements DataProvider
         return false;
        // start higher to allow priority additions easily.
       $list_order = (10 + $this->itemCount());
-      $now = date('Y-m-d H:i:s');
+      $now = $this->timestamptoSQL();
 
       $sql = 'INSERT IGNORE INTO ' . $this->table . ' (queue_name, plugin_slug, value, list_order, item_id, updated, created) VALUES ';
       $values = array();
@@ -93,6 +93,7 @@ class MysqlDataProvider implements DataProvider
           'newstatus' => ShortQ::QSTATUS_DONE,
           'orderby' => 'list_order',
           'order' => 'ASC',
+          'priority' => false,  // array('operator' => '<', 'value' => 10);
       );
 
       $args = wp_parse_args($args, $defaults);
@@ -105,6 +106,7 @@ class MysqlDataProvider implements DataProvider
         'status' => $args['status'],
         'orderby' => $args['orderby'],
         'order' => $args['order'],
+        'priority' => $args['priority'],
       ));
 
       $id_array = array_keys($items);
@@ -112,8 +114,8 @@ class MysqlDataProvider implements DataProvider
       // Update status if results yielded.
       if ($args['status'] !== $args['newstatus'] && count($id_array) > 0)
       {
-        $now = time();
-        $this->updateRecords(array('status' => $args['newstatus'], 'updated' => $now ), array('id' => $id_array));
+        $now = $this->timestamptoSQL();
+        $this->updateRecords(array('status' => $args['newstatus'], 'updated' => $now), array('id' => $id_array));
         foreach($items as $index => $item)
         {
           $item->status = $args['newstatus']; // update status to new situation.
@@ -130,7 +132,18 @@ class MysqlDataProvider implements DataProvider
       return array_values($items); // array values resets the id index returns by queryItems
    }
 
+   private function timestampToSQL($timestamp = 0)
+   {
+      if (! is_numeric($timestamp))
+        return $timestamp; // possible already date;
 
+      if ($timestamp == 0)
+        $timestamp = time();
+
+      $date =  date('Y-m-d H:i:s', $timestamp);
+
+      return $date;
+   }
 
    private function queryItems($args = array())
    {
@@ -139,6 +152,9 @@ class MysqlDataProvider implements DataProvider
        'orderby' => 'list_order',
        'order' => 'ASC',
        'numitems' => -1,
+       'item_id' => false,
+       'updated' => false, // updated since (Unix Timestamp) ( or array with operator)
+       'priority' => false, // number (or array with operator)
      );
 
      $args = wp_parse_args($args, $defaults);
@@ -156,6 +172,48 @@ class MysqlDataProvider implements DataProvider
        $prepare[] = $args['status'];
      }
 
+     if ($args['item_id'] !== false && intval($args['item_id']) > 0)
+     {
+       $sql .= 'and item_id = %d ';
+       $prepare[] = intval($args['item_id']);
+     }
+
+     if ($args['updated'])
+     {
+       $operator = '=';
+
+       if (is_array($args['updated']))
+       {
+           $operator = isset($args['updated']['operator']) ? ($args['updated']['operator']) : $operator;
+           $value = isset($args['updated']['value']) ? $args['updated']['value'] : false;
+       }
+       else
+       {
+           $value = $args['updated'];
+       }
+
+       $sql .= 'and updated ' . $operator . ' %s ';
+       $prepare[] = $this->timestamptoSQL($value);
+     }
+
+     if ($args['priority'])
+     {
+        $operator = '=';
+
+        if (is_array($args['priority']))
+        {
+            $operator = isset($args['priority']['operator']) ? ($args['priority']['operator']) : $operator;
+            $value = isset($args['priority']['value']) ? $args['priority']['value'] : false;
+        }
+        else
+        {
+            $value = $args['priority'];
+        }
+
+        $sql .= 'and list_order ' . $operator . ' %d ';
+        $prepare[] = $value;
+     }
+
      if ($args['orderby'])
      {
        $order = (strtoupper($args['order']) == 'ASC') ? 'ASC ' : 'DESC ';
@@ -163,6 +221,7 @@ class MysqlDataProvider implements DataProvider
 
       // $prepare[] = $args['orderby'];
      }
+
 
      if ($args['numitems'] > 0)
      {
@@ -197,8 +256,11 @@ class MysqlDataProvider implements DataProvider
    *
    *  @return int Number of Records Updated
    */
-   public function alterqueue($args)
+   public function alterQueue($data, $fields, $operators)
    {
+
+    return $this->updateRecords($data, $fields, $operators);
+
 
    }
 
@@ -216,6 +278,20 @@ class MysqlDataProvider implements DataProvider
         return false;
    }
 
+   public function getItem($item_id)
+   {
+       $items = $this->queryItems(array('item_id' => $item_id));
+
+       if (count($items) == 0)
+          return false;
+       else
+         return array_shift($items);
+   }
+
+   public function getItems($args)
+   {
+      return $this->queryItems($args);
+   }
 
    /* Counts Items in Database Queue
    * @param Status Mixed When supplied with ShortQ Status Constant it will count this status, will count all with ShortQ:QSTATUS_ALL.
@@ -262,19 +338,20 @@ class MysqlDataProvider implements DataProvider
    *
    * @param $Data Array. Data array to change, to WP standards
    * @param $where Array. Data Array on conditions, to WP standards
+   * @param $operators Array. Maps of Field => Operator to use anything else than standard = in the where query.
    * @return int Amount of records updates, or null|false
    */
-   private function updateRecords($data, $where)
+   private function updateRecords($data, $where, $operators = array() )
    {
       global $wpdb;
       $update_sql = 'UPDATE ' . $this->table . ' set updated = %s';
       if (isset($data['updated']))
       {
-          $placeholders = array($data['updated']);
+          $placeholders = array($this->timestamptoSQL($data['updated']));
           unset($data['updated']);
       }
       else
-          $placeholders = array(date('Y-m-d H:i:s'));
+          $placeholders = array($this->timestamptoSQL());
 
       foreach($data as $field => $value)
       {
@@ -295,6 +372,7 @@ class MysqlDataProvider implements DataProvider
           $placeholders = array_merge($placeholders, $value);
         }
         else {
+          $operator = isset($operators[$field]) ? $operators[$field] : '=';
           $update_sql .= ' AND ' . $field . ' = %s';
           $placeholders[] = $value;
         }
@@ -340,7 +418,7 @@ class MysqlDataProvider implements DataProvider
      elseif(! is_null($args['items']) && count($args['items']) > 0)
      {
        $items = $args['items'];
-       $vals = implode( ', ', array_fill( 0, count( $items ), '%s' ));
+       $vals = implode( ', ', array_fill( 0, count( $items ), '%d' ));
        $delete_sql .= ' AND item_id in (' . $vals .  ' ) ';
        $data = array_merge($data, $items);
      }
@@ -352,8 +430,8 @@ class MysqlDataProvider implements DataProvider
        return false; // prevent accidents if all is not set explicitly.
      }
 
-     $result = $wpdb->query($wpdb->prepare($delete_sql, $data));
-
+     $delete_sql = $wpdb->prepare($delete_sql, $data);
+     $result = $wpdb->query($delete_sql);
      return $result;
    }
 
@@ -386,6 +464,7 @@ class MysqlDataProvider implements DataProvider
      require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
      global $wpdb;
+     $prefix = $wpdb->prefix;
 
      $charset = $wpdb->get_charset_collate();
       $sql = "CREATE TABLE `" . $this->table . "` (
@@ -400,22 +479,20 @@ class MysqlDataProvider implements DataProvider
                 created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated timestamp NULL DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (id),
-                INDEX queue_name (queue_name),
-                INDEX plugin_slug (plugin_slug),
-                INDEX status (status),
-                INDEX item_id (item_id),
-                INDEX list_order (list_order)
+                KEY queue_name (queue_name),
+                KEY plugin_slug (plugin_slug),
+                KEY status (status),
+                KEY item_id (item_id),
+                KEY list_order (list_order)
                 ) $charset; ";
 
       $result = dbDelta($sql);
 
-
-
-      $sql = "SHOW INDEX FROM " . $this->table . " WHERE Key_name = 'uq'";
+      $sql = "SHOW INDEX FROM " . $this->table . " WHERE Key_name = 'uq_" . $prefix . "'";
       $result = $wpdb->get_results($sql);
       if (is_null($result) || count($result) == 0)
       {
-         $sql = 'ALTER TABLE '. $this->table . ' ADD CONSTRAINT UNIQUE uq(plugin_slug,queue_name,item_id)';
+         $sql = 'ALTER TABLE '. $this->table . ' ADD CONSTRAINT UNIQUE uq_' . $prefix . '(plugin_slug,queue_name,item_id)';
          $wpdb->query($sql);
       }
 
@@ -442,7 +519,6 @@ class MysqlDataProvider implements DataProvider
      $sql = ' DROP TABLE IF EXISTS ' . $this->table;
 
      $wpdb->query($sql);
-//     dbDelta($sql);
 
      return $this->check();
    }

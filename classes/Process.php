@@ -126,7 +126,7 @@ class Process
      $this->end_process();
   }
 
-  // Chain function to limit runtimes in seconds..
+  // function to limit runtimes in seconds..
   public function limitTime($limit = 6)
   {
       if ($this->run_limit == 0)
@@ -165,7 +165,7 @@ class Process
 
       if ($this_result == false)
       {
-         $this->q->setStatus('preparing', false);
+         $this->q->setStatus('preparing', false, false);
          $this->q->setStatus('running', true);
          Log::addDebug('Preparing done, Starting run status');
       }
@@ -215,7 +215,7 @@ class Process
      $prepare[] = $this->query_prepare_limit;
 
      $sql = $wpdb->prepare($query, $prepare);
-     Log::addTemp('Preparing SQL' . $sql);
+     //Log::addTemp('Preparing SQL' . $sql);
      $result = $wpdb->get_results($sql);
      $resultCount = count($result);
 

@@ -108,6 +108,7 @@ section.regenerate
     border-left: 1px solid #ccc;
     position: relative;
     z-index: 10;
+    padding-bottom : 75px; // Space for the stop / start controls.
 
     .rta_wait_loader, .rta_wait_paused
     {
