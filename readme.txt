@@ -65,7 +65,7 @@ The script stops but it will resume after you open the settings page of the plug
 
 * New: Pause Button
 * New: Resuming process from another page now starts paused.
-* New: Added Filter for increasing number of items processed per run
+* New: Added Filter for increasing number of items processed per run and prepare time limit
 * Fix: Users optimizing more than 50K images could run into a code loop protection
 
 = 2.3.2 =

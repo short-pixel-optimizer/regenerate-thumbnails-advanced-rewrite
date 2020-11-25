@@ -129,6 +129,7 @@ class Process
   // function to limit runtimes in seconds..
   public function limitTime($limit = 6)
   {
+      $limit = apply_filters('rta/process/prepare_limit', $limit); 
       if ($this->run_limit == 0)
       {
           $this->run_start = time();

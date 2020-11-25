@@ -6,8 +6,9 @@ rtaJS.prototype = {
   //offset: 0,
   process: false,
   is_interrupted_process: false, // was the process killed by reload earlier?
-  in_process: false, // currently pushing it through.
-  is_stopped: false,
+  in_process: false, // processing, in general. can be set via server
+  in_ajax: false,  // currently waiting for an ajax response.
+  is_stopped: false, // is_stopped: paused, when stopped permanently it also removes server-queue.
   is_saved: true,
   is_debug: false,  // use sparingly
   status: []
@@ -151,6 +152,10 @@ rtaJS.prototype.startProcess = function (e)
   this.togglePanel('main', true);
   this.togglePanel('loading', true);
 
+  $([document.documentElement, document.body]).animate({
+       scrollTop: $("section.regenerate").offset().top
+   }, 1000);
+
 
   var status = new Object;
   status.id = -1;
@@ -202,15 +207,21 @@ rtaJS.prototype.startProcess = function (e)
 // function was interrupted, but will continue now; draw panels.
 rtaJS.prototype.resumeProcess = function()
 {
-  this.resetPanels();
   this.togglePanel('main', true);
+  //this.resetPanels();
+  //this.togglePanel('main', true);
   this.togglePanel('loading', true);
+  this.togglePanel('progress', true);
 
   var status = new Object;
   status.id = -1;
   status.message = rta_data.strings.status_resume;
   status.error = true;
   this.add_status([status]);
+
+  $([document.documentElement, document.body]).animate({
+       scrollTop: $("section.regenerate").offset().top
+   }, 1000);
 
   this.processStoppable();
   this.togglePanel('loading', false);
@@ -230,6 +241,7 @@ rtaJS.prototype.doProcess = function()
     //total = this.total;
 
     this.in_process = true;
+    this.in_ajax = true;
     this.checkSubmitReady();
 
     this.togglePanel('progress', true);
@@ -249,6 +261,8 @@ rtaJS.prototype.doProcess = function()
                 //genform: JSON.stringify(form),
         },
         success: function (response) {
+            self.in_ajax = false;
+
             if (typeof response.items !== 'undefined') // return is a process var..
             {
               self.process = response;
@@ -265,6 +279,13 @@ rtaJS.prototype.doProcess = function()
                 {
                 //  self.offset = response.current;
                   setTimeout(function(){ self.doProcess(); },500);
+                }
+                else
+                {
+                    self.in_process = false;
+                    self.togglePanel('paused', true);
+                    self.togglePanel('pausing', false);
+                    $('.button.pause-process').prop('disabled', false);
                 }
             }else{
                 self.finishProcess(); // done, or so.
@@ -319,6 +340,7 @@ rtaJS.prototype.processStoppable = function()
 
     this.togglePanel('success', true);
     this.togglePanel('paused', false);
+    this.togglePanel('pausing', false);
     this.processStoppable();
     //this.toggleShortPixelNotice(true);
   //  $('.stop-process').addClass('rta_hidden');
@@ -332,14 +354,26 @@ rtaJS.prototype.processStoppable = function()
   }
 
   // This functions as a toggle
-  rtaJS.prototype.pauseProcess = function()
+  rtaJS.prototype.pauseProcess = function(e)
   {
+      // Disable button pending action.
+      $('.button.pause-process').prop('disabled', true);
+
       if (this.is_stopped == false)
       {
         this.is_stopped = true;
         $('.pause-process .pause').css('display', 'none');
         $('.pause-process .resume').css('display', 'inline');
-        this.togglePanel('paused', true);
+
+        if (this.in_ajax == false)
+        {
+          this.togglePanel('paused', true);
+          $('.button.pause-process').prop('disabled', false);
+        }
+        else
+        {
+          this.togglePanel('pausing', true);
+        }
 
       }
       else if (this.is_stopped == true)
@@ -348,8 +382,12 @@ rtaJS.prototype.processStoppable = function()
         $('.pause-process .pause').css('display', 'inline');
         $('.pause-process .resume').css('display', 'none');
         var self = this;
+        this.togglePanel('pausing', false);
         this.togglePanel('paused', false);
-        setTimeout(function(){ self.doProcess(); },500);
+        setTimeout(function(){
+            $('.button.pause-process').prop('disabled', false);
+            self.doProcess();
+        },500);
       }
 
   }
@@ -388,7 +426,7 @@ rtaJS.prototype.processStoppable = function()
     }
   }
 
-    rtaJS.prototype.updateProgress = function(percentage_done) {
+    rtaJS.prototype.updateProgress = function() {
 
         if (! this.process)
           return;
@@ -434,6 +472,9 @@ rtaJS.prototype.processStoppable = function()
         case 'paused':
           panel = ".rta_wait_paused";
         break;
+        case 'pausing':
+         panel = '.rta_wait_pausing';
+        break
         case 'progress':
           panel = '.rta_progress_view';
         break;
@@ -448,15 +489,15 @@ rtaJS.prototype.processStoppable = function()
         break;
       }
 
-      var is_visible = $(panel).is(':visible');
+    /*  var is_visible = $(panel).is(':visible');
       if (is_visible)
       {
         // zero opacity is considered visible by Jquery.
         if ($(panel).css('opacity') == 0)
           is_visible = false;
-      }
+      } */
 
-      if (show && ! is_visible)
+      if (show)
       {
         if ($(panel).hasClass('rta_hidden'))
         {
@@ -466,26 +507,36 @@ rtaJS.prototype.processStoppable = function()
           $(panel).css('opacity', 1);
         }
 
+        $(panel).removeClass('rta_panel_off');
+
       }
-      else if (! show && is_visible)
+      else if (! show)
       {
         if ($(panel).hasClass('rta_hidden'))
           $(panel).hide();
         else
           $(panel).css('opacity', 0);
+
+        $(panel).addClass('rta_panel_off');
       }
+
     }
 
     rtaJS.prototype.resetPanels = function()
     {
       this.togglePanel('loading', false);
       this.togglePanel('paused', false);
+      this.togglePanel('pausing', false);
       this.togglePanel('progress', false);
       this.togglePanel('thumbnail', false);
       this.togglePanel('success', false);
       this.togglePanel('notices', false);
 
       $('.rta_notices .statuslist li').remove(); // empty previous statuses
+
+      // Flick back the pause / resume thing.
+      $('.pause-process .pause').css('display', 'inline');
+      $('.pause-process .resume').css('display', 'none');
 
     }
 

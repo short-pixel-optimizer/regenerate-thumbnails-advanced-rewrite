@@ -51,15 +51,23 @@ namespace ReThumbAdvanced;
           <span class='dashicons dashicons-update'>&nbsp;</span>
           <div class='start'>
           <h4><?php _e('Starting Process', 'regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></h4>
-          <?php _e('Please wait...','regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?>
+          <p><?php _e('Please wait...','regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></p>
           </div>
         </div>
 
         <div class="rta_wait_paused rta_panel_off" >
-          <span class='dashicons dashicons-update'>&nbsp;</span>
+          <span class='dashicons dashicons-controls-pause'>&nbsp;</span>
           <div class='resume'>
-            <h4><?php _e('Process is paused', 'regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></h4>
-            <?php _e('Click Resume Process to continue','regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?>
+            <h4 ><?php _e('Process is paused', 'regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></h4>
+            <p><?php _e('Click Resume Process to continue','regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></p>
+          </div>
+        </div>
+
+        <div class="rta_wait_pausing rta_panel_off" >
+          <span class='dashicons dashicons-update'>&nbsp;</span>
+          <div class='pausing'>
+                <h4><?php _e('Process is pausing, please wait', 'regenerate-thumbnails-advanced'); ?></h4>
+                <p><?php _e('This can take a few seconds', 'regenerate-thumbnails-advanced') ?></p>
           </div>
         </div>
 
