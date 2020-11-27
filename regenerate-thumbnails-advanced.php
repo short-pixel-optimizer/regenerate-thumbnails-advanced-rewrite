@@ -1,15 +1,16 @@
 <?php
 namespace ReThumbAdvanced;
-/*
-Plugin Name: Regenerate Thumbnails Advanced
-Description: Regenerate thumbnails fast and easy while removing unused thumbnails of existing images; very useful when changing a theme.
-Version: 2.3.3-DEV02
-Author: ShortPixel
-Author URI: https://shortpixel.com/
-License: GPLv2 or later
-Text Domain: regenerate-thumbnails-advanced
-Domain Path: /languages
-*/
+/**
+ * Plugin Name: Regenerate Thumbnails Advanced
+ * Description: Regenerate thumbnails fast and easy while removing unused thumbnails of existing images; very useful when changing a theme.
+ * Version: 2.3.3-DEV02
+ * Author: ShortPixel
+ * Author URI: https://shortpixel.com/
+ * License: GPLv2 or later
+ * GitHub Plugin URI: https://github.com/short-pixel-optimizer/regenerate-thumbnails-advanced-rewrite
+ * Text Domain: regenerate-thumbnails-advanced
+ * Domain Path: /languages
+ */
 
 // Make sure we don't expose any info if called directly
 if ( !function_exists( 'add_action' ) ) {
