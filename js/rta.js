@@ -233,7 +233,6 @@ rtaJS.prototype.resumeProcess = function()
 // function for getting the next image in line.
 rtaJS.prototype.doProcess = function()
 {
-    this.togglePanel('loading', false);
 
     if (this.is_stopped)
       return; // escape if process has been stopped.
@@ -262,6 +261,7 @@ rtaJS.prototype.doProcess = function()
         },
         success: function (response) {
             self.in_ajax = false;
+            self.togglePanel('loading', false);
 
             if (typeof response.items !== 'undefined') // return is a process var..
             {
@@ -294,6 +294,7 @@ rtaJS.prototype.doProcess = function()
         },
         error: function (response) {
 
+          self.togglePanel('loading', false);
           var status = new Object;
           status.id = -1;
           status.message = response.status + ' ' + response.statusText + ' :: ';
@@ -384,6 +385,8 @@ rtaJS.prototype.processStoppable = function()
         var self = this;
         this.togglePanel('pausing', false);
         this.togglePanel('paused', false);
+        this.togglePanel('loading', true);
+
         setTimeout(function(){
             $('.button.pause-process').prop('disabled', false);
             self.doProcess();
