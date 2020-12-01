@@ -33,7 +33,15 @@ namespace ReThumbAdvanced;
     </div>
 
     <div class="rta_status_box">
-      <button class='button stop-process' disabled><?php _e('Stop Process', 'regenerate-thumbnails-advanced') ?></button>
+      <button class='button pause-process' type="button" disabled>
+        <span class='pause'><span class="dashicons dashicons-controls-pause">&nbsp;</span> <?php _e('Pause Process', 'regenerate-thumbnails-advanced') ?></span>
+        <span class='resume'><span class="dashicons dashicons-controls-play">&nbsp;</span> <?php _e('Resume Process', 'regenerate-thumbnails-advanced') ?></span>
+      </button>
+
+      <button class='button stop-process' type="button" disabled>
+          <span class="dashicons dashicons-no">&nbsp;</span>
+          <?php _e('Stop Process', 'regenerate-thumbnails-advanced') ?>
+      </button>
 
         <div class="rta_notices rta_panel_off">
             <ul class="statuslist">
@@ -41,9 +49,25 @@ namespace ReThumbAdvanced;
         </div>
         <div class="rta_wait_loader rta_panel_off" >
           <span class='dashicons dashicons-update'>&nbsp;</span>
-          <div>
+          <div class='start'>
           <h4><?php _e('Starting Process', 'regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></h4>
-          <?php _e('Please wait...','regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?>
+          <p><?php _e('Please wait...','regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></p>
+          </div>
+        </div>
+
+        <div class="rta_wait_paused rta_panel_off" >
+          <span class='dashicons dashicons-controls-pause'>&nbsp;</span>
+          <div class='resume'>
+            <h4 ><?php _e('Process is paused', 'regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></h4>
+            <p><?php _e('Click Resume Process to continue','regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></p>
+          </div>
+        </div>
+
+        <div class="rta_wait_pausing rta_panel_off" >
+          <span class='dashicons dashicons-update'>&nbsp;</span>
+          <div class='pausing'>
+                <h4><?php _e('Process is pausing, please wait', 'regenerate-thumbnails-advanced'); ?></h4>
+                <p><?php _e('This can take a few seconds', 'regenerate-thumbnails-advanced') ?></p>
           </div>
         </div>
 

@@ -10,14 +10,17 @@ use ReThumbAdvanced\ShortQ\Item as Item;
 */
 interface DataProvider
 {
-  
+
   function __construct($pluginSlug, $queueName);
 
   //function add($items);
   function enqueue($items);
   function dequeue($args); // @return Items removed from queue and set to status. Returns Item Object
-  function alterqueue($args); // @return Item Count / Boolean . Mass alteration of queue.
+  function alterQueue($changes, $conditions, $operators); // @return Item Count / Boolean . Mass alteration of queue. ( changes, what to change, conditions, basically where statement)
   function itemUpdate(Item $item, $new_status);
+  function getItem($item_id);
+  function getItems($args); // get items on basis of status / updated date /etc 
+
 
   // Returns number of items left in Queue.
   function itemCount($mode = 'waiting');

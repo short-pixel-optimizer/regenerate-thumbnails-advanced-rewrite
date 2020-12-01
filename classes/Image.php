@@ -124,7 +124,7 @@ class Image
             $result = $this->saveNewMeta($new_metadata); // this here calls the regeneration.
             Log::addDebug('Result :', $result);
 
-            $is_a_bulk = true; // we are sending multiple images.
+            $is_a_bulk = false; // not a bulk in the SPIO sense ( directly optimize )
             $regenSizes = isset($new_metadata['sizes']) ? $new_metadata['sizes'] : array();
 
             // Do not send if nothing was regenerated, otherwise SP thinks all needs to be redone

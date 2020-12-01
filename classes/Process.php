@@ -46,7 +46,7 @@ class Process
       if ($process !== false)
         $this->set_process($process);
 
-      $this->q->setOption('numitems', 3);
+      $this->q->setOption('numitems', apply_filters('rta/process/numitems', 3));
   }
 
   public static function getInstance()
@@ -126,9 +126,10 @@ class Process
      $this->end_process();
   }
 
-  // Chain function to limit runtimes in seconds..
+  // function to limit runtimes in seconds..
   public function limitTime($limit = 6)
   {
+      $limit = apply_filters('rta/process/prepare_limit', $limit); 
       if ($this->run_limit == 0)
       {
           $this->run_start = time();
@@ -159,19 +160,13 @@ class Process
             break;
           }
 
-          if ($i >= 50)
-          {
-            exit('Prepare loop went over maximum count!');
-            Log::addError('Fatal error on preparation. Hanging loop detected');
-          }
-
           $result += $this_result;
           $i++;
       }
 
       if ($this_result == false)
       {
-         $this->q->setStatus('preparing', false);
+         $this->q->setStatus('preparing', false, false);
          $this->q->setStatus('running', true);
          Log::addDebug('Preparing done, Starting run status');
       }
@@ -221,7 +216,7 @@ class Process
      $prepare[] = $this->query_prepare_limit;
 
      $sql = $wpdb->prepare($query, $prepare);
-     Log::addTemp('Preparing SQL' . $sql);
+     //Log::addTemp('Preparing SQL' . $sql);
      $result = $wpdb->get_results($sql);
      $resultCount = count($result);
 
