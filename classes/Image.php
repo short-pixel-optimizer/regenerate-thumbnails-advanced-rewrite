@@ -151,7 +151,7 @@ class Image
           }
           else
           {
-            Log::addDebug('File missing - Current Image reported as not an image', array($this->filePath) );
+            Log::addDebug('File missing - Current Image reported as not an image', array($this->filePath, $this->id) );
             RTA()->ajax()->add_status('file_missing', array('name' => basename($debug_filename)) );
           }
 
