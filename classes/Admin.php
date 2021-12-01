@@ -147,11 +147,11 @@ class Admin
         foreach($status as $statusName => $statusItem)
         {
             if ($statusItem['error'])
-              Notice::addError($statusItem['message']);
+              Notice::addError('<p>' . $statusItem['message'] . '</p>');
             elseif ($statusItem['status'] == 1)
-              Notice::addSuccess(__('Image thumbnails regenerated', 'regenerate-thumbnails-advanced'));
+              Notice::addSuccess('<p>' . __('Image thumbnails regenerated', 'regenerate-thumbnails-advanced') . '</p>');
             else
-              Notice::addNormal($statusItem['message']);
+              Notice::addNormal('<p>' . $statusItem['message'] . '</p>');
         }
 
       //  $this->end_process();
