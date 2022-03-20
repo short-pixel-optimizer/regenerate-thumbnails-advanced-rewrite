@@ -3,7 +3,7 @@ Contributors: ShortPixel
 Donate link: https://www.paypal.me/resizeImage
 Tags: regenerate, thumbnail, thumbnails, thumb, thumbs, easy, media, force regenerate, image, images, pics, date
 Requires at least: 4.0
-Tested up to: 5.6
+Tested up to: 5.9
 Requires PHP: 5.3
 Stable tag: 2.4.0
 License: GPLv2 or later
@@ -33,12 +33,20 @@ Features:
 Support:
 For support please contact us <a href="https://shortpixel.com/contact">here</a> making sure you mention RTA plugin.
 
-**Other plugins by ShortPixel**
+**Other plugins by [ShortPixel](https://shortpixel.com)**
 
-* Image optimization & compression for all the images on your site, including WebP delivery - <a href="https://wordpress.org/plugins/shortpixel-image-optimiser/" target="_blank">ShortPixel Image Optimizer</a>
-* Image optimization & CDN on the fly - <a href="https://wordpress.org/plugins/shortpixel-adaptive-images/" target="_blank">ShortPixel Adaptive Images</a>
-* Easily replace images or files in Media Library - <a href="https://wordpress.org/plugins/enable-media-replace/" target="_blank">Enable Media Replace</a>
-* Make sure you don't have huge images in your Media Library - <a href="https://wordpress.org/plugins/resize-image-after-upload/" target="_blank">Resize Image After Upload</a>
+* [ShortPixel Image Optimizer](https://wordpress.org/plugins/shortpixel-image-optimiser/) - Image optimization & compression for all the images on your website, including WebP & AVIF delivery
+* [ShortPixel Adaptive Images](https://wordpress.org/plugins/shortpixel-adaptive-images/) - On-the-fly image optimization & CDN delivery
+* [Enable Media Replace](https://wordpress.org/plugins/enable-media-replace/) - Easily replace images or files in Media Library
+* [Resize Image After Upload](https://wordpress.org/plugins/resize-image-after-upload/) - Automatically resize each uploaded image
+* [WP SVG Images](https://wordpress.org/plugins/wp-svg-images/) - Secure upload of SVG files to Media Library
+
+**Get in touch!**
+
+* Email <a href="https://shortpixel.com/contact" target="_blank">https://shortpixel.com/contact</a>
+* Twitter <a href="https://twitter.com/shortpixel" target="_blank">https://twitter.com/shortpixel</a>
+* Facebook <a href="https://www.facebook.com/ShortPixel" target="_blank">https://www.facebook.com/ShortPixel</a>
+* LinkedIn <a href="https://www.linkedin.com/company/shortpixel" target="_blank">https://www.linkedin.com/company/shortpixel</a>
 
 == Installation ==
 
