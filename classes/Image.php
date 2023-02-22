@@ -29,11 +29,19 @@ class Image
       if (function_exists('wp_get_original_image_path')) // WP 5.3+
       {
         $this->filePath = wp_get_original_image_path($image_id);
+
         /** When this function returns false it's possible the post_mime_type in wp_posts table got corrupted. If the file is displayable image,
         * attempt to fix this issue, then reget the item for further processing */
         if ($this->filePath === false)
         {
           $this->filePath = get_attached_file($image_id);
+
+					if ($this->filePath === false)
+					{
+						RTA()->ajax()->add_status('file_missing', array('name' => basename($image_id)) );
+						return false;
+					}
+
           if (file_is_displayable_image($this->filePath))
           {
             $this->fixMimeType($image_id);
@@ -54,8 +62,9 @@ class Image
         $this->does_exist = false;
 
       if (! file_is_displayable_image($this->filePath)) // this is based on getimagesize
+			{
           $this->is_image = false;
-
+			}
       $this->metadata = wp_get_attachment_metadata($image_id);
 
   /*    $is_image_mime = wp_attachment_is('image', $image_id); // this is based on post mime.
@@ -75,7 +84,14 @@ class Image
     }
 
     if(RTA()->process()->doDeleteLeftMeta() && ! $this->exists() )  {
+				$post = get_post($this->id);
 
+				// Ugly exception for a plugin that doesn't play by the rules
+				// @todo add a mechanism so we can cater for more bad plugins here.
+				if ($post->post_mime_type == 'video/videopress')
+				{
+					return false;
+				}
         Log::addDebug('Deleting post ' . $this->id);
         wp_delete_post($this->id, true);
 
