@@ -3,9 +3,9 @@ Contributors: ShortPixel
 Donate link: https://www.paypal.me/resizeImage
 Tags: regenerate, thumbnail, thumbnails, thumb, thumbs, easy, media, force regenerate, image, images, pics, date
 Requires at least: 4.0
-Tested up to: 5.9
+Tested up to: 6.2
 Requires PHP: 5.3
-Stable tag: 2.4.0
+Stable tag: 2.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -40,6 +40,7 @@ For support please contact us <a href="https://shortpixel.com/contact">here</a> 
 * [Enable Media Replace](https://wordpress.org/plugins/enable-media-replace/) - Easily replace images or files in Media Library
 * [Resize Image After Upload](https://wordpress.org/plugins/resize-image-after-upload/) - Automatically resize each uploaded image
 * [WP SVG Images](https://wordpress.org/plugins/wp-svg-images/) - Secure upload of SVG files to Media Library
+* [ShortPixel Critical CSS](https://wordpress.org/plugins/shortpixel-critical-css/) - Automatically generate above-the-fold CSS for fatster loading times and better SEO scores
 
 **Get in touch!**
 
@@ -68,6 +69,11 @@ The script stops but it will resume after you open the settings page of the plug
 2. Thumbnail regeneration process in action
 
 == Changelog ==
+
+= 2.4.1 =
+
+Release date: February 27, 2023
+* Fix: Videos uploaded with VideoPress were removed from the Media Library when using the "Remove non-existing images" option;
 
 = 2.4.0 =
 
