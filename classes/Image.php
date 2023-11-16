@@ -119,7 +119,7 @@ class Image
         remove_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
         remove_filter('big_image_size_threshold', array($this, 'disable_scaling'));
 
-        Log::addDebug('New Attachment metadata generated');
+        Log::addDebug('New Attachment metadata generated', $new_metadata);
         //restore the optimized main image
         if($backup && $backup !== $this->filePath) {
             rename($backup . "_optimized_" . $this->id, $this->filePath);

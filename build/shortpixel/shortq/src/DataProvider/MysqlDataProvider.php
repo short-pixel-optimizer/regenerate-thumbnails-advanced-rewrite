@@ -222,10 +222,7 @@ class MysqlDataProvider implements DataProvider
      {
        $order = (strtoupper($args['order']) == 'ASC') ? 'ASC ' : 'DESC ';
        $sql .= 'order by ' . $args['orderby'] . ' ' . $order;
-
-      // $prepare[] = $args['orderby'];
      }
-
 
      if ($args['numitems'] > 0)
      {
@@ -262,9 +259,7 @@ class MysqlDataProvider implements DataProvider
    */
    public function alterQueue($data, $fields, $operators)
    {
-
     return $this->updateRecords($data, $fields, $operators);
-
    }
 
    /** Updates one queued item, for instance in case of failing, or status update
@@ -399,6 +394,12 @@ class MysqlDataProvider implements DataProvider
       else
           $placeholders = array($this->timestamptoSQL());
 
+			// Certain older SQL servers like to auto-update created date, creating a mess.
+			if (! isset($data['created']))
+			{
+				 $update_sql .= ', created = created';
+			}
+
       foreach($data as $field => $value)
       {
         $update_sql .= ' ,' . $field . ' = %s ';
@@ -504,7 +505,7 @@ class MysqlDataProvider implements DataProvider
 
    public function install($nocheck = false)
    {
-     if ($nocheck == false && $this->check())
+     if ($nocheck === false && true === $this->check())
         return true;
 
      require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -513,18 +514,18 @@ class MysqlDataProvider implements DataProvider
      $prefix = $wpdb->prefix;
 
      $charset = $wpdb->get_charset_collate();
-      $sql = "CREATE TABLE IF NOT EXISTS `" . $this->table . "` (
+      $sql = "CREATE TABLE `" . $this->table . "` (
                 id INT UNSIGNED NOT NULL AUTO_INCREMENT,
                 queue_name VARCHAR(30) NOT NULL,
                 plugin_slug VARCHAR(30) NOT NULL,
                 status int(11) NOT NULL DEFAULT 0,
                 list_order int(11) NOT NULL,
-                item_id INT NOT NULL,
+                item_id bigint unsigned NOT NULL,
                 item_count INT DEFAULT 1,
                 value longtext NOT NULL,
                 tries int(11) NOT NULL DEFAULT 0,
-                created timestamp NOT NULL DEFAULT 0,
-                updated timestamp NULL DEFAULT 0,
+                created timestamp ,
+                updated timestamp,
                 PRIMARY KEY  (id),
                 KEY queue_name (queue_name),
                 KEY plugin_slug (plugin_slug),
@@ -533,7 +534,7 @@ class MysqlDataProvider implements DataProvider
                 KEY list_order (list_order)
                 ) $charset; ";
 
-      $result = $wpdb->query($sql);
+			$result = dbDelta($sql);
 
       $sql = "SHOW INDEX FROM " . $this->table . " WHERE Key_name = 'uq_" . $prefix . "'";
       $result = $wpdb->get_results($sql);
@@ -588,9 +589,9 @@ class MysqlDataProvider implements DataProvider
      global $wpdb;
 
      // check if table is there.
-     if (! $override_check)
+     if (false === $override_check)
      {
-       if (! $this->check())
+       if (false === $this->check())
         $this->install();
      }
 
@@ -599,11 +600,7 @@ class MysqlDataProvider implements DataProvider
      {
       $this->install(true);
      }
-     echo "<PRE> ERROR! ";
-      print_r( debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2) );
-     echo ($wpdb->last_query);
-     var_dump($error);
-     echo "</PRE>";
+
      $this->install();
 
      // @todo Add error log here

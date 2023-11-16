@@ -19,6 +19,8 @@ class ShortQ
 
   protected $pluginSlug; // unique plugin name using Q.
   protected $queueName;
+	protected $queue;
+	protected $dataProvider;
 
   protected static $queues = array();
 
@@ -47,6 +49,7 @@ class ShortQ
       switch($this->dataProvider)
       {
         case 'mysql':
+				default:
            $dataProvider = new DataProvider\MysqlDataProvider($this->pluginSlug, $this->queueName);
         break;
       }
@@ -58,11 +61,6 @@ class ShortQ
               $newQ = new Queue\WPQ($this->pluginSlug, $this->queueName, $dataProvider);
         break;
       }
-
-    /*  if (defined('SHORTPIXEL_DEBUG') && SHORTPIXEL_DEBUG)
-      {
-            $test = new Tests\Tests($newQ);
-      } */
 
       self::$queues[$this->queueName] = $this;
       return $newQ;
