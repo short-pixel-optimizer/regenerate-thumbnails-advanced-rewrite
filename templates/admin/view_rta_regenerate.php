@@ -20,7 +20,7 @@ namespace ReThumbAdvanced;
       </select>
     </div>
     <div class='option'>
-      <label for='regenonly_featured'><?php _e(sprintf('Regenerate %sonly%s Featured Images', '<strong>','</strong>'),'regenerate-thumbnails-advanced');  ?></label>
+      <label for='regenonly_featured'><?php printf(__('Regenerate %sonly%s Featured Images','regenerate-thumbnails-advanced'), '<strong>','</strong>');  ?></label>
       <input type='checkbox' id='regenonly_featured' name="regenonly_featured" value="1">
     </div>
   </div>

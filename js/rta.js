@@ -1,3 +1,5 @@
+'use strict';
+
 jQuery(document).ready(function($){
 
 function rtaJS() {};
@@ -23,7 +25,7 @@ rtaJS.prototype.init = function()
       console.log(rta_data); // let's go.
   }
 
-  this.setStatusCodes();
+  //this.setStatusCodes();
   this.initProcess();
   this.checkSubmitReady();
 
@@ -59,17 +61,18 @@ rtaJS.prototype.init = function()
 }
 
 /** Status codes need to sync with Ajax Controller */
+/*
 rtaJS.prototype.setStatusCodes = function()
 {
   //  this.status[
-}
+} */
 
 // function to check if admin screen can start a new job.
 rtaJS.prototype.checkSubmitReady = function()
 {
-  processReady = true;
+  var processReady = true;
 
-  inputs = $('input[name^="regenerate_sizes"]:checked');
+  var inputs = $('input[name^="regenerate_sizes"]:checked');
 /*  if (inputs.length == 0)
     processReady = false; */
 
@@ -105,7 +108,7 @@ rtaJS.prototype.checkSubmitReady = function()
 // Function to check if there was a interrupted process via rta_data.
 rtaJS.prototype.initProcess = function()
 {
-  process = rta_data.process;
+  var process = rta_data.process;
   if (this.is_debug)
     console.log(process);
 
@@ -114,12 +117,6 @@ rtaJS.prototype.initProcess = function()
   if (process.running)
     this.in_process = process.running;
 
-  /*if (process.current)
-      this.offset = process.current;
-
-  if (process.total)
-    this.total = process.total;
- */
 
    if (process.running || process.preparing)
    {
@@ -135,9 +132,9 @@ rtaJS.prototype.selectAll = function(e)
    var target = $(e.target).data('target');
 
    if (action == 'select')
-      checked = true;
+      var checked = true;
    else {
-     checked = false;
+      var checked = false;
    }
 
    $('input[name^="' + target + '"]').prop('checked', checked).trigger('change');
@@ -306,11 +303,6 @@ rtaJS.prototype.doProcess = function()
         },
     });
 
-
-        //this.show_buttons();
-    //    this.finishProcess();
-
-
 }
 
 // check if progress is stoppable  and activate stop process button, or not.
@@ -431,8 +423,10 @@ rtaJS.prototype.processStoppable = function()
 
     rtaJS.prototype.updateProgress = function() {
 
-        if (! this.process)
+        if (false === this.process)
+        {
           return;
+        }
 
         var items = parseInt(this.process.items);
         var done = parseInt(this.process.done);
@@ -442,14 +436,20 @@ rtaJS.prototype.processStoppable = function()
         //var total = parseInt(this.total);
 
         if (done == 0 && total > 0)
-          percentage_done = 0;
+        {
+          var percentage_done = 0;
+        }
         else if (total > 0)
-          percentage_done = Math.round( (done/total) * 100);
+        {
+          var percentage_done = Math.round( (done/total) * 100);
+        }
         else
-          percentage_done = 100;
+        {
+          var percentage_done = 100;
+        }
 
         var total_circle = 289.027;
-        if(percentage_done>0) {
+        if(percentage_done > 0) {
             total_circle = Math.round(total_circle-(total_circle*percentage_done/100));
         }
         $(".CircularProgressbar-path").css("stroke-dashoffset",total_circle+"px");
@@ -561,7 +561,12 @@ rtaJS.prototype.processStoppable = function()
                   // @todo Move these to named constants.
                 if(item.status == 1) // status 1 is successfully regenerated  thumbnail with URL in message.
                 {
-                  this.showThumb(item.message);
+                  this.showThumb(item.image);
+                  var messageElement = document.querySelector('.thumb-message');
+                  if (null !== messageElement)
+                  {
+                     messageElement.innerHTML = item.message;
+                  }
                   continue;
                 }
 

@@ -3,6 +3,7 @@ namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
 use \ReThumbAdvanced\Notices\NoticeController as Notice;
 use \ReThumbAdvanced\Controllers\AdminController as AdminController;
+use \ReThumbAdvanced\FileSystem\Controller\FileSystemController as FileSystemController;
 
 // load runtime.
 class Plugin
@@ -103,6 +104,11 @@ class Plugin
   public function process()
   {
     return Process::getInstance();
+  }
+
+  public function fs()
+  {
+     return new FileSystemController();
   }
 
   public function admin()
@@ -257,6 +263,7 @@ class Plugin
 
     $editurl = $this->getRegenerateLink($post->ID, $url);
     $link = "href=\"$editurl\"";
+
 
     echo "<p><a class='button-secondary' $link>" . esc_html__("Regenerate Thumbnails", "regenerate-thumbnails-advanced") . "</a></p>";
   }

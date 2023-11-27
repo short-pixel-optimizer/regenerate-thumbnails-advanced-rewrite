@@ -7,7 +7,8 @@ namespace ReThumbAdvanced;
 
     <div class="rta_progress two-panel-wrap">
       <div class="images rta_thumbnail_view rta_panel_off">
-          <h4 class='thumb-label'><?php _e('Last Regenerated Image:','regenerate-thumbnails-advanced'); ?></h4>
+          <h4 class='thumb-label'><?php _e('Last Regenerated','regenerate-thumbnails-advanced'); ?></h4>
+          <p class='thumb-message'>&nbsp;</p>
           <div class='thumbnail'> <img src="" alt=""> </div>
       </div>
         <div class='rta_progress_view rta_panel_off'>

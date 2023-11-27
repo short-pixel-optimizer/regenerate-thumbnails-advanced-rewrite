@@ -3,6 +3,8 @@ namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
 use \ReThumbAdvanced\ShortQ as ShortQ;
 
+
+
 /** Class Process
 * This class functions as glue between ShortQ and RTA. Responsible for enqueuing and process monitoring.
 * Main class should be simply able to ask for process and it's status and act upon that.
@@ -129,7 +131,7 @@ class Process
   // function to limit runtimes in seconds..
   public function limitTime($limit = 6)
   {
-      $limit = apply_filters('rta/process/prepare_limit', $limit); 
+      $limit = apply_filters('rta/process/prepare_limit', $limit);
       if ($this->run_limit == 0)
       {
           $this->run_start = time();
@@ -225,11 +227,26 @@ class Process
 
      foreach($result as $index => $row)
      {
+          $image_id = $row->ID;
+          $imageObj = new Image($image_id);
+          if (false === $imageObj->isProcessable())
+          {
+             continue;
+          }
+
           $items[] = array('id' => $row->ID, 'value' => '');
+
      }
+
 
      $this->q->addItems($items);
      $this->q->enqueue();
+
+     if (0 === count($items))
+     {
+        Log::addTemp('Settings Status ', $image_id);
+        $this->q->setStatus('last_item_id', $image_id);
+     }
 
      /** Keep looping preparing ( possible query limit reached ) until no new items are forthcoming. */
      if ($resultCount > 0)

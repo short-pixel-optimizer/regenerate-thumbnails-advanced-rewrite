@@ -3,6 +3,7 @@ namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
 
 
+
 class Image
 {
   protected $id;
@@ -15,6 +16,7 @@ class Image
   protected $filePath;
   protected $fileUri;
   protected $fileDir;
+  protected $fileObj; // FileModel
   protected $metadata = array();
 
   protected $persistentMeta = array();
@@ -25,41 +27,54 @@ class Image
   public function __construct($image_id)
   {
       $this->id = $image_id;
+      $fs = RTA()->fs();
 
       if (function_exists('wp_get_original_image_path')) // WP 5.3+
       {
-        $this->filePath = wp_get_original_image_path($image_id);
+        $filePath = wp_get_original_image_path($image_id);
 
         /** When this function returns false it's possible the post_mime_type in wp_posts table got corrupted. If the file is displayable image,
         * attempt to fix this issue, then reget the item for further processing */
-        if ($this->filePath === false)
+        if ($filePath === false)
         {
-          $this->filePath = get_attached_file($image_id);
+          $filePath = get_attached_file($image_id);
 
-					if ($this->filePath === false)
+					if ($filePath === false)
 					{
 						RTA()->ajax()->add_status('file_missing', array('name' => basename($image_id)) );
 						return false;
 					}
 
-          if (file_is_displayable_image($this->filePath))
+          if (file_is_displayable_image($filePath))
           {
             $this->fixMimeType($image_id);
-            $this->filePath = wp_get_original_image_path($image_id);
+            $filePath = wp_get_original_image_path($image_id);
           }
         }
       }
       else
-        $this->filePath = get_attached_file($image_id);
-      $this->fileDir = trailingslashit(pathinfo($this->filePath,  PATHINFO_DIRNAME));
+      {
+        $filePath = get_attached_file($image_id);
+      }
+
+      $fileObj = $fs->getFile($filePath);
+      $this->fileObj = $fileObj;
+
+
+      $this->fileDir = (string) $fileObj->getFileDir(); // trailingslashit(pathinfo($this->filePath,  PATHINFO_DIRNAME));
+
+      $this->filePath = $fileObj->getFullPath();
+      Log::addTemp('FilePath', $this->filePath);
 
       if (function_exists('wp_get_original_image_url')) // WP 5.3+
         $this->fileUri = wp_get_original_image_url($image_id);
       else
         $this->fileUri = wp_get_attachment_url($image_id);
 
-      if (!file_exists($this->filePath))
+      if (false === $fileObj->exists())
+      {
         $this->does_exist = false;
+      }
 
       if (! file_is_displayable_image($this->filePath)) // this is based on getimagesize
 			{
@@ -67,12 +82,22 @@ class Image
 			}
       $this->metadata = wp_get_attachment_metadata($image_id);
 
-  /*    $is_image_mime = wp_attachment_is('image', $image_id); // this is based on post mime.
-      if (! $is_image_mime && $this->is_image )
-      {
-        $this->fixMimeType($image_id);
-      }
-*/
+  }
+
+  public function isProcessable()
+  {
+       $fileObj = $this->fileObj;
+
+       if (! is_object($fileObj))
+       {
+          return false;
+       }
+       elseif ( ! $fileObj->exists()  || (! $fileObj->is_virtual() && ! $fileObj->is_directory_writable() ) || false === $this->isImage() )
+       {
+          return false;
+       }
+
+       return true;
   }
 
   public function regenerate()
@@ -120,6 +145,7 @@ class Image
         remove_filter('big_image_size_threshold', array($this, 'disable_scaling'));
 
         Log::addDebug('New Attachment metadata generated', $new_metadata);
+
         //restore the optimized main image
         if($backup && $backup !== $this->filePath) {
             rename($backup . "_optimized_" . $this->id, $this->filePath);
@@ -154,7 +180,11 @@ class Image
       //  $imageUrl = $this->fileUri;
         //$logstatus = 'Processed';
       //  $thumb = wp_get_attachment_thumb_url($this->id);
-        RTA()->ajax()->add_status('regenerate_success', array('thumb' => $last_success_url));
+        RTA()->ajax()->add_status('regenerate_success',
+                array('image' => $last_success_url,
+                'count' => count($regenSizes),
+                'name' => basename($this->filePath),
+            ));
 
     } else {
 

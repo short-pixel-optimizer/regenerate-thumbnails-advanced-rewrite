@@ -7,7 +7,7 @@ use \ReThumbAdvanced\Controllers\AdminController as AdminController;
 class AjaxController
 {
    protected static $instance;
-   protected $status; // /for the status.s
+   protected $status; // /for the status.
 
    // Ok status
    const STATUS_OK  = 0;
@@ -52,19 +52,22 @@ class AjaxController
 
    }
 
-   public function add_status($name, $args = array() )
+   public function add_status($event_name, $args = array() )
    {
      $status = array('error' => true, 'message' => __('Unknown Error occured', 'regenerate-thumbnails-advanced'), 'status' => 0);
 
      $defaults =  array(
          'name' => false,
-         'thumb' => false,
+         'image' => $this->getURL('images/placeholder.svg'),  // @todo Add a placeholder here
          'count' => false,
+
      );
 
      $args = wp_parse_args($args, $defaults);
 
-     switch($name)
+     Log::addTemp('Add Status Args', $args);
+
+     switch($event_name)
      {
          case 'no_nonce':
              $status['message'] = __('Site error, Invalid Nonce', 'regenerate-thumbnails-advanced');
@@ -110,9 +113,12 @@ class AjaxController
             $status['status'] = self::STATUS_STOPPED;
          break;
          case 'regenerate_success':
-            $status['message'] = '%s';
-            $status['mask'] = array('thumb');
+            $status['message'] = sprintf(__('%s Success! %s %s has %s new thumbnails', 'regenerate-thumbnails-advanced'), '<strong>', '</strong>', $args['name'], $args['count'] );
+
+        //    $status['mask'] =  array('name', 'count');
             $status['status'] = self::STATUS_SUCCESS;
+            $status['image'] = $args['image'];
+
             $status['error'] = false;
          break;
 
@@ -258,9 +264,13 @@ class AjaxController
       if ($process->get('finished') == true)
       {
          if ($process->get('done') == 0) // if Q is finished with 0 done, it was empty.
-           $this->add_status('no_images');
+         {
+             $this->add_status('no_images');
+         }
 
-         $this->jsonResponse($this->get_json_process());
+         $stats = $this->get_json_process();
+         $process->end();
+         $this->jsonResponse($stats);
       }
    }
 
@@ -347,6 +357,12 @@ class AjaxController
    {
      wp_send_json($response);
      exit();
+   }
+
+   // @todo  This should probably be mergen with the one in @controller and AjaxController should move to Controllers . ( And distinction made between ViewControl and Control)
+   private function getURL($path)
+   {
+       return plugins_url($path, RTA_PLUGIN_FILE);
    }
 
 }
