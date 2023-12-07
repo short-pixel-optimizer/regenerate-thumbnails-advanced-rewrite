@@ -188,7 +188,7 @@ section.regenerate .shortpixel-notice {
 section.regenerate .shortpixel-notice h3 {
   line-height: 1.3em;
 }
-section.regenerate button.stop-process, section.regenerate button.pause-process {
+section.regenerate button.stop-process, section.regenerate button.pause-process, section.regenerate button.resume-process {
   position: absolute;
   bottom: 10px;
   right: 15px;
@@ -197,15 +197,12 @@ section.regenerate button.stop-process, section.regenerate button.pause-process 
   padding: 4px 20px;
   font-size: 14px;
 }
-section.regenerate button.stop-process .dashicons, section.regenerate button.pause-process .dashicons {
+section.regenerate button.stop-process .dashicons, section.regenerate button.pause-process .dashicons, section.regenerate button.resume-process .dashicons {
   vertical-align: middle;
 }
-section.regenerate button.pause-process {
+section.regenerate button.pause-process, section.regenerate button.resume-process {
   left: 15px;
   right: auto;
-}
-section.regenerate button.pause-process .resume {
-  display: none;
 }
 
 /*# sourceMappingURL=rta-admin-progress.css.map */

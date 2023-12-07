@@ -209,7 +209,7 @@ class Process
      {
        $query .= ' and ID < %d'; // note the reverse here, due to order!
        $prepare[] = $lastId;
-       Log::addDebug('Adding Last ID' . $lastId);
+
      }
 
      $query .= ' order by ID DESC ';
@@ -218,9 +218,8 @@ class Process
      $prepare[] = $this->query_prepare_limit;
 
      $sql = $wpdb->prepare($query, $prepare);
-     //Log::addTemp('Preparing SQL' . $sql);
      $result = $wpdb->get_results($sql);
-     $resultCount = count($result);
+     $resultCount = 0;
 
     // $chunks =
      $items = array();
@@ -234,6 +233,7 @@ class Process
              continue;
           }
 
+          $resultCount++;
           $items[] = array('id' => $row->ID, 'value' => '');
 
      }
@@ -244,7 +244,6 @@ class Process
 
      if (0 === count($items))
      {
-        Log::addTemp('Settings Status ', $image_id);
         $this->q->setStatus('last_item_id', $image_id);
      }
 

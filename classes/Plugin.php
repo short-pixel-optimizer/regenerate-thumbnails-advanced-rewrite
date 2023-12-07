@@ -247,6 +247,11 @@ class Plugin
           'attachment_id' => $post_id,
       ), $url);
 
+    if ( Log::isManualDebug())
+    {
+       $url = add_query_arg('SHORTIXEL_DEBUG', Log::getLogLevel(), $url);
+    }
+
     $editurl = wp_nonce_url( $url, $action );
     return $editurl;
 
@@ -264,6 +269,8 @@ class Plugin
     $editurl = $this->getRegenerateLink($post->ID, $url);
     $link = "href=\"$editurl\"";
 
+    $image = new Image($post->ID);
+    //var_dump($image);
 
     echo "<p><a class='button-secondary' $link>" . esc_html__("Regenerate Thumbnails", "regenerate-thumbnails-advanced") . "</a></p>";
   }

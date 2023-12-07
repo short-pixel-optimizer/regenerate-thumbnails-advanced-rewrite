@@ -1,18 +1,12 @@
 <?php
 namespace ReThumbAdvanced\Controllers;
+
 use function ReThumbAdvanced\RTA;
+use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
+
 
 class AdminController extends Controller
 {
-  //protected $controller;
-
-  /** Settings saved in the option table. Being set on construct. Refreshed on save */
-/*  protected $custom_image_sizes = array();
-  protected $process_image_sizes = false;
-  protected $process_image_options = array();
-  protected $system_image_sizes = array();
-  protected $jpeg_quality = 90; */
-
   protected $cropOptions;
 
   public function __construct()
@@ -36,11 +30,7 @@ class AdminController extends Controller
             'right_bottom' => __('Right bottom','regenerate-thumbnails-advanced'),
         );
 
-      //  $this->setOptionData();
-
   }
-
-
 
   public function show()
   {
@@ -59,6 +49,7 @@ class AdminController extends Controller
       $view->process_image_sizes = RTA()->admin()->getOption('process_image_sizes');
       $view->process_image_options = RTA()->admin()->getOption('process_image_options');
       $view->jpeg_quality = RTA()->admin()->getOption('jpeg_quality');
+
     }
 
     $html = $this->load_template($name, 'admin', array('view' => $view ));
@@ -80,15 +71,6 @@ class AdminController extends Controller
     return $output;
   }
 
-/*
-  public function __get($name)
-  {
-    if (isset($this->{$name}))
-    {
-      return $this->{$name};
-    }
-    return false;
-  } */
 
   /** Save thumbnail settings.
   *
@@ -103,15 +85,15 @@ class AdminController extends Controller
       $option = array();
       $exclude = array();
 
-      $nonce = isset($_POST['save_nonce']) ? $_POST['save_nonce'] : false;
+    /*  $nonce = isset($_POST['save_nonce']) ? $_POST['save_nonce'] : false;
       if (! wp_verify_nonce($nonce, 'rta_save_image_sizes'))
       {
         $jsonResponse['error'] = 'Invalid Nonce';
         return $jsonResponse;
-      }
+      } */
 
-      if (isset($_POST['saveform']))
-          parse_str($_POST['saveform'], $formpost);
+      if (isset($_POST['form']))
+          parse_str($_POST['form'], $formpost);
        else
           $formpost = array();
 
@@ -158,15 +140,14 @@ class AdminController extends Controller
       $option['process_image_options'] = $size_options;
 
       update_option( 'rta_image_sizes', $option );
-      //$this->setOptionData();
       RTA()->admin()->resetOptionData();
 
       $newsizes = $this->generateImageSizeOptions($sizes);
       $jsonResponse = array( 'error' => $error, 'message' => '', 'new_image_sizes' => $newsizes );
-
       return $jsonResponse;
 
   }
+
 
 
   public function generateImageSizeOptions($checked_ar = false)
@@ -179,9 +160,11 @@ class AdminController extends Controller
     $process_options = RTA()->admin()->getOption('process_image_options');
 
     $system_image_sizes = RTA()->admin()->getOption('system_image_sizes');
+    $image_sizes = array();
 
     // size here is a name, value is how the name is found in the system (in interface, the technical name)
     foreach($system_image_sizes as $value => $size):
+
 
       //if ($check_all)
         //$checked = 'checked';

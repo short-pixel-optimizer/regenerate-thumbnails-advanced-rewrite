@@ -97,7 +97,7 @@ namespace ReThumbAdvanced;
 
     <div class='option'>
       <label><?php _e('Default JPEG Quality','regenerate-thumbnails-advanced'); ?></label>
-      <input type="number" name="jpeg_quality" id="jpeg_quality" value="<?php echo $view->jpeg_quality ?>" onchange="javascript: rta_save_image_sizes();" />
+      <input type="number" name="jpeg_quality" id="jpeg_quality" value="<?php echo $view->jpeg_quality ?>" />
     </div>
 </div> <!-- container -->
 </section>

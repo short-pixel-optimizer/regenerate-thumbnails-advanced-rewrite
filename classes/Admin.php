@@ -130,18 +130,10 @@ class Admin
 
     public function regenerate_single_image($attach_id)
     {
-      /*  $form = $this->getFormData();
-        $form['posts_per_page'] = -1;
-        $form['attach_id'] = $attach_id;
-*/
+
         $image = new Image($attach_id);
         $image->regenerate();
 
-        /*if ($this->start_process($form))
-        {
-          $this->regenerate_thumbnails();
-        }
- */
         $status = RTA()->ajax()->get_status();
 
         foreach($status as $statusName => $statusItem)

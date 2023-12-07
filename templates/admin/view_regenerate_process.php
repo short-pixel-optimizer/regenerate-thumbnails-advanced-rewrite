@@ -34,12 +34,16 @@ namespace ReThumbAdvanced;
     </div>
 
     <div class="rta_status_box">
-      <button class='button pause-process' type="button" disabled>
-        <span class='pause'><span class="dashicons dashicons-controls-pause">&nbsp;</span> <?php _e('Pause Process', 'regenerate-thumbnails-advanced') ?></span>
-        <span class='resume'><span class="dashicons dashicons-controls-play">&nbsp;</span> <?php _e('Resume Process', 'regenerate-thumbnails-advanced') ?></span>
+      <button class='button pause-process process-button' id="pauseProcess" type="button" disabled>
+      <span class="dashicons dashicons-controls-pause">&nbsp;</span> <?php _e('Pause Process', 'regenerate-thumbnails-advanced') ?>
       </button>
 
-      <button class='button stop-process' type="button" disabled>
+      <button class='button resume-process process-button' id="resumeProcess" type="button" disabled>
+        <span class="dashicons dashicons-controls-play">&nbsp;</span> <?php _e('Resume Process', 'regenerate-thumbnails-advanced') ?>
+      </button>
+
+
+      <button class='button stop-process process-button' id="stopProcess" type="button" disabled>
           <span class="dashicons dashicons-no">&nbsp;</span>
           <?php _e('Stop Process', 'regenerate-thumbnails-advanced') ?>
       </button>
@@ -81,7 +85,7 @@ namespace ReThumbAdvanced;
   	?>
 
     <div class='rta_success_box rta_hidden'>
-        <div class='modal-close'><span class='dashicons dashicons-no'>&nbsp;</span></div>
+        <div class='modal-close'><span class='dashicons dashicons-no ' >&nbsp;</span></div>
         <h3 class='header'><?php _e('Done!', 'regenerate-thumbnails-advanced'); ?></h3>
         <p><?php _e('Regenerate Thumbnails Advanced is done with your task', 'regenerate-thumbnails-advanced'); ?></p>
 

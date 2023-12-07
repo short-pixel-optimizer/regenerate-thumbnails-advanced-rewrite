@@ -50,6 +50,7 @@ class Image
             $this->fixMimeType($image_id);
             $filePath = wp_get_original_image_path($image_id);
           }
+
         }
       }
       else
@@ -61,10 +62,9 @@ class Image
       $this->fileObj = $fileObj;
 
 
-      $this->fileDir = (string) $fileObj->getFileDir(); // trailingslashit(pathinfo($this->filePath,  PATHINFO_DIRNAME));
+      $this->fileDir = (string) $fileObj->getFileDir();
 
       $this->filePath = $fileObj->getFullPath();
-      Log::addTemp('FilePath', $this->filePath);
 
       if (function_exists('wp_get_original_image_url')) // WP 5.3+
         $this->fileUri = wp_get_original_image_url($image_id);
@@ -80,6 +80,12 @@ class Image
 			{
           $this->is_image = false;
 			}
+
+      if ( $this->fileObj->is_virtual())
+      {
+          $this->is_image = false;
+      }
+
       $this->metadata = wp_get_attachment_metadata($image_id);
 
   }
@@ -107,6 +113,8 @@ class Image
       $this->setCleanUp(true);
       Log::addDebug('Image thumbnails will be cleaned');
     }
+
+
 
     if(RTA()->process()->doDeleteLeftMeta() && ! $this->exists() )  {
 				$post = get_post($this->id);
@@ -177,9 +185,7 @@ class Image
             $last_success_url = $this->fileUri;
 
         }
-      //  $imageUrl = $this->fileUri;
-        //$logstatus = 'Processed';
-      //  $thumb = wp_get_attachment_thumb_url($this->id);
+
         RTA()->ajax()->add_status('regenerate_success',
                 array('image' => $last_success_url,
                 'count' => count($regenSizes),
@@ -189,16 +195,25 @@ class Image
     } else {
 
           $debug_filename = (strlen($this->fileUri) > 0) ? $this->fileUri : $this->filePath;
-          if ($this->does_exist) // Existing files, not image, can be attachments, zipfiles, pdf etc. Fail silently.
+          if (false === $this->does_exist) // Existing files, not image, can be attachments, zipfiles, pdf etc. Fail silently.
           {
             $mime = get_post_mime_type($this->id);
             if (strpos($mime, 'image') !== false)
+            {
               RTA()->ajax()->add_status('not_image', array('name' => $debug_filename));
+            }
           }
           else
           {
-            Log::addDebug('File missing - Current Image reported as not an image', array($this->filePath, $this->id) );
-            RTA()->ajax()->add_status('file_missing', array('name' => basename($debug_filename)) );
+            if ($this->fileObj->is_virtual())
+            {
+              Log::addDebug('File virtual', array($this->filePath, $this->id) );
+              RTA()->ajax()->add_status('is_virtual', array('name' => basename($debug_filename)));
+            }
+            else {
+              Log::addDebug('File missing - Current Image reported as not an image', array($this->filePath, $this->id) );
+              RTA()->ajax()->add_status('file_missing', array('name' => basename($debug_filename)) );
+            }
           }
 
           return false;
@@ -264,6 +279,7 @@ class Image
 
   public function capture_generate_sizes($full_sizes)
   {
+
       $do_regenerate_sizes = RTA()->admin()->getOption('process_image_sizes'); // $this->viewControl->process_image_sizes; // to images to be regenerated.
       $process_options = RTA()->admin()->getOption('process_image_options'); // $this->viewControl->process_image_options; // the setting options for each size.
 

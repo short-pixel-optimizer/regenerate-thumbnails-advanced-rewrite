@@ -19,6 +19,19 @@ namespace ReThumbAdvanced;
           <option value="6"><?php _e('Past Year','regenerate-thumbnails-advanced'); ?></option>
       </select>
     </div>
+
+
+    <div class='option'>
+        <label><?php _e('Custom Date'); ?></label>
+        <div> <label>Start date</label>
+
+        </div>
+        <div> <lavel>End date</label>
+
+        </div>
+
+    </div>
+
     <div class='option'>
       <label for='regenonly_featured'><?php printf(__('Regenerate %sonly%s Featured Images','regenerate-thumbnails-advanced'), '<strong>','</strong>');  ?></label>
       <input type='checkbox' id='regenonly_featured' name="regenonly_featured" value="1">

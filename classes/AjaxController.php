@@ -65,7 +65,6 @@ class AjaxController
 
      $args = wp_parse_args($args, $defaults);
 
-     Log::addTemp('Add Status Args', $args);
 
      switch($event_name)
      {
@@ -95,6 +94,11 @@ class AjaxController
          break;
          case 'file_missing':
             $status['message'] =  __('<b>%s</b> is missing or not an image file', 'regenerate-thumbnails-advanced');
+            $status['mask'] = array('name');
+            $status['status'] = self::ERROR_NOFILE;
+         break;
+         case 'is_virtual':
+            $status['message'] =  __('<b>%s</b> is offloaded', 'regenerate-thumbnails-advanced');
             $status['mask'] = array('name');
             $status['status'] = self::ERROR_NOFILE;
          break;
@@ -161,11 +165,10 @@ class AjaxController
 
      $this->checkNonce('rta_generate');
 
-     if (isset($_POST['genform']))
+     if (isset($_POST['form']))
      {
          $form = $this->getFormData();
          $process = RTA()->process();
-
          $process->setRemoveThumbnails($form['del_associated_thumbs']);
          $process->setDeleteLeftMeta($form['del_leftover_metadata']);
          $process->setCleanMetadata($form['process_clean_metadata']);
@@ -178,8 +181,7 @@ class AjaxController
            $endstamp = $stamps['endstamp']; // period['args']['endstamp'];
            $process->setTime($startstamp, $endstamp);
          //}
-
-         $this->add_status('preparing');
+         $this->add_status('Searching for items to add');
          $process->start();
          $result = $this->runprocess(); // This would mostly be preparing.
      }
@@ -203,7 +205,7 @@ class AjaxController
        );
 
        $data = array();
-       $form = isset($_POST['genform']) ? $_POST['genform'] : '';
+       $form = isset($_POST['form']) ? $_POST['form'] : '';
        parse_str($form, $data);
 
        return wp_parse_args($data, $defaults);
@@ -291,6 +293,8 @@ class AjaxController
    {
      $json = true;
      $view = new AdminController($this);
+
+     $this->checkNonce('rta_save_image_sizes');
      $response = $view->save_image_sizes();
 
      if ($json)
