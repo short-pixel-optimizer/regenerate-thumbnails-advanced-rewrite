@@ -169,31 +169,36 @@ class AdminController extends Controller
     $image_sizes = array();
 
     // size here is a name, value is how the name is found in the system (in interface, the technical name)
-    foreach($system_image_sizes as $value => $size):
+    foreach($system_image_sizes as $size => $item)
+    {
 
+      $width = isset($item['width']) ? $item['width'] : '*';
+      $height = isset($item['height']) ? $item['height'] : '*';
+      $name = isset($item['nice-name']) ? $item['nice-name'] : ucfirst($size);
+    //  $size = $item['name']
 
       //if ($check_all)
         //$checked = 'checked';
-      $checked = ($check_all || in_array($value, $checked_ar)) ? 'checked' : '';
+      $checked = ($check_all || in_array($size, $checked_ar)) ? 'checked' : '';
       $hidden = ($checked == 'checked') ? '' : 'hidden'; // hide add. option if not checked.
 
-      $option_in_db = (isset($process_options[$value])) ? true : false;
-      $checked_keep = (isset($process_options[$value]) && isset($process_options[$value]['overwrite_files']) && ! $process_options[$value]['overwrite_files'] )  ? 'checked' : '';
+      $option_in_db = (isset($process_options[$size])) ? true : false;
+      $checked_keep = (isset($process_options[$size]) && isset($process_options[$size]['overwrite_files']) && ! $process_options[$size]['overwrite_files'] )  ? 'checked' : '';
 
       if ($option_in_db)
         $checked .= ' data-setbyuser=true'; // if value was ever saved in DB, don't change it in the JS.
 
       $output .= "<div class='item'>";
       $output .= "<span>
-        <label> <input type='checkbox' id='regenerate_sizes[$i]' name='regenerate_sizes[$i]' value='$value' $checked>
-          " .  ucfirst($size) . "</label>
+        <label> <input type='checkbox' id='regenerate_sizes[$i]' name='regenerate_sizes[$i]' value='$size' $checked>
+          " .  $name . " ({$width}x{$height})</label>
       </span>";
-      $output .= "<span class='options $hidden'><label><input value='1' type='checkbox' $checked_keep name='keep_" . $value . "'> " . __('Don\'t redo existing', 'regenerate-thumbnails-advanced') . "</label></span>";
+      $output .= "<span class='options $hidden'><label><input value='1' type='checkbox' $checked_keep name='keep_" . $size . "'> " . __('Don\'t redo existing', 'regenerate-thumbnails-advanced') . "</label></span>";
       $output .= "</div>";
 
       $i++;
 
-    endforeach;
+    };
     return $output;
   }
 

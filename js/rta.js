@@ -280,7 +280,10 @@ class RtaJS
           catch(e)
           {
              console.error('Error parsing result!', xhr.responseText);
-             self.CheckSubmitReady();
+             if (data.error)
+             {
+                data.error.apply(self, [response]);
+             }
              return false;
           }
        }
@@ -289,8 +292,6 @@ class RtaJS
        }
 
        data.success.apply(self, [response]);
-
-
      }
 
      // @TODO AJAX CALLS!
@@ -317,7 +318,7 @@ class RtaJS
 
         for(var key in data)
         {
-            if (key == 'success')
+            if (key == 'success' || key == 'error')
             {
                continue; // don't send handlers.
             }
@@ -327,7 +328,7 @@ class RtaJS
 
      xhr.send(params.toString());
 
-   }
+  } // ajaxcall
 
    StartProcess(event)
    {
@@ -684,13 +685,10 @@ class RtaJS
            total_circle = Math.round(total_circle-(total_circle*percentage_done/100));
        }
        var circularBar = document.querySelector('.CircularProgressbar-path');
-       var circularText = document.querySelector('.CircularProgressbar-path');
+       var circularText = document.querySelector('.CircularProgressbar-text');
 
        circularBar.style.strokeDashoffset = total_circle +  'px';
        circularText.textContent = percentage_done + '%';
-
-      // $(".CircularProgressbar-path").css("stroke-dashoffset",total_circle+"px");
-      // //$(".CircularProgressbar-text").html(percentage_done+"%");
 
        var progressCurrent = document.querySelector('.progress-count .current');
        var progressTotal = document.querySelector('.progress-count .total');

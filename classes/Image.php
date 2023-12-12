@@ -74,17 +74,17 @@ class Image
       if (false === $fileObj->exists())
       {
         $this->does_exist = false;
-      }
 
-      if (! file_is_displayable_image($this->filePath)) // this is based on getimagesize
-			{
-          $this->is_image = false;
-			}
+      }
 
       if ( $this->fileObj->is_virtual())
       {
           $this->is_image = false;
       }
+      elseif (false === $this->fileObj->exists() || false === file_is_displayable_image($this->filePath)) // this is based on getimagesize
+			{
+          $this->is_image = false;
+			}
 
       $this->metadata = wp_get_attachment_metadata($image_id);
 
