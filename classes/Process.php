@@ -218,6 +218,8 @@ class Process
      $prepare[] = $this->query_prepare_limit;
 
      $sql = $wpdb->prepare($query, $prepare);
+
+     Log::addTemp('SQL', $sql);
      $result = $wpdb->get_results($sql);
      $resultCount = 0;
 
@@ -242,7 +244,7 @@ class Process
      $this->q->addItems($items);
      $this->q->enqueue();
 
-     if (0 === count($items))
+     if (0 === count($items) && isset($image_id))
      {
         $this->q->setStatus('last_item_id', $image_id);
      }

@@ -161,6 +161,27 @@
         margin-top: 0;
       }
     }
+
+    .period-list {
+       margin-left: 15px;
+    }
+  }
+
+  .option.custom_date
+  {
+     margin-left: 18px;
+     margin-bottom: 10px;
+     label
+     {
+        width: 90px;
+        display: inline-block;
+
+
+     }
+     input {
+       margin: 2px 0;
+       min-width: 150px;
+     }
   }
 
   input
@@ -387,6 +408,7 @@
   .window-up
   {
     opacity: 0;
+    display: none;
   }
   .window-down
   {

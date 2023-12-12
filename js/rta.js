@@ -35,9 +35,10 @@ class RtaJS
 
       this.InitEvents();
       this.ToggleDeleteItems();
-      this.CheckSubmitReady();
 
       this.InitProcess();
+
+      this.CheckSubmitReady();
 
    }
 
@@ -94,6 +95,12 @@ class RtaJS
      for(var i = 0; i < saveIndicatorInputs.length; i++)
      {
         saveIndicatorInputs[i].addEventListener('change', this.ShowSaveIndicatorEvent.bind(this));
+     }
+
+     var dateInputs = document.querySelectorAll('.period-list input');
+     for (var i = 0; i < dateInputs.length; i++)
+     {
+        dateInputs[i].addEventListener('click', this.UpdateDateEvent.bind(this));
      }
 
      var visibleOptions = document.querySelectorAll('input[name^="regenerate_sizes"]');
@@ -154,6 +161,40 @@ class RtaJS
    {
       event.preventDefault();
       this.CheckSubmitReady();
+   }
+
+   UpdateDateEvent(event)
+   {
+      var target = event.target;
+      var startstamp = target.dataset.start;
+      var endstamp = target.dataset.end;
+
+      var startDate = new Date(startstamp * 1000);
+      var endDate = new Date(endstamp * 1000);
+
+      var startInput = document.querySelector('input[name="start_date"]');
+      var endInput = document.querySelector('input[name="end_date"]');
+
+      //var startFormat = startDate.getFullYear() + '-' + startDate.getMonth() + '-' + startDate.getDay();
+      //var endFormat = endDate.getFullYear() + '-' + endDate.getMonth() + '-' + endDate.getDay();
+
+      if (startstamp == '0')
+      {
+         startInput.value = '';
+      }
+      else {
+        startInput.valueAsDate = startDate; //  '2019-09-01'; //startFormat;
+      }
+
+      if (endstamp == '0')
+      {
+         endInput.value = '';
+      }
+      else {
+        endInput.valueAsDate =  endDate; //endFormat;
+      }
+
+
    }
 
    InitProcess()
@@ -233,7 +274,15 @@ class RtaJS
        }
        if (typeof xhr === 'object' && xhr.responseText && xhr.responseText.length > 0 )
        {
-          var response = JSON.parse(xhr.responseText);
+          try {
+            var response = JSON.parse(xhr.responseText);
+          }
+          catch(e)
+          {
+             console.error('Error parsing result!', xhr.responseText);
+             self.CheckSubmitReady();
+             return false;
+          }
        }
        else {
           var response = {};
@@ -1103,16 +1152,14 @@ class RtaJS
        var windowElement = document.getElementById(windowName);
        var arrowEl = target.querySelector('span.dashicons');
 
-    //   var $window = $('#' + target.data('window'));
        if (windowElement.classList.contains('window-up'))
        {
+         windowElement.style.display = 'block';
          windowElement.classList.remove('window-up');
          windowElement.classList.add('window-down');
 
          arrowEl.classList.remove('dashicons-arrow-down');
          arrowEl.classList.add('dashicons-arrow-up');
-//         $target.find('span.dashicons').removeClass('dashicons-arrow-down').addClass('dashicons-arrow-up');
-
        }
        else {
          windowElement.classList.add('window-up');
@@ -1120,6 +1167,9 @@ class RtaJS
 
          arrowEl.classList.add('dashicons-arrow-down');
          arrowEl.classList.remove('dashicons-arrow-up');
+
+         windowElement.style.display = 'none';
+
        }
    }
 

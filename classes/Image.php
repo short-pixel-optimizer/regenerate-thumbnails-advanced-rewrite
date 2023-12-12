@@ -114,8 +114,6 @@ class Image
       Log::addDebug('Image thumbnails will be cleaned');
     }
 
-
-
     if(RTA()->process()->doDeleteLeftMeta() && ! $this->exists() )  {
 				$post = get_post($this->id);
 
@@ -147,6 +145,7 @@ class Image
         // RTA should never touch source files. This happens when redoing scaling. This would also be problematic in combination with optimisers. Disable scaling when doing thumbs.
         add_filter('big_image_size_threshold', array($this, 'disable_scaling'));
 
+Log::addTemp("Geenerating " . $this->id . ' ' . $this->filePath);
         $new_metadata = wp_generate_attachment_metadata($this->id, $this->filePath);
 
         remove_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
@@ -180,7 +179,12 @@ class Image
             // Do not send if nothing was regenerated, otherwise SP thinks all needs to be redone
             if (count($regenSizes) > 0)
             {
-              do_action('shortpixel-thumbnails-regenerated', $this->id, $original_meta, $regenSizes, $is_a_bulk);
+              $ext = $this->fileObj->getExtension();
+              if ($ext !== 'webp' && $ext !== 'avif')
+              {
+                Log::addTemp('Sending to SPIO rergen');
+                do_action('shortpixel-thumbnails-regenerated', $this->id, $original_meta, $regenSizes, $is_a_bulk);
+              }
             }
             $last_success_url = $this->fileUri;
 
@@ -319,6 +323,7 @@ class Image
       // 5. Drop the 'not to be' regen. images from the sizes so it will not process.
       $do_regenerate_sizes = array_diff($do_regenerate_sizes, $prevent_regen);
       Log::addDebug('Sizes going for regen - ' . count($do_regenerate_sizes) );
+      Log::addTemp('Sizes', $do_regenerate_sizes);
 
       /* 6. If metadata should be cleansed of undefined sizes, remove them from the imageMetaSizes
       *   This is for sizes that are -undefined- in total by system sizes.

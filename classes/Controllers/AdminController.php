@@ -3,7 +3,7 @@ namespace ReThumbAdvanced\Controllers;
 
 use function ReThumbAdvanced\RTA;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
-
+use \ReThumbAdvanced\Periods as Periods;
 
 class AdminController extends Controller
 {
@@ -51,6 +51,12 @@ class AdminController extends Controller
       $view->jpeg_quality = RTA()->admin()->getOption('jpeg_quality');
 
     }
+    elseif ($name === 'view_rta_regenerate')
+    {
+        $view->periods = Periods::getAll();
+    }
+
+
 
     $html = $this->load_template($name, 'admin', array('view' => $view ));
     echo $html;

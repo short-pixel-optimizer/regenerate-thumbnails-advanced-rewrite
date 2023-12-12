@@ -20,14 +20,6 @@ class AjaxController
    const ERROR_NOFILE = -2;
    const ERROR_METADATA = -3;
 
-   /** PERIOD OPTIONS */
-   const PERIOD_ALL = 0;
-   const PERIOD_DAY = 1;
-   const PERIOD_WEEK = 2;
-   const PERIOD_MONTH = 3;
-   const PERIOD_3MONTH = 4;
-   const PERIOD_6MONTH = 5;
-   const PERIOD_YEAR = 6;
 
    public static function getInstance()
    {
@@ -127,7 +119,7 @@ class AjaxController
          break;
 
          default:
-            $status['message']  = '[' . $name . ']';
+            $status['message']  = '[' . $args['name'] . ']';
 
          break;
      }
@@ -174,13 +166,36 @@ class AjaxController
          $process->setCleanMetadata($form['process_clean_metadata']);
          $process->setOnlyFeatured($form['regenonly_featured']);
 
-         $stamps = $this->getQueryDate($form['period']);
+         $period = Periods::getPeriod($form['period']);
+         $stamps = $period->getQueryDate();
+
       //   if ($period['date'] !== false)
          //{
-           $startstamp = $stamps['startstamp']; // $period['args']['startstamp'];
-           $endstamp = $stamps['endstamp']; // period['args']['endstamp'];
+           if ($form['start_date'] == '0')
+           {
+              $startstamp = -1;
+           }
+           else {
+              $startstamp = strtotime($form['start_date']);
+           }
+
+           if ($form['end_date'] == '0')
+           {
+              $endstamp = time();
+           }
+           else {
+              $endstamp = strtotime($form['end_date']);
+           }
+
+Log::addDebug("Adding Period $startstamp - $endstamp");
            $process->setTime($startstamp, $endstamp);
-         //}
+
+        /*
+         $startstring = ($startstamp > 0) ? date_i18n(get_option('date_format'), $startstamp) : false;
+         $endstring = ($endstamp > 0) ? date_i18n(get_option('date_format'), $endstamp) : false;
+         */
+
+
          $this->add_status('Searching for items to add');
          $process->start();
          $result = $this->runprocess(); // This would mostly be preparing.
@@ -202,6 +217,8 @@ class AjaxController
            'del_associated_thumbs' => false,
            'del_leftover_metadata' => false,
            'process_clean_metadata' => false,
+           'start_date' => false,
+           'end_date' => false,
        );
 
        $data = array();
@@ -307,38 +324,6 @@ class AjaxController
      }
    }
 
-   // period comes from form.
-   protected function getQueryDate($period)
-     {
-       $now = time();
-       $endstamp = current_time('timestamp');
-       switch (intval($period)) {
-           case self::PERIOD_ALL:
-             $startstamp = 0;
-           break;
-           case self::PERIOD_DAY:
-             $startstamp = $now - DAY_IN_SECONDS;
-          break;
-           case self::PERIOD_WEEK:
-             $startstamp = $now - WEEK_IN_SECONDS;
-             break;
-           case self::PERIOD_MONTH:
-             $startstamp = $now - MONTH_IN_SECONDS;
-             break;
-         case self::PERIOD_3MONTH:
-             $startstamp = $now - (3* MONTH_IN_SECONDS);
-         break;
-         case self::PERIOD_6MONTH:
-             $startstamp = $now - (6* MONTH_IN_SECONDS);
-             break;
-         case self::PERIOD_YEAR:
-             $startstamp = $now - YEAR_IN_SECONDS;
-         break;
-       }
-    //   $result = array('date' => $date, 'args' => $args);
-       $result = array('startstamp' => $startstamp, 'endstamp' => $endstamp);
-       return $result;
-     }
 
    // No Noncense function.
    protected function checkNonce($action)

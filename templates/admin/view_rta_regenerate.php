@@ -9,25 +9,37 @@ namespace ReThumbAdvanced;
   <div class='container'>
     <div class='option'>
       <label><?php _e('Regenerate period:','regenerate-thumbnails-advanced'); ?></label>
-      <select name='period' class="timeDropdownSelect" id="">
-          <option value="0"><?php _e('All','regenerate-thumbnails-advanced'); ?></option>
-          <option value="1"><?php _e('Past Day','regenerate-thumbnails-advanced'); ?></option>
-          <option value="2"><?php _e('Past Week','regenerate-thumbnails-advanced'); ?></option>
-          <option value="3"><?php _e('Past Month','regenerate-thumbnails-advanced'); ?></option>
-          <option value="4"><?php _e('Past 3 Months','regenerate-thumbnails-advanced'); ?></option>
-          <option value="5"><?php _e('Past 6 Months','regenerate-thumbnails-advanced'); ?></option>
-          <option value="6"><?php _e('Past Year','regenerate-thumbnails-advanced'); ?></option>
-      </select>
+
+      <ul class='period-list'>
+
+          <?php
+          foreach($view->periods as $index => $period)
+          {
+            if ($period->isCustom())
+              continue;
+
+            $queryDate = $period->getQueryDate();
+            $startstamp = $queryDate['startstamp'];
+            $endstamp = $queryDate['endstamp'];
+
+            $checked = ($period->period_id === PERIODS::PERIOD_ALL) ? 'checked="checked"' : '';
+
+             echo "<li>
+             <input data-start='$startstamp' data-end='$endstamp' type='radio' name='period' value='" . $period->period_id . "' $checked >" . $period->period_name .
+             '</li>';
+          }
+          ?>
+
+      </ul>
     </div>
 
 
-    <div class='option'>
-        <label><?php _e('Custom Date'); ?></label>
+    <div class='option custom_date'>
         <div> <label>Start date</label>
-
+          <input type='date' name='start_date' value='' >
         </div>
-        <div> <lavel>End date</label>
-
+        <div> <label>End date</label>
+          <input type='date' name='end_date' value='<?php echo date('Y-m-d', time()) ?>'>
         </div>
 
     </div>

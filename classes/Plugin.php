@@ -144,7 +144,7 @@ class Plugin
   public function enqueue_scripts() {
 
       //wp_enqueue_script( 'jquery' );
-      wp_register_script('rta_js', RTA_PLUGIN_URL.'js/rta.js', array( 'jquery' ), RTA_PLUGIN_VERSION );
+      wp_register_script('rta_js', RTA_PLUGIN_URL.'js/rta.js', array(), RTA_PLUGIN_VERSION );
       wp_register_style( 'rta_css', RTA_PLUGIN_URL.'css/rta.css', array(), RTA_PLUGIN_VERSION );
       wp_register_style( 'rta_css_admin', RTA_PLUGIN_URL.'css/rta-admin-view.css', array(), RTA_PLUGIN_VERSION );
       wp_register_style( 'rta_css_admin_progress', RTA_PLUGIN_URL.'css/rta-admin-progress.css', array('rta_css_admin'), RTA_PLUGIN_VERSION );
@@ -173,6 +173,7 @@ class Plugin
                           'process' => $this->ajax()->get_json_process(),
                           'is_debug' => (Log::debugIsActive()) ? 1 : 0,
                           ));
+
 
       do_action('rta_enqueue_scripts');
   }
