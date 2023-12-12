@@ -24,9 +24,9 @@ namespace ReThumbAdvanced;
 
             $checked = ($period->period_id === PERIODS::PERIOD_ALL) ? 'checked="checked"' : '';
 
-             echo "<li>
+             echo "<li><label>
              <input data-start='$startstamp' data-end='$endstamp' type='radio' name='period' value='" . $period->period_id . "' $checked >" . $period->period_name .
-             '</li>';
+             '</label></li>';
           }
           ?>
 
@@ -35,10 +35,10 @@ namespace ReThumbAdvanced;
 
 
     <div class='option custom_date'>
-        <div> <label>Start date</label>
+        <div> <label><?php _e('Start date', 'regenerate-thumbnails-advanced'); ?></label>
           <input type='date' name='start_date' value='' >
         </div>
-        <div> <label>End date</label>
+        <div> <label><?php _e('End date', 'regenerate-thumbnails-advanced'); ?></label>
           <input type='date' name='end_date' value='<?php echo date('Y-m-d', time()) ?>'>
         </div>
 

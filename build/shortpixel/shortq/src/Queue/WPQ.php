@@ -286,7 +286,7 @@ class WPQ implements Queue
        $item->tries++;
 			 if ($item->tries > $this->getOption('retry_limit'))
 			 {
-				 do_action('shortpixel/modules/wpq/item/timeout', $item);
+				 do_action('rta/modules/wpq/item/timeout', $item);
 				 $this->itemFailed($item, true); // fatal fail
 			 }
 			 else

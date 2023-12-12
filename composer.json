@@ -24,7 +24,8 @@
         "buildSP" : "\\ShortPixel\\Build\\Build::BuildIt"
     },
     "extra": {
-         "targetNamespace" : "ReThumbAdvanced"
+         "targetNamespace" : "ReThumbAdvanced",
+         "targetFilter" : "rta"
     }
 
 }

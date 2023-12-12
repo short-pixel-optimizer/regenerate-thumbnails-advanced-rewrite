@@ -90,6 +90,13 @@ class Plugin
 
     $notices = Notice::getInstance();
 
+    $notices->loadIcons(array(
+        'normal' => '<img class="short-pixel-notice-icon" src="' . plugins_url('/images/notices/slider.png', RTA_PLUGIN_FILE) . '">',
+        'success' => '<img class="short-pixel-notice-icon" src="' . plugins_url('/images/notices/robo-cool.png', RTA_PLUGIN_FILE) . '">',
+        'warning' => '<img class="short-pixel-notice-icon" src="' . plugins_url('/images/notices/robo-scared.png', RTA_PLUGIN_FILE) . '">',
+        'error' => '<img class="short-pixel-notice-icon" src="' . plugins_url('/images/notices/robo-scared.png', RTA_PLUGIN_FILE) . '">',
+    ));
+
     // Enqueue notices
     add_action('admin_notices', array($notices, 'admin_notices')); // previous page / init time
     add_action('admin_footer', array($notices, 'admin_notices')); // fresh notices between init - end

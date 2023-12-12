@@ -220,7 +220,7 @@ class NoticeController //extends ShortPixelController
 
 					if (! is_null($id))
 					{
-						
+
           	$notice = $this->getNoticeByID($id);
 					}
 					else
@@ -346,6 +346,7 @@ class NoticeController //extends ShortPixelController
             add_action('admin_print_footer_scripts', array($this, 'printNoticeStyle'));
             self::$cssHookLoaded = true;
           }
+          
           foreach($this->getNoticesForDisplay() as $notice)
           {
             echo $notice->getForDisplay();
