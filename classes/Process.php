@@ -111,6 +111,47 @@ class Process
       return $this->q->getStatus($name);
   }
 
+  public function getProcessStatus()
+  {
+    $process = array(
+      'running' => $this->get('running'),
+      'preparing' => $this->get('preparing'),
+      'finished' => $this->get('finished'),
+      'done' => $this->get('done'),
+      'items' => $this->get('items'),
+      'errors' => $this->get('errors'),
+    );
+
+     return $process;
+
+  }
+
+  public function isRunning()
+  {
+      return (true == $this->get('running')) ? true : false;
+  }
+
+  public function isPreparing()
+  {
+      return (true == $this->get('preparing')) ? true : false;
+  }
+
+  public function isFinished()
+  {
+      return (true == $this->get('finished')) ? true : false;
+  }
+
+
+  public function isUnemployed()
+  {
+     if (false === $this->isRunning() || false === $this->isPreparing())
+     {
+        return true;
+     }
+     return false;
+  }
+
+
   /** Starts a new generate process. Queries the totals based on form input
   * @param $form Array with FormData
   * @return boolean true if all went ok, false if error occured
@@ -176,7 +217,7 @@ class Process
       return $result;
   }
 
-  public function getItems()
+  public function dequeueItems()
   {
      return $this->q->dequeue();
   }

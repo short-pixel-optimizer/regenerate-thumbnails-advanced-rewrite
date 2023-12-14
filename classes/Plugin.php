@@ -5,6 +5,9 @@ use \ReThumbAdvanced\Notices\NoticeController as Notice;
 use \ReThumbAdvanced\Controllers\AdminController as AdminController;
 use \ReThumbAdvanced\FileSystem\Controller\FileSystemController as FileSystemController;
 
+use \ReThumbAdvanced\Integrations\Wpcli\Wpcli as Wpcli;
+
+
 // load runtime.
 class Plugin
 {
@@ -33,6 +36,8 @@ class Plugin
       add_action( 'admin_menu', array( $this, 'admin_menus' ) );
 
       add_filter( 'plugin_action_links_' . plugin_basename(RTA_PLUGIN_FILE), array($this, 'generate_plugin_links'));//for plugin settings page
+
+      Wpcli::getInstance();
   }
 
   public static function getInstance()
@@ -48,28 +53,6 @@ class Plugin
     return '\ReThumbAdvanced\\'  . $name;
   }
 
-
-  /*public function initRuntime()
-  {
-
-    foreach($this->paths as $short_path)
-    {
-      $directory_path = realpath(RTA_PLUGIN_PATH . $short_path);
-
-      if ($directory_path !== false)
-      {
-        $it = new \DirectoryIterator($directory_path);
-        foreach($it as $file)
-        {
-          $file_path = $file->getRealPath();
-          if ($file->isFile() && pathinfo($file_path, PATHINFO_EXTENSION) == 'php')
-          {
-            require_once($file_path);
-          }
-        }
-      }
-    }
-  } */
 
   // load textdomain, init.
   public function init()
@@ -151,7 +134,7 @@ class Plugin
   public function enqueue_scripts() {
 
       //wp_enqueue_script( 'jquery' );
-      wp_register_script('rta_js', RTA_PLUGIN_URL.'js/rta.js', array(), RTA_PLUGIN_VERSION );
+      wp_register_script('rta_js', RTA_PLUGIN_URL.'js/rta.js', array('rta_shift-select'), RTA_PLUGIN_VERSION );
       wp_register_style( 'rta_css', RTA_PLUGIN_URL.'css/rta.css', array(), RTA_PLUGIN_VERSION );
       wp_register_style( 'rta_css_admin', RTA_PLUGIN_URL.'css/rta-admin-view.css', array(), RTA_PLUGIN_VERSION );
       wp_register_style( 'rta_css_admin_progress', RTA_PLUGIN_URL.'css/rta-admin-progress.css', array('rta_css_admin'), RTA_PLUGIN_VERSION );
@@ -180,6 +163,8 @@ class Plugin
                           'process' => $this->ajax()->get_json_process(),
                           'is_debug' => (Log::debugIsActive()) ? 1 : 0,
                           ));
+
+      wp_register_script('rta_shift-select', RTA_PLUGIN_URL.'js/shift-select.js', array(), RTA_PLUGIN_VERSION );
 
 
       do_action('rta_enqueue_scripts');

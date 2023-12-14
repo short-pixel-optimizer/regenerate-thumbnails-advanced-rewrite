@@ -109,6 +109,8 @@ class RtaJS
         visibleOptions[i].addEventListener('change', this.CheckOptionsVisible.bind(this));
      }
 
+     var sh = new ShiftSelect('input[name^="regenerate_sizes"]');
+
      var toggleWindow = document.querySelector('.toggle-window');
      toggleWindow.addEventListener('click', this.ToggleWindow.bind(this));
 
@@ -219,8 +221,8 @@ class RtaJS
 
    SelectAll(event)
    {
-      var action = event.target.dataList.action;
-      var target = event.target.dataList.target;
+      var action = event.target.dataset.action;
+      var target = event.target.dataset.target;
 
       if (action == 'select')
          var checked = true;
@@ -229,7 +231,7 @@ class RtaJS
       }
 
     //  $('input[name^="' + target + '"]').prop('checked', checked).trigger('change');
-      var inputs = document.querySelector('input[name^="' + target + '"]');
+      var inputs = document.querySelectorAll('input[name^="' + target + '"]');
       for (var i = 0; i < inputs.length; i++)
       {
          inputs[i].checked = checked;

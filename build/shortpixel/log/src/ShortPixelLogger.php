@@ -225,8 +225,20 @@ namespace ReThumbAdvanced\ShortPixelLogger;
 				return false;
 			}
 
+      $file = false;
+      if (file_exists($this->logPath))
+      {
+         if (! is_writable($this->logPath))
+         {
+            error_log('ShortPixelLogger: File Exists, but not writable: ' . $this->logPath);
+            $this->logFile = false;
+            return $file;
+         }
+      }
+
 			$file = fopen($this->logPath, 'a');
-			if ($file === false)
+
+      if ($file === false)
 			{
 				 error_log('ShortpixelLogger: File could not be opened / created: ' . $this->logPath);
 				 $this->logFile = false;

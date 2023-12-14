@@ -111,7 +111,6 @@ class AjaxController
          case 'regenerate_success':
             $status['message'] = sprintf(__('%s Success! %s %s has %s new thumbnails', 'regenerate-thumbnails-advanced'), '<strong>', '</strong>', $args['name'], $args['count'] );
 
-        //    $status['mask'] =  array('name', 'count');
             $status['status'] = self::STATUS_SUCCESS;
             $status['image'] = $args['image'];
 
@@ -152,6 +151,11 @@ class AjaxController
      return $this->status;
    }
 
+   public function clear_status()
+   {
+      $this->status = array();
+   }
+
    public function ajax_start_process()
    {
 
@@ -187,7 +191,6 @@ class AjaxController
               $endstamp = strtotime($form['end_date']);
            }
 
-Log::addDebug("Adding Period $startstamp - $endstamp");
            $process->setTime($startstamp, $endstamp);
 
         /*
@@ -233,7 +236,12 @@ Log::addDebug("Adding Period $startstamp - $endstamp");
    {
        //$json = array('running' => false);
        $process = RTA()->process();
-       $json = array();
+
+       $json = $process->getProcessStatus();
+       $json['status'] = $this->status;
+       return $json;
+
+/*       $json = array();
        $json['running'] = $process->get('running');
        $json['preparing'] = $process->get('preparing');
        $json['finished'] = $process->get('finished');
@@ -241,7 +249,7 @@ Log::addDebug("Adding Period $startstamp - $endstamp");
        $json['items'] = $process->get('items');
        $json['errors'] = $process->get('errors');
        $json['status'] = $this->status;
-       return $json;
+       return $json; */
    }
 
    public function ajax_do_process()
@@ -266,7 +274,7 @@ Log::addDebug("Adding Period $startstamp - $endstamp");
 
       if ($process->get('running') == true)
       {
-          $items = $process->getItems();
+          $items = $process->dequeueItems();
 
           if ($items)
           {

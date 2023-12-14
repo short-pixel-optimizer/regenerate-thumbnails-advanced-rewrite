@@ -145,7 +145,7 @@ class Image
         // RTA should never touch source files. This happens when redoing scaling. This would also be problematic in combination with optimisers. Disable scaling when doing thumbs.
         add_filter('big_image_size_threshold', array($this, 'disable_scaling'));
 
-Log::addTemp("Geenerating " . $this->id . ' ' . $this->filePath);
+
         $new_metadata = wp_generate_attachment_metadata($this->id, $this->filePath);
 
         remove_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
@@ -307,6 +307,7 @@ Log::addTemp("Geenerating " . $this->id . ' ' . $this->filePath);
          if (! $overwrite)
          {
           // thumbFile is RELATIVE. So find dir via main image.
+          // @todo this should be done via FS getFile
            $thumbFile = $this->getDir() . $metaSize['file'];
            //Log::addDebug('Preventing overwrite of - ' . $thumbFile);
            if (file_exists($thumbFile)) // 4. Check if file is really there
