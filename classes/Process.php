@@ -111,6 +111,15 @@ class Process
       return $this->q->getStatus($name);
   }
 
+  public function getSetting($name)
+  {
+      if (property_exists($this, $name))
+      {
+         return $this->{$name};
+      }
+      return null;
+  }
+
   public function getProcessStatus()
   {
     $process = array(
@@ -144,7 +153,7 @@ class Process
 
   public function isUnemployed()
   {
-     if (false === $this->isRunning() || false === $this->isPreparing())
+     if (false === $this->isRunning() && false === $this->isPreparing())
      {
         return true;
      }
@@ -273,6 +282,7 @@ class Process
           $imageObj = new Image($image_id);
           if (false === $imageObj->isProcessable())
           {
+            Log::addTemp("Rejecting $image_id " . $imageObj->getProcessableReason());
              continue;
           }
 

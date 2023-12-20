@@ -3,8 +3,7 @@ namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
 
 
-
-class Image
+class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 {
   protected $id;
 
@@ -13,16 +12,24 @@ class Image
   protected $do_cleanup =false;
   protected $do_metacheck = false;
 
-  protected $filePath;
   protected $fileUri;
-  protected $fileDir;
-  protected $fileObj; // FileModel
+
   protected $metadata = array();
 
   protected $persistentMeta = array();
   protected $regeneratedSizes = array();
 
   protected $customThumbSuffixes =  array('_c', '_tl', '_tr', '_br', '_bl');
+
+  protected $processable_status;
+
+  const P_PROCESSABLE = 0;
+  const P_FILE_NOT_EXIST  = 1;
+  const P_FILE_NOTWRITABLE = 6;
+  const P_DIRECTORY_NOTWRITABLE = 10;
+  const P_NOTDISPLAYABLE = 11;
+  const P_ISVIRTUAL = 12;
+
 
   public function __construct($image_id)
   {
@@ -42,6 +49,7 @@ class Image
 					if ($filePath === false)
 					{
 						RTA()->ajax()->add_status('file_missing', array('name' => basename($image_id)) );
+            $this->processable_status = self::P_FILE_NOT_EXIST;
 						return false;
 					}
 
@@ -58,31 +66,29 @@ class Image
         $filePath = get_attached_file($image_id);
       }
 
-      $fileObj = $fs->getFile($filePath);
-      $this->fileObj = $fileObj;
+      parent::__construct($filePath);
 
-
-      $this->fileDir = (string) $fileObj->getFileDir();
-
-      $this->filePath = $fileObj->getFullPath();
 
       if (function_exists('wp_get_original_image_url')) // WP 5.3+
         $this->fileUri = wp_get_original_image_url($image_id);
       else
         $this->fileUri = wp_get_attachment_url($image_id);
 
-      if (false === $fileObj->exists())
+      if (false === $this->exists())
       {
+        $this->processable_status = self::P_FILE_NOT_EXIST;
         $this->does_exist = false;
 
       }
 
-      if ( $this->fileObj->is_virtual())
+      if ( $this->is_virtual())
       {
+          $this->processable_status = self::P_ISVIRTUAL;
           $this->is_image = false;
       }
-      elseif (false === $this->fileObj->exists() || false === file_is_displayable_image($this->filePath)) // this is based on getimagesize
+      elseif (false === $this->exists() || false === file_is_displayable_image($this->getFullPath())) // this is based on getimagesize
 			{
+          $this->processable_status = self::P_NOTDISPLAYABLE;
           $this->is_image = false;
 			}
 
@@ -92,13 +98,7 @@ class Image
 
   public function isProcessable()
   {
-       $fileObj = $this->fileObj;
-
-       if (! is_object($fileObj))
-       {
-          return false;
-       }
-       elseif ( ! $fileObj->exists()  || (! $fileObj->is_virtual() && ! $fileObj->is_directory_writable() ) || false === $this->isImage() )
+       if ( ! $this->exists()  || (! $this->is_virtual() && ! $this->is_directory_writable() ) || false === $this->isImage() )
        {
           return false;
        }
@@ -134,19 +134,24 @@ class Image
         do_action('shortpixel-thumbnails-before-regenerate', $this->id);
 
         //use the original main image if exists
-        $backup = apply_filters('shortpixel_get_backup', $this->getPath() );
-        if($backup && $backup !== $this->filePath) {
+        $backup = apply_filters('rta/get_backup', $this->getFullPath(), $this->id);
+        if($backup && $backup !== $this->getFullPath()) {
             Log::addDebug('Retrieving SPIO backups for process');
-            copy($this->getPath(), $backup . "_optimized_" . $this->id);
-            copy($backup, $this->getPath());
+            $fs = RTA()->fs();
+            $backupObj = $fs->getFile($backup);
+
+            $targetObj = $fs->getFile($backup . "_optimized_" . $this->id);
+            $this->copy($targetObj);
+            $backupObj->copy($this);
+            //copy($this->getFullPath(), $backup . "_optimized_" . $this->id);
+            //copy($backup, $this->getFullPath());
         }
 
         add_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
         // RTA should never touch source files. This happens when redoing scaling. This would also be problematic in combination with optimisers. Disable scaling when doing thumbs.
         add_filter('big_image_size_threshold', array($this, 'disable_scaling'));
 
-
-        $new_metadata = wp_generate_attachment_metadata($this->id, $this->filePath);
+        $new_metadata = wp_generate_attachment_metadata($this->id, $this->getFullPath());
 
         remove_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
         remove_filter('big_image_size_threshold', array($this, 'disable_scaling'));
@@ -154,17 +159,19 @@ class Image
         Log::addDebug('New Attachment metadata generated', $new_metadata);
 
         //restore the optimized main image
-        if($backup && $backup !== $this->filePath) {
-            rename($backup . "_optimized_" . $this->id, $this->filePath);
+        if($backup && $backup !== $this->getFullPath()) {
+            $targetObj->copy($this);
+            $targetObj->delete();
+  //          rename($backup . "_optimized_" . $this->id, $this->getFullPath());
         }
 
         //get the attachment name
         if (is_wp_error($new_metadata)) {
 
-          RTA()->ajax()->add_status('error_metadata', array('name' => basename($this->filePath) ));
+          RTA()->ajax()->add_status('error_metadata', array('name' => basename($this->getFullPath()) ));
         }
         else if (empty($new_metadata)) {
-            Log::addDebug('File missing - New metadata returned empty', array($new_metadata, $this->fileUri,$this->filePath ));
+            Log::addDebug('File missing - New metadata returned empty', array($new_metadata, $this->fileUri,$this->getFullPath() ));
             RTA()->ajax()->add_status('file_missing', array('name' => basename($this->fileUri) ));
         } else {
 
@@ -179,7 +186,7 @@ class Image
             // Do not send if nothing was regenerated, otherwise SP thinks all needs to be redone
             if (count($regenSizes) > 0)
             {
-              $ext = $this->fileObj->getExtension();
+              $ext = $this->getExtension();
               if ($ext !== 'webp' && $ext !== 'avif')
               {
                 Log::addTemp('Sending to SPIO rergen');
@@ -193,12 +200,12 @@ class Image
         RTA()->ajax()->add_status('regenerate_success',
                 array('image' => $last_success_url,
                 'count' => count($regenSizes),
-                'name' => basename($this->filePath),
+                'name' => $this->getFileName(),
             ));
 
     } else {
 
-          $debug_filename = (strlen($this->fileUri) > 0) ? $this->fileUri : $this->filePath;
+          $debug_filename = (strlen($this->fileUri) > 0) ? $this->fileUri : $this->getFullPath();
           if (false === $this->does_exist) // Existing files, not image, can be attachments, zipfiles, pdf etc. Fail silently.
           {
             $mime = get_post_mime_type($this->id);
@@ -209,13 +216,13 @@ class Image
           }
           else
           {
-            if ($this->fileObj->is_virtual())
+            if ($this->is_virtual())
             {
-              Log::addDebug('File virtual', array($this->filePath, $this->id) );
+              Log::addDebug('File virtual', array($this->getFullPath(), $this->id) );
               RTA()->ajax()->add_status('is_virtual', array('name' => basename($debug_filename)));
             }
             else {
-              Log::addDebug('File missing - Current Image reported as not an image', array($this->filePath, $this->id) );
+              Log::addDebug('File missing - Current Image reported as not an image', array($this->getFullPath(), $this->id) );
               RTA()->ajax()->add_status('file_missing', array('name' => basename($debug_filename)) );
             }
           }
@@ -256,7 +263,7 @@ class Image
         Log::addDebug('Do metaCheck now for ' . $this->id);
         foreach($updated_meta['sizes'] as $size => $sizedata)
         {
-           $thumbfile = $this->getDir() . $sizedata['file'];
+           $thumbfile = $this->getFileDir() . $sizedata['file'];
            if (! file_exists($thumbfile))
            {
              Log::addDebug('Thumbfile not existing. Unsetting this size', array($size, $thumbfile, $this->id));
@@ -308,7 +315,7 @@ class Image
          {
           // thumbFile is RELATIVE. So find dir via main image.
           // @todo this should be done via FS getFile
-           $thumbFile = $this->getDir() . $metaSize['file'];
+           $thumbFile = $this->getFileDir() . $metaSize['file'];
            //Log::addDebug('Preventing overwrite of - ' . $thumbFile);
            if (file_exists($thumbFile)) // 4. Check if file is really there
            {
@@ -378,7 +385,7 @@ class Image
   **/
   public function clean()
   {
-    $mainFile = $this->filePath;
+    $mainFile = $this->getFullPath();
     $exclude = array();
 
     if (isset($this->metadata['sizes']))
@@ -438,30 +445,12 @@ class Image
     return $result;
   }
 
-  public function exists()
-  {
-    return $this->does_exist;
-  }
 
   public function isImage()
   {
       return $this->is_image;
   }
 
-  public function getUri()
-  {
-    return $this->fileUri;
-  }
-
-  public function getPath()
-  {
-    return $this->filePath;
-  }
-
-  public function getDir()
-  {
-    return $this->fileDir;
-  }
 
   public function getMetaData()
   {
@@ -501,11 +490,48 @@ class Image
 
       if ($post->post_mime_type == '')
       {
-        $mime = wp_get_image_mime($this->filePath);
+        $mime = wp_get_image_mime($this->getFullPath());
         $post->post_mime_type = $mime;
-        Log::addDebug('Fixing File Mime for ' . $this->filePath . ' new MIME - ' . $mime);
+        Log::addDebug('Fixing File Mime for ' . $this->getFullPath() . ' new MIME - ' . $mime);
         wp_update_post($post);
       }
   }
 
-}
+  // Stolen from SPIO
+  public function getProcessableReason($status = null)
+  {
+    $message = false;
+    $status = (! is_null($status)) ? $status : $this->processable_status;
+
+    switch($status)
+    {
+       case self::P_PROCESSABLE:
+          $message = __('Image Ok', 'regenerate-thumbnails-advanced');
+       break;
+       case self::P_FILE_NOT_EXIST:
+          $message = __('File does not exist', 'regenerate-thumbnails-advanced');
+       break;
+       case self::P_FILE_NOTWRITABLE:
+          $message = sprintf(__('Image %s is not writable in %s', 'regenerate-thumbnails-advanced'), $this->getFileName(), (string) $this->getFileDir());
+       break;
+       case self::P_DIRECTORY_NOTWRITABLE:
+          $message = sprintf(__('Image directory %s is not writable', 'regenerate-thumbnails-advanced'), (string) $this->getFileDir());
+       break;
+       case self::P_NOTDISPLAYABLE:
+          $message = sprintf(__('Image  %s is not displayable', 'regenerate-thumbnails-advanced'), (string) $this->getFileName());
+       break;
+       case self::P_ISVIRTUAL:
+       $message = sprintf(__('Image  %s is virtual', 'regenerate-thumbnails-advanced'), (string) $this->getFileName());
+       break;
+       // Restorable Reasons
+       default:
+          $message = __(sprintf('Unknown Issue, Code %s',  $this->processable_status), 'regenerate-thumbnails-advanced');
+       break;
+    }
+
+    return $message;
+  }
+
+
+
+} // Image Class
