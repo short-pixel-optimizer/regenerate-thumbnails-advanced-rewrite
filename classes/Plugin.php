@@ -265,8 +265,8 @@ class Plugin
     $editurl = $this->getRegenerateLink($post->ID, $url);
     $link = "href=\"$editurl\"";
 
-    $image = new Image($post->ID);
-    //var_dump($image);
+//    $image = new Image($post->ID);
+
 
     echo "<p><a class='button-secondary' $link>" . esc_html__("Regenerate Thumbnails", "regenerate-thumbnails-advanced") . "</a></p>";
   }

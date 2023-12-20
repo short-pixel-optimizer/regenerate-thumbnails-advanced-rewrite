@@ -282,7 +282,7 @@ class Process
           $imageObj = new Image($image_id);
           if (false === $imageObj->isProcessable())
           {
-            Log::addTemp("Rejecting $image_id " . $imageObj->getProcessableReason());
+
              continue;
           }
 

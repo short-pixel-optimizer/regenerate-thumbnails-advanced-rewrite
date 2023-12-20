@@ -106,6 +106,16 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
        return true;
   }
 
+  public function is_directory_writable()
+  {
+      $bool = parent::is_directory_writable();
+      if (false === $bool)
+      {
+         $this->processable_status = self::P_DIRECTORY_NOTWRITABLE;
+      }
+
+  }
+
   public function regenerate()
   {
     if (RTA()->process()->doRemoveThumbnails())
@@ -189,7 +199,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
               $ext = $this->getExtension();
               if ($ext !== 'webp' && $ext !== 'avif')
               {
-                Log::addTemp('Sending to SPIO rergen');
                 do_action('shortpixel-thumbnails-regenerated', $this->id, $original_meta, $regenSizes, $is_a_bulk);
               }
             }
@@ -331,7 +340,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
       // 5. Drop the 'not to be' regen. images from the sizes so it will not process.
       $do_regenerate_sizes = array_diff($do_regenerate_sizes, $prevent_regen);
       Log::addDebug('Sizes going for regen - ' . count($do_regenerate_sizes) );
-      Log::addTemp('Sizes', $do_regenerate_sizes);
+
 
       /* 6. If metadata should be cleansed of undefined sizes, remove them from the imageMetaSizes
       *   This is for sizes that are -undefined- in total by system sizes.
@@ -456,8 +465,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
   {
     return $this->metadata;
   }
-
-
 
   public function getCurrentSizes()
   {
