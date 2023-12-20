@@ -109,10 +109,13 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
   public function is_directory_writable()
   {
       $bool = parent::is_directory_writable();
+
       if (false === $bool)
       {
          $this->processable_status = self::P_DIRECTORY_NOTWRITABLE;
       }
+
+      return $bool;
 
   }
 

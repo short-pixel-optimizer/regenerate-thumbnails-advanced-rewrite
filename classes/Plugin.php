@@ -265,10 +265,16 @@ class Plugin
     $editurl = $this->getRegenerateLink($post->ID, $url);
     $link = "href=\"$editurl\"";
 
-//    $image = new Image($post->ID);
-
-
+    $image = new Image($post->ID);
+    if (true == $image->isProcessable())
+    {
     echo "<p><a class='button-secondary' $link>" . esc_html__("Regenerate Thumbnails", "regenerate-thumbnails-advanced") . "</a></p>";
+    }
+    else {
+        echo $image->getProcessableReason();
+    }
+
+
   }
 
   /** Adding a button to the attachements view popup */
