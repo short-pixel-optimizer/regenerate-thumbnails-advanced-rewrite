@@ -31,9 +31,10 @@ class Process
   protected $delete_leftmetadata = false;
   protected $clean_metadata = false;
 
-  protected $query_prepare_limit = 1000; // amount of records to enqueue per go.
+  protected $query_prepare_limit = 500; // amount of records to enqueue per go.
   protected $run_start = 0;
   protected $run_limit = 0;
+  protected $memory_limit;
 //  protected $query_chunk_size = 100;
 
   protected $q;
@@ -48,7 +49,11 @@ class Process
       if ($process !== false)
         $this->set_process($process);
 
+        // Allow this to be filtered.
+      $this->query_prepare_limit = apply_filters('rta/process/prepare_limit', $this->query_prepare_limit);
       $this->q->setOption('numitems', apply_filters('rta/process/numitems', 3));
+
+      $this->memory_limit =$this->unitToInt(ini_get('memory_limit'));
   }
 
   public static function getInstance()
@@ -179,25 +184,45 @@ class Process
   }
 
   // function to limit runtimes in seconds..
-  public function limitTime($limit = 6)
+  protected function IsOverTimeLimit($limit = 6)
   {
       $limit = apply_filters('rta/process/prepare_limit', $limit);
-      if ($this->run_limit == 0)
+      if (0 == $this->run_limit )
       {
           $this->run_start = time();
           $this->run_limit = time() + $limit;
       }
 
-      if ($this->run_start <= $this->run_limit)
+Log::addTemp('Run Limit ' . $this->run_limit);
+Log::addTemp('Time      ' . time() );
+      if ($this->run_limit <= time())
       {
           return true;
       }
-      else
-      {
-         $this->run_limit = 0;
-         $this->run_start = 0;
-      }
+
+
       return false;
+  }
+
+  public function IsOverMemoryLimit($runCount)
+  {
+      $memory_limit = $this->memory_limit;
+      $current_mem = memory_get_usage();
+
+      $percentage_limit = ($runCount > 0) ?  (95 - round(100/$runCount)) : 95;
+
+      $limit = round($memory_limit/100 * apply_filters('rta/process/max_memory', $percentage_limit));
+
+Log::addTemp('Current Mem / Limit ' . $current_mem .  ' ' . $limit . ' ( ' . $percentage_limit . ' %)');
+      if ($current_mem >= $limit)
+      {
+        Log::addTemp('Over Mem!');
+         return true;
+      }
+      else {
+        return false;
+      }
+
   }
 
   public function prepare()
@@ -206,23 +231,31 @@ class Process
       $i = 0;
       while( $this_result = $this->runEnqueue()  )
       {
-          if (! $this->limitTime() )
+
+        Log::addTemp('This_Result ' . var_export($this_result, true));
+          if (false !== $this_result)
           {
-            Log::addDebug('Prepare went over time, breaking');
+            $result += $this_result;
+            Log::addTemp('adding this result ' . $this_result . ' total : ' . $result);
+          }
+
+          if (true === $this->IsOverTimeLimit() || true === $this->IsOverMemoryLimit($i) )
+          {
+            Log::addDebug('Prepare went over time or Memory, breaking');
             break;
           }
 
-          $result += $this_result;
           $i++;
       }
 
-      if ($this_result == false)
+      if ($this_result === false)
       {
          $this->q->setStatus('preparing', false, false);
          $this->q->setStatus('running', true);
          Log::addDebug('Preparing done, Starting run status');
       }
 
+Log::addTemp('Return Result ' . $result);
       return $result;
   }
 
@@ -282,7 +315,7 @@ class Process
           $imageObj = new Image($image_id);
           if (false === $imageObj->isProcessable())
           {
-
+          //  Log::addTemp("Not processable $image_id - " . $imageObj->getProcessableReason() );
              continue;
           }
 
@@ -302,8 +335,10 @@ class Process
 
      /** Keep looping preparing ( possible query limit reached ) until no new items are forthcoming. */
      if ($resultCount > 0)
+     {
+       Log::addTemp('ResultCount :' . $resultCount);
       return $resultCount;
-
+     }
      return false;
 
   }
@@ -335,6 +370,13 @@ class Process
   {
       $this->q->resetQueue();
       delete_option($this->process_name);
+  }
+
+  private function unitToInt($s)
+  {
+    return (int)preg_replace_callback('/(\-?\d+)(.?)/', function ($m) {
+        return $m[1] * pow(1024, strpos('BKMG', $m[2]));
+    }, strtoupper($s));
   }
 
 

@@ -71,7 +71,6 @@ class RtaCommand
 
          $process->setTime($startstamp, $endstamp);
 
-
          $process->start();
       }
       elseif (count($assoc) > 0)
@@ -80,9 +79,6 @@ class RtaCommand
       }
 
       $this->runProcess();
-
-      //$process = $this->getProcess();
-
 
    }
 

@@ -209,13 +209,12 @@ class RtaJS
 
      this.process = process;
 
-     if (process.running)
-       this.in_process = process.running;
+     if (true == process.running  || true == process.preparing)
+     {
+       this.in_process = true;
 
-      if (process.running || process.preparing)
-      {
-         this.UpdateProgress();
-         this.ResumeProcess();
+       this.UpdateProgress();
+       this.ResumeProcess();
      }
    }
 
@@ -501,11 +500,12 @@ class RtaJS
    {
       var stoppable = false;
 
-       if (this.in_process)
+       if (this.in_process || this.preparing)
        {
            stoppable = true;
        }
 
+console.log("ProcessStoppable", stoppable);
 
       var stopButton = this.GetButton('stop');
       var pauseButton = this.GetButton('pause');
@@ -580,8 +580,6 @@ class RtaJS
        var resumeButton = this.GetButton('resume');
 
        pauseButton.disabled = true;
-
-
 
        if (this.is_stopped == false)
        {

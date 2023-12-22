@@ -28,7 +28,6 @@ class ShortPixel
 
       if (\is_plugin_active('shortpixel-image-optimiser/wp-shortpixel.php'))
       {
-         Log::addTemp('Integration: Adding Filter');
          add_filter('rta/get_backup', array($this, 'spio_get_backup'),10,2);
       }
   }
