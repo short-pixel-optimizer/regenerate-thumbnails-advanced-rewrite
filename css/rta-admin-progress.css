@@ -44,7 +44,9 @@ section.regenerate .rta_progress .rta_progress_view svg.CircularProgressbar .pro
 }
 section.regenerate .rta_progress .images {
   padding: 15px;
-  width: 60%;
+  width: 80%;
+  height: 80%;
+  margin-bottom: 25px;
 }
 section.regenerate .rta_progress .images h5 {
   text-align: right;
@@ -203,6 +205,40 @@ section.regenerate button.stop-process .dashicons, section.regenerate button.pau
 section.regenerate button.pause-process, section.regenerate button.resume-process {
   left: 15px;
   right: auto;
+}
+section.regenerate .rta_progressbar_view {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 5px;
+}
+section.regenerate .rta_progressbar {
+  width: 100%;
+  position: relative;
+  bottom: 5px;
+  height: 35px;
+  border: 1px solid rgba(200, 200, 200, 0.5);
+}
+section.regenerate .rta_progressbar .left, section.regenerate .rta_progressbar .right, section.regenerate .rta_progressbar .centre {
+  position: absolute;
+  padding-top: 8px;
+}
+section.regenerate .rta_progressbar .left {
+  left: 10px;
+  color: #fff;
+}
+section.regenerate .rta_progressbar .right {
+  right: 10px;
+  color: #000;
+}
+section.regenerate .rta_progressbar .centre {
+  left: 45%;
+  font-size: 1.2em;
+}
+section.regenerate .rta_progressbar .thebar {
+  background: rgb(0, 188, 212);
+  width: 1%;
+  position: relative;
 }
 
 /*# sourceMappingURL=rta-admin-progress.css.map */

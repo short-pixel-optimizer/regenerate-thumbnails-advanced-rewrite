@@ -5,12 +5,15 @@ namespace ReThumbAdvanced;
 <section class='regenerate rta_hidden'>
   <div class='container two-panel-wrap'>
 
-    <div class="rta_progress two-panel-wrap">
+    <div class="rta_progress no-panel-wrap">
+
       <div class="images rta_thumbnail_view rta_panel_off">
           <h4 class='thumb-label'><?php _e('Last Regenerated','regenerate-thumbnails-advanced'); ?></h4>
           <p class='thumb-message'>&nbsp;</p>
-          <div class='thumbnail'> <img src="" alt=""> </div>
+          <div class='thumbnail'> <img src="<?php echo $this->getURL('images/placeholder.svg') ?>" alt=""> </div>
       </div>
+
+      <!--
         <div class='rta_progress_view rta_panel_off'>
           <svg class="CircularProgressbar" viewBox="0 0 100 100">
               <path class="CircularProgressbar-trail" d="
@@ -30,6 +33,17 @@ namespace ReThumbAdvanced;
               <text class="CircularProgressbar-text" x="50" y="50">0%</text>
               <text class="progress-count" x="50" y="70"><tspan class='current'>0</tspan> / <tspan class='total'>0</tspan></text>
           </svg>
+       </div>
+-->
+       <div class='rta_progressbar_view'>
+         <div class='rta_progressbar'>
+
+            <!--  <span class='left'>0%</span>&nbsp; -->
+              <span class='right'>0%</span>
+              <span class='centre'>0/100</span>
+
+
+         </div>
        </div>
     </div>
 
@@ -123,4 +137,5 @@ namespace ReThumbAdvanced;
     </div>
 
   </div>  <!-- container -->
+
 </section>

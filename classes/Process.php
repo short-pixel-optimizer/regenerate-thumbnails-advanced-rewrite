@@ -311,14 +311,14 @@ Log::addTemp('Return Result ' . $result);
 
      foreach($result as $index => $row)
      {
-          $image_id = $row->ID;
-          $imageObj = new Image($image_id);
+      /*    $image_id = $row->ID;
+         $imageObj = new Image($image_id);
           if (false === $imageObj->isProcessable())
           {
           //  Log::addTemp("Not processable $image_id - " . $imageObj->getProcessableReason() );
              continue;
           }
-
+*/
           $resultCount++;
           $items[] = array('id' => $row->ID, 'value' => '');
 

@@ -188,7 +188,7 @@ class AjaxController
               $endstamp = time();
            }
            else {
-              $endstamp = strtotime($form['end_date']);
+              $endstamp = strtotime($form['end_date'] . ' 23:59:59');
            }
 
            $process->setTime($startstamp, $endstamp);
@@ -199,7 +199,7 @@ class AjaxController
          */
 
 
-         $this->add_status('Searching for items to add');
+         $this->add_status(__('Searching for items to add', 'regenerate-thumbnails-advanced') );
          $process->start();
          $result = $this->runprocess(); // This would mostly be preparing.
      }
@@ -276,17 +276,23 @@ class AjaxController
       {
           $items = $process->dequeueItems();
 
-          if ($items)
+          if (is_array($items))
           {
             foreach($items as $item)
             {
               $item_id = $item->item_id;
               $image = new Image($item_id);
-              $status = $image->regenerate();
+              if (false === $image->isProcessable())
+              {
+                 Log::addDebug('Image not processable: ' . $image->getProcessableReason());
+                 continue;
+              }
+              else {
+                 $status = $image->regenerate();
+              }
             }
           }
       }
-
 
       if ($process->get('finished') == true)
       {

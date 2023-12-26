@@ -266,7 +266,7 @@ class Plugin
     $link = "href=\"$editurl\"";
 
     $image = new Image($post->ID);
-    if (true == $image->isProcessable())
+    if (true === $image->isProcessable())
     {
     echo "<p><a class='button-secondary' $link>" . esc_html__("Regenerate Thumbnails", "regenerate-thumbnails-advanced") . "</a></p>";
     }

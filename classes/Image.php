@@ -12,8 +12,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
   protected $do_cleanup =false;
   protected $do_metacheck = false;
 
-  protected $fileUri;
-
   protected $metadata = array();
 
   protected $persistentMeta = array();
@@ -39,16 +37,17 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
       if (function_exists('wp_get_original_image_path')) // WP 5.3+
       {
         $filePath = wp_get_original_image_path($image_id);
+        Log::addTemp('FilePath Original', $filePath);
 
         /** When this function returns false it's possible the post_mime_type in wp_posts table got corrupted. If the file is displayable image,
         * attempt to fix this issue, then reget the item for further processing */
         if ($filePath === false)
         {
           $filePath = get_attached_file($image_id);
-
+          Log::addTemp('FilePath Attached', $filePath);
 					if ($filePath === false)
 					{
-						RTA()->ajax()->add_status('file_missing', array('name' => basename($image_id)) );
+						RTA()->ajax()->add_status('file_missing', array('name' => basename($image_id), 'image_id' => $image_id) );
             $this->processable_status = self::P_FILE_NOT_EXIST;
 						return false;
 					}
@@ -67,12 +66,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
       }
 
       parent::__construct($filePath);
-
-
-      if (function_exists('wp_get_original_image_url')) // WP 5.3+
-        $this->fileUri = wp_get_original_image_url($image_id);
-      else
-        $this->fileUri = wp_get_attachment_url($image_id);
 
       if (false === $this->exists())
       {
@@ -141,6 +134,13 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
     }
 
+    Log::addTemp('Processable regen ' . var_export($this->isProcessable(), true));
+
+    Log::addTemp('Processable regen ' . var_export($this->getProcessableReason(), true));
+    Log::addTemp('Processable regen ' . var_export($this->isImage(), true));
+    Log::addTemp('Processable regen ' . var_export($this->getFullPath(), true));
+
+
     if ($this->isImage() ) {
 
         @set_time_limit(900);
@@ -184,8 +184,8 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
           RTA()->ajax()->add_status('error_metadata', array('name' => basename($this->getFullPath()) ));
         }
         else if (empty($new_metadata)) {
-            Log::addDebug('File missing - New metadata returned empty', array($new_metadata, $this->fileUri,$this->getFullPath() ));
-            RTA()->ajax()->add_status('file_missing', array('name' => basename($this->fileUri) ));
+            Log::addDebug('File missing - New metadata returned empty', array($new_metadata, $this->getFileUri(),$this->getFullPath() ));
+            RTA()->ajax()->add_status('file_missing', array('name' => basename($this->getFileName()) ));
         } else {
 
             // going for the save.
@@ -205,7 +205,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
                 do_action('shortpixel-thumbnails-regenerated', $this->id, $original_meta, $regenSizes, $is_a_bulk);
               }
             }
-            $last_success_url = $this->fileUri;
+            $last_success_url = $this->getFileUri();
 
         }
 
@@ -217,7 +217,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
     } else {
 
-          $debug_filename = (strlen($this->fileUri) > 0) ? $this->fileUri : $this->getFullPath();
+          $debug_filename = (strlen($this->getFileUri()) > 0) ? $this->getFileUri() : $this->getFullPath();
           if (false === $this->does_exist) // Existing files, not image, can be attachments, zipfiles, pdf etc. Fail silently.
           {
             $mime = get_post_mime_type($this->id);
@@ -389,6 +389,16 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
       return $returned_sizes;
   }
 
+  public function getFileUri()
+  {
+    if (function_exists('wp_get_original_image_url')) // WP 5.3+
+      $fileUri = wp_get_original_image_url($this->id);
+    else
+      $fileUri = wp_get_attachment_url($this->id);
+
+Log::addTemp('FileURI', $fileUri);
+    return $fileUri;
+  }
 
   /** This function tries to find related thumbnails to the current image. If there are not in metadata after our process, assume cleanup.
   * This removes thumbnail files.

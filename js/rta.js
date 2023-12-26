@@ -273,7 +273,7 @@ class RtaJS
           status.error = true;
           self.AddStatus([status]);
        }
-       if (typeof xhr === 'object' && xhr.responseText && xhr.responseText.length > 0 )
+       else if (typeof xhr === 'object' && xhr.responseText && xhr.responseText.length > 0 )
        {
           try {
             var response = JSON.parse(xhr.responseText);
@@ -283,7 +283,7 @@ class RtaJS
              console.error('Error parsing result!', xhr.responseText);
              if (data.error)
              {
-                data.error.apply(self, [response]);
+                data.error.apply(self, xhr);
              }
              return false;
           }
@@ -483,12 +483,13 @@ class RtaJS
          }
    }
 
-   DoProcessError(response)
+   DoProcessError(xhr)
    {
      this.TogglePanel('loading', false);
+
      var status = new Object;
      status.id = -1;
-     status.message = response.status + ' ' + response.statusText + ' :: ';
+     status.message = xhr.status + ' ' + xhr.statusText + ' :: ';
      status.error = true;
      this.AddStatus([status]);
 
@@ -687,6 +688,25 @@ console.log("ProcessStoppable", stoppable);
        var circularBar = document.querySelector('.CircularProgressbar-path');
        var circularText = document.querySelector('.CircularProgressbar-text');
 
+
+       //NEW
+       var theBar = document.querySelector('.rta_progressbar');
+       var statRight = theBar.querySelector('.right');
+       var statCentre = theBar.querySelector('.centre');
+       var percShadow = (percentage_done < 100) ? percentage_done + 2 : 100;
+
+
+       theBar.style.background = 'linear-gradient(90deg, rgba(0,188,212,1) ' + percentage_done + '%, rgba(255,255,255,1) ' + percShadow + '%';
+
+       statRight.textContent = percentage_done + '%';
+       statCentre.textContent = done + '/' + total;
+
+
+       if (null == circularBar || null == circularText)
+       {
+          return;
+       }
+
        circularBar.style.strokeDashoffset = total_circle +  'px';
        circularText.textContent = percentage_done + '%';
 
@@ -826,7 +846,7 @@ console.log("ProcessStoppable", stoppable);
                {
                  listItem.classList.add(item_class);
                }
-               listItem.textContent = item.message;
+               listItem.innerHTML = item.message;
                html = listItem;
            }
 
