@@ -506,7 +506,6 @@ class RtaJS
            stoppable = true;
        }
 
-console.log("ProcessStoppable", stoppable);
 
       var stopButton = this.GetButton('stop');
       var pauseButton = this.GetButton('pause');
@@ -533,13 +532,11 @@ console.log("ProcessStoppable", stoppable);
        event.preventDefault();
        var target = event.target;
 
-       console.log('ProcessActionEvent', event);
        if (target.id.length === 0)
        {
           target = target.parentElement;
        }
 
-       console.log('target', target, target.id.length);
         // @todo Resume / Pause from here.
        if ('pauseProcess' === target.id)
        {
@@ -738,7 +735,7 @@ console.log("ProcessStoppable", stoppable);
         panelName = '.rta_wait_pausing';
        break
        case 'progress':
-         panelName = '.rta_progress_view';
+         panelName = '.rta_progressbar_view';
        break;
        case 'thumbnail':
          panelName = '.rta_thumbnail_view';
@@ -815,8 +812,9 @@ console.log("ProcessStoppable", stoppable);
      //  var $ = jQuery;
        this.TogglePanel('notices', true);
 
-       if(status!="") {
+       if(status != "") {
            var html = '';
+           var image_added = false; // add only 1 image per run to preview to prevent flooding.
 
            for(var i=0;i < status.length;i++) {
                var item = status[i];
@@ -830,12 +828,19 @@ console.log("ProcessStoppable", stoppable);
                  // @todo Move these to named constants.
                if(item.status == 1) // status 1 is successfully regenerated  thumbnail with URL in message.
                {
-                 this.ShowThumb(item.image);
-                 var messageElement = document.querySelector('.thumb-message');
-                 if (null !== messageElement)
+
+                 if (false == image_added)
                  {
-                    messageElement.innerHTML = item.message;
+                   console.log('Adding Image', item.image);
+                   this.ShowThumb(item.image);
+
+                   var messageElement = document.querySelector('.thumb-message');
+                   if (null !== messageElement)
+                   {
+                      messageElement.innerHTML = item.message;
+                   }
                  }
+                 image_added = true;
                  continue;
                }
 
@@ -1114,8 +1119,6 @@ console.log("ProcessStoppable", stoppable);
 
      var thumbnails = document.querySelectorAll('.checkbox-list .item');
 
-    // console.log(thumbnails);
-
      for(var i = 0; i < thumbnails.length; i++)
      {
         var currentItem = thumbnails[i];
@@ -1143,7 +1146,6 @@ console.log("ProcessStoppable", stoppable);
              warnNode.remove();
            }
         }
-        //console.log(input);
      }
 
      var warning = document.getElementById('warn-delete-items');

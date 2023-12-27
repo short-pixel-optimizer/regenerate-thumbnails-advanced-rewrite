@@ -67,11 +67,32 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
       parent::__construct($filePath);
 
+      // If Pdf, check for PDF thumbnail main file.
+      if ('pdf' == $this->getExtension())
+      {
+          $size = image_get_intermediate_size($image_id, 'full');
+          if (false !== $size)
+          {
+             $pdfPath = $this->getFileDir() . $size['file'];
+             $fs = RTA()->fs();
+
+             $fileObj = $fs->getFile($pdfPath);
+
+             if ($fileObj->exists())
+             {
+                $filePath = $fileObj->getFullPath();
+                parent::__construct($filePath);
+             }
+
+          }
+
+      }
+
+
       if (false === $this->exists())
       {
         $this->processable_status = self::P_FILE_NOT_EXIST;
         $this->does_exist = false;
-
       }
 
       if ( $this->is_virtual())

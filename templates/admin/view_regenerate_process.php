@@ -3,7 +3,7 @@ namespace ReThumbAdvanced;
 ?>
 
 <section class='regenerate rta_hidden'>
-  <div class='container two-panel-wrap'>
+  <div class='container two-panel-wrap process-wrap'>
 
     <div class="rta_progress no-panel-wrap">
 
@@ -35,14 +35,8 @@ namespace ReThumbAdvanced;
           </svg>
        </div>
 -->
-       <div class='rta_progressbar_view'>
-         <div class='rta_progressbar'>
-
-            <!--  <span class='left'>0%</span>&nbsp; -->
-              <span class='right'>0%</span>
-              <span class='centre'>0/100</span>
-
-
+       <div class='rta_progressbar_view rta_panel_off' >
+         <div class='rta_progressbar'><span class='right'>0%</span><span class='centre'>0/100</span>
          </div>
        </div>
     </div>

@@ -13,6 +13,17 @@
     margin: 14px 0;
   }
 }
+@media (max-width: 1200px) {
+  .rta-admin .two-panel-wrap.process-wrap button.resume-process, .rta-admin .two-panel-wrap.process-wrap button.stop-process, .rta-admin .two-panel-wrap.process-wrap button.pause-process {
+    max-width: none;
+    width: 80%;
+    left: 5%;
+    right: 5px;
+  }
+  .rta-admin .two-panel-wrap.process-wrap button.resume-process, .rta-admin .two-panel-wrap.process-wrap button.pause-process {
+    bottom: 15%;
+  }
+}
 .rta-admin h2 {
   font-size: 26px;
   padding-left: 8px;

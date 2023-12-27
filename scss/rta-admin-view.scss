@@ -20,7 +20,28 @@
         }
 
       }
+
     }
+    &.process-wrap
+    {
+      @include breakpoint(0,1200px)
+      {
+         button.resume-process, button.stop-process, button.pause-process
+         {
+            max-width: none;
+            width: 80%;
+            left: 5%;
+            right: 5px;
+
+         }
+         button.resume-process, button.pause-process
+         {
+            bottom: 15%;
+         }
+
+      }
+    }
+
   }
 
   h2 {
