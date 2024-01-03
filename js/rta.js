@@ -110,6 +110,7 @@ class RtaJS
      }
 
      var sh = new ShiftSelect('input[name^="regenerate_sizes"]');
+     var shkeep = new ShiftSelect('input[name^="keep"]');
 
      var toggleWindow = document.querySelector('.toggle-window');
      toggleWindow.addEventListener('click', this.ToggleWindow.bind(this));

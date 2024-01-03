@@ -68,10 +68,12 @@ class ShiftSelect
     FindIndexOfElement(element)
     {
         let name = element.name;
-        
+        let value = element.value;
+
+
         for (let i = 0; i < this.checkList.length; i++)
         {
-              if (this.checkList[i].name == name)
+              if (this.checkList[i].name == name && this.checkList[i].value == value)
               {
                  return i;
               }

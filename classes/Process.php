@@ -209,7 +209,7 @@ Log::addTemp('Time      ' . time() );
       $memory_limit = $this->memory_limit;
       $current_mem = memory_get_usage();
 
-      $percentage_limit = ($runCount > 0) ?  (95 - round(100/$runCount)) : 95;
+      $percentage_limit = 95;
 
       $limit = round($memory_limit/100 * apply_filters('rta/process/max_memory', $percentage_limit));
 

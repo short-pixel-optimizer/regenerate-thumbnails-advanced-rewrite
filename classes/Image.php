@@ -155,12 +155,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
     }
 
-    Log::addTemp('Processable regen ' . var_export($this->isProcessable(), true));
-
-    Log::addTemp('Processable regen ' . var_export($this->getProcessableReason(), true));
-    Log::addTemp('Processable regen ' . var_export($this->isImage(), true));
-    Log::addTemp('Processable regen ' . var_export($this->getFullPath(), true));
-
 
     if ($this->isImage() ) {
 
