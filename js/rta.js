@@ -232,9 +232,13 @@ class RtaJS
 
     //  $('input[name^="' + target + '"]').prop('checked', checked).trigger('change');
       var inputs = document.querySelectorAll('input[name^="' + target + '"]');
+      var changeEv = new Event('change');
+
       for (var i = 0; i < inputs.length; i++)
       {
          inputs[i].checked = checked;
+         // Trigger change to update other settings
+         inputs[i].dispatchEvent(changeEv);
       }
    }
 
