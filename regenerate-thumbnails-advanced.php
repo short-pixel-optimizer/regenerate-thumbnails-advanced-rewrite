@@ -25,8 +25,7 @@ define( 'RTA_PLUGIN_FILE', __FILE__);
 define( 'RTA_LANG_DIR', dirname( plugin_basename(__FILE__) ).'/languages' );
 
 require_once(RTA_PLUGIN_PATH . 'build/shortpixel/autoload.php');
-//require_once(RTA_PLUGIN_PATH . 'classes/rta_controller.php');
-require_once(RTA_PLUGIN_PATH . 'classes/Plugin.php');
+
 
 $loader = new Build\PackageLoader();
 $loader->setComposerFile(RTA_PLUGIN_PATH . 'classes/plugin.json');
@@ -34,10 +33,20 @@ $loader->load(RTA_PLUGIN_PATH);
 
 function RTA()
 {
-  return Plugin::getInstance();
+  if (class_exists('\ReThumbAdvanced\PluginPro'))
+  {
+    return PluginPro::getInstance();
+  }
+  else {
+    return Plugin::getInstance();
+  }
+
 }
 
-RTA();
+add_action('plugins_loaded', function () {
+  RTA();
+});
+
 
 
 register_uninstall_hook(RTA_PLUGIN_FILE, array('ReThumbAdvanced\Install', 'uninstall'));

@@ -2,6 +2,10 @@
 namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
 
+if (! defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
+}
+
 
 class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 {
@@ -11,6 +15,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
   protected $does_exist = true;
   protected $do_cleanup =false;
   protected $do_metacheck = false;
+  protected $remove_imagetypes = false;
 
   protected $metadata = array();
 
@@ -37,14 +42,12 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
       if (function_exists('wp_get_original_image_path')) // WP 5.3+
       {
         $filePath = wp_get_original_image_path($image_id);
-        Log::addTemp('FilePath Original', $filePath);
 
         /** When this function returns false it's possible the post_mime_type in wp_posts table got corrupted. If the file is displayable image,
         * attempt to fix this issue, then reget the item for further processing */
         if ($filePath === false)
         {
           $filePath = get_attached_file($image_id);
-          Log::addTemp('FilePath Attached', $filePath);
 					if ($filePath === false)
 					{
 						RTA()->ajax()->add_status('file_missing', array('name' => basename($image_id), 'image_id' => $image_id) );
@@ -133,11 +136,14 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
   }
 
-  public function regenerate()
+  public function process()
   {
     if (RTA()->process()->doRemoveThumbnails())
     {
       $this->setCleanUp(true);
+      // Might be it's own setting
+      $this->setRemoveImageTypes(true);
+
       Log::addDebug('Image thumbnails will be cleaned');
     }
 
@@ -155,8 +161,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
     }
 
-
-    if ($this->isImage() ) {
+    if ($this->isProcessable() ) {
 
         @set_time_limit(900);
         do_action('shortpixel-thumbnails-before-regenerate', $this->id);
@@ -302,8 +307,9 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
       $result['update'] = wp_update_attachment_metadata($this->id, $updated_meta);
       $this->metadata = wp_get_attachment_metadata($this->id);
 
-      if ($this->do_cleanup)
+      if (true === $this->do_cleanup)
       {
+        Log::addTemp('Doing Clean');
         $result = $this->clean($result);
       }
 
@@ -323,6 +329,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
       // imageMetaSizes is sizeName => Data based array of WP metadata.
       $imageMetaSizes = $this->getCurrentSizes();
+      $fs = RTA()->fs();
 
       $prevent_regen = array();
       foreach($do_regenerate_sizes as $rsize)
@@ -342,9 +349,9 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
          {
           // thumbFile is RELATIVE. So find dir via main image.
           // @todo this should be done via FS getFile
-           $thumbFile = $this->getFileDir() . $metaSize['file'];
+           $thumbFile = $fs->getFile($this->getFileDir() . $metaSize['file']);
            //Log::addDebug('Preventing overwrite of - ' . $thumbFile);
-           if (file_exists($thumbFile)) // 4. Check if file is really there
+           if ($thumbFile->exists()) // 4. Check if file is really there
            {
               $prevent_regen[] = $rsize;
               // Add to current Image the metaSize since it will be dropped by the metadata redoing.
@@ -353,7 +360,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
            }
          }
       }
-
 
       // 5. Drop the 'not to be' regen. images from the sizes so it will not process.
       $do_regenerate_sizes = array_diff($do_regenerate_sizes, $prevent_regen);
@@ -378,7 +384,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
       }
 
       // 7. If unused thumbnails are not set for delete, keep the metadata intact.
-      if (! RTA()->process()->doRemoveThumbnails() )
+      if (false === RTA()->process()->doRemoveThumbnails() )
       {
         $other_meta = array_diff( array_keys($imageMetaSizes), $do_regenerate_sizes, $prevent_regen);
         if (count($other_meta) > 0)
@@ -411,7 +417,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
     else
       $fileUri = wp_get_attachment_url($this->id);
 
-Log::addTemp('FileURI', $fileUri);
     return $fileUri;
   }
 
@@ -420,10 +425,11 @@ Log::addTemp('FileURI', $fileUri);
   * See ShortPixel Image Optimiser's findThumbs method
   **
   **/
-  public function clean()
+  protected function clean($result)
   {
-    $mainFile = $this->getFullPath();
+    //$mainFile = $this->getFullPath();
     $exclude = array();
+    $fs = RTA()->fs();
 
     if (isset($this->metadata['sizes']))
     {
@@ -434,11 +440,19 @@ Log::addTemp('FileURI', $fileUri);
     }
     $result['excluding'] = $exclude;
 
-    $ext = pathinfo($mainFile, PATHINFO_EXTENSION); // file extension
-    $base = substr($mainFile, 0, strlen($mainFile) - strlen($ext) - 1);
-    $pattern = '/' . preg_quote($base, '/') . '-\d+x\d+\.'. $ext .'/';
-    $thumbsCandidates = @glob($base . "-*." . $ext);
 
+
+    $extension = $this->getExtension();
+
+
+//    $ext = pathinfo($mainFile, PATHINFO_EXTENSION); // file extension
+    $base = (string) $this->getFileDir() . $this->getFileBase();
+  //  $base = substr($mainFile, 0, strlen($mainFile) - strlen($ext) - 1);
+Log::addTemp('Base/ext -- ' . $base. ' ' . $extension);
+    $pattern = '/' . preg_quote($base, '/') . '-\d+x\d+\.'. $extension .'/';
+    $thumbsCandidates = @glob($base . "-*." . $extension);
+
+Log::addTemp('ThumbCadndidates', $thumbsCandidates);
     $thumbs = array();
     if(is_array($thumbsCandidates)) {
         foreach($thumbsCandidates as $th) {
@@ -451,7 +465,7 @@ Log::addTemp('FileURI', $fileUri);
                 || is_plugin_active('soliloquy/soliloquy.php')
                 || is_plugin_active('soliloquy-lite/soliloquy-lite.php'))){
             foreach ($this->customThumbSuffixes as $suffix){
-                $pattern = '/' . preg_quote($base, '/') . '-\d+x\d+'. $suffix . '\.'. $ext .'/';
+                $pattern = '/' . preg_quote($base, '/') . '-\d+x\d+'. $suffix . '\.'. $extension .'/';
                 foreach($thumbsCandidates as $th) {
                     if(preg_match($pattern, $th)) {
                         $thumbs[]= $th;
@@ -464,18 +478,40 @@ Log::addTemp('FileURI', $fileUri);
     $result['removed'] = array();
 
     foreach($thumbs as $thumb) {
-        if($thumb === $mainFile)
+
+        $thumbObj = $fs->getFile($thumb);
+
+        if($thumbObj->getFullPath() === $this->getFullPath())
         {
           continue;
         }
-        if (in_array(basename($thumb), $exclude))
+        if (in_array($thumbObj->getFileName(), $exclude))
         {
           continue;
         }
 
-        if($thumb !== $mainFile) {
-          $status = @unlink($thumb);
-          $result['removed'][] = $thumb . "($status)";
+        if($thumbObj->getFullPath() !== $this->getFullPath()) {
+
+          if (true === $this->remove_imagetypes)
+          {
+             $webpCheck = $fs->getFile($thumbObj->getFileDir() . $thumbObj->getFileBase() . '.webp');
+             Log::addTemp('WebpCheck', $webpCheck);
+             if ($webpCheck->exists())
+             {
+                $webpCheck->delete();
+                $result['removed'][] = $webpCheck->getFullPath();
+             }
+             $avifCheck = $fs->getFile($thumbObj->getFileDir() . $thumbObj->getFileBase() . '.avif');
+             if ($avifCheck->exists())
+             {
+               $result['removed'][] = $avif->getFullPath();
+                $avifCheck->delete();
+             }
+          }
+
+          $status = $thumbObj->delete();
+//          $status = @unlink($thumb);
+          $result['removed'][] = $thumbObj->getFullPath() . "($status)";
         }
     }
 
@@ -512,6 +548,11 @@ Log::addTemp('FileURI', $fileUri);
   public function setCleanUp($clean)
   {
     $this->do_cleanup = $clean;
+  }
+
+  public function setRemoveImageTypes($bool)
+  {
+     $this->remove_imagetypes = $bool;
   }
 
   public function setMetaCheck($bool)

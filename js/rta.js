@@ -40,6 +40,8 @@ class RtaJS
 
       this.CheckSubmitReady();
 
+
+
    }
 
    InitEvents()

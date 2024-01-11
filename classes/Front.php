@@ -1,18 +1,10 @@
 <?php
 namespace ReThumbAdvanced;
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
-/**
- * Class that will hold functionality for front side
- *
- * PHP version 5
- *
- * @category   Front Side Code
- * @package    Regenerate Thumbnails ID SCOUT
- * @author     Muhammad Atiq
- * @version    1.0.0
- * @since      File available since Release 1.0.0
-*/
+if (! defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
+}
+
 
 class Front
 {

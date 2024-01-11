@@ -82,10 +82,12 @@ class PackageLoader
                     $filename = str_replace('\\','/', $filename);
 
                     foreach ($classpaths as $classpath) {
+
                       $fullpath = trailingslashit($dir) . trailingslashit($classpath) .$filename;
                         if (file_exists($fullpath)) {
                             include_once $fullpath;
                         }
+
                     }
                 }
             });

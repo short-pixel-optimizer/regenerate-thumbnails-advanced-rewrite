@@ -1,6 +1,10 @@
 <?php
 namespace ReThumbAdvanced\Controllers;
 
+if (! defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
+}
+
 // Main Controller
 class Controller
 {
@@ -33,6 +37,6 @@ class Controller
 
   public function getURL($path)
   {
-      return plugins_url($path, RTA_PLUGIN_FILE); 
+      return plugins_url($path, RTA_PLUGIN_FILE);
   }
 } // class

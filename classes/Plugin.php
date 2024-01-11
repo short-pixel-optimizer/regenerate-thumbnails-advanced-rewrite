@@ -5,9 +5,11 @@ use \ReThumbAdvanced\Notices\NoticeController as Notice;
 use \ReThumbAdvanced\Controllers\AdminController as AdminController;
 use \ReThumbAdvanced\FileSystem\Controller\FileSystemController as FileSystemController;
 
-use \ReThumbAdvanced\Integrations\Wpcli\Wpcli as Wpcli;
 use \ReThumbAdvanced\Integrations\ShortPixel as ShortPixel;
 
+if (! defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
+}
 
 // load runtime.
 class Plugin
@@ -38,8 +40,6 @@ class Plugin
 
       add_filter( 'plugin_action_links_' . plugin_basename(RTA_PLUGIN_FILE), array($this, 'generate_plugin_links'));//for plugin settings page
 
-      // @todo Move integrations to somewhere if this list grows.
-      Wpcli::getInstance();
       ShortPixel::getInstance();
   }
 

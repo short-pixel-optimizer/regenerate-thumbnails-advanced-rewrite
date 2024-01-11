@@ -146,7 +146,7 @@ class Admin
     {
 
         $image = new Image($attach_id);
-        $image->regenerate();
+        $image->process();
 
         $status = RTA()->ajax()->get_status();
 

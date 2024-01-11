@@ -3,6 +3,11 @@ namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
 use \ReThumbAdvanced\Controllers\AdminController as AdminController;
 
+if (! defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
+}
+
+
 // For communication with the Javascripting.
 class AjaxController
 {
@@ -156,6 +161,7 @@ class AjaxController
       $this->status = array();
    }
 
+
    public function ajax_start_process()
    {
 
@@ -163,44 +169,15 @@ class AjaxController
 
      if (isset($_POST['form']))
      {
-         $form = $this->getFormData();
+         $options = $this->getFormData();
          $process = RTA()->process();
-         $process->setRemoveThumbnails($form['del_associated_thumbs']);
-         $process->setDeleteLeftMeta($form['del_leftover_metadata']);
-         $process->setCleanMetadata($form['process_clean_metadata']);
-         $process->setOnlyFeatured($form['regenonly_featured']);
 
-         $period = Periods::getPeriod($form['period']);
-         $stamps = $period->getQueryDate();
-
-      //   if ($period['date'] !== false)
-         //{
-           if ($form['start_date'] == '0')
-           {
-              $startstamp = -1;
-           }
-           else {
-              $startstamp = strtotime($form['start_date']);
-           }
-
-           if ($form['end_date'] == '0')
-           {
-              $endstamp = time();
-           }
-           else {
-              $endstamp = strtotime($form['end_date'] . ' 23:59:59');
-           }
-
-           $process->setTime($startstamp, $endstamp);
-
-        /*
-         $startstring = ($startstamp > 0) ? date_i18n(get_option('date_format'), $startstamp) : false;
-         $endstring = ($endstamp > 0) ? date_i18n(get_option('date_format'), $endstamp) : false;
-         */
+         $process->setOption($options);
 
 
          $this->add_status(__('Searching for items to add', 'regenerate-thumbnails-advanced') );
          $process->start();
+
          $result = $this->runprocess(); // This would mostly be preparing.
      }
      else {
@@ -214,21 +191,28 @@ class AjaxController
    /** Collect form data, make a storable process array out of it */
    protected function getFormData()
    {
-       $defaults = array(
-           //'period' => self::PERIOD_ALL,
-           'regenonly_featured' => false,
-           'del_associated_thumbs' => false,
-           'del_leftover_metadata' => false,
-           'process_clean_metadata' => false,
-           'start_date' => false,
-           'end_date' => false,
-       );
-
        $data = array();
+       $options = array();
+
+       // fill from FORM to data, sanitize and then move to options for process
        $form = isset($_POST['form']) ? $_POST['form'] : '';
        parse_str($form, $data);
 
-       return wp_parse_args($data, $defaults);
+      $options['only_featured'] = (isset($data['regenonly_featured']) && '1' == $data['regenonly_featured']) ? true : false;
+
+      $options['remove_thumbnails'] = (isset($data['del_associated_thumbs']) && '1' == $data['del_associated_thumbs']) ? true : false;
+
+      $options['delete_leftmetadata'] = (isset($data['del_leftover_metadata']) && '1' == $data['del_leftover_metadata']) ? true : false;
+
+      $options['clean_metadata'] = (isset($data['process_clean_metadata']) && '1' == $data['process_clean_metadata']) ? true : false;
+
+      $data['start_date']  = (isset($data['start_date'])) ? sanitize_text_field($data['start_date']) : 0;
+      $data['end_date']  = (isset($data['end_date'])) ? sanitize_text_field($data['end_date']) : time();
+
+      $options['startstamp']  = ($data['start_date'] == 0) ? -1 : strtotime($data['start_date']);
+      $options['endstamp'] = strtotime($data['end_date'] . ' 23:59:59');
+
+      return $options;
    }
 
    // retrieve JS friendly overview, if we are in process and if yes, what are we doing here.
@@ -241,15 +225,6 @@ class AjaxController
        $json['status'] = $this->status;
        return $json;
 
-/*       $json = array();
-       $json['running'] = $process->get('running');
-       $json['preparing'] = $process->get('preparing');
-       $json['finished'] = $process->get('finished');
-       $json['done'] = $process->get('done');
-       $json['items'] = $process->get('items');
-       $json['errors'] = $process->get('errors');
-       $json['status'] = $this->status;
-       return $json; */
    }
 
    public function ajax_do_process()
@@ -282,14 +257,8 @@ class AjaxController
             {
               $item_id = $item->item_id;
               $image = new Image($item_id);
-              if (false === $image->isProcessable())
-              {
-                 Log::addDebug('Image not processable: ' . $image->getProcessableReason());
-                 continue;
-              }
-              else {
-                 $status = $image->regenerate();
-              }
+              $status = $image->process();
+
             }
           }
       }

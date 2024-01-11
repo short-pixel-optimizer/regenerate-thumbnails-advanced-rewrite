@@ -1,5 +1,10 @@
 <?php
 namespace ReThumbAdvanced;
+
+if (! defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
+}
+
 ?>
 
 <div class='wrap'> <!-- this wrap to keep notices and other scum out of the interface -->

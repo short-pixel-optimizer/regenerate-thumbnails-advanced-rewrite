@@ -5,6 +5,11 @@ use function ReThumbAdvanced\RTA;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
 use \ReThumbAdvanced\Periods as Periods;
 
+if (! defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
+}
+
+
 class AdminController extends Controller
 {
   protected $cropOptions;

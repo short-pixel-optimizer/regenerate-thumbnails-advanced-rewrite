@@ -3,6 +3,9 @@ namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
 use \ReThumbAdvanced\ShortQ as ShortQ;
 
+if (! defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
+}
 
 
 /** Class Process
@@ -24,14 +27,17 @@ class Process
   //protected $status; // notifications.
 
   // options.
-  protected $startstamp = -1;
-  protected $endstamp = -1;
-  protected $only_featured = false;
-  protected $remove_thumbnails = false;
-  protected $delete_leftmetadata = false;
-  protected $clean_metadata = false;
 
-  protected $query_prepare_limit = 500; // amount of records to enqueue per go.
+  protected $options = array(
+    'startstamp' => -1,
+    'endstamp' => -1,
+    'only_featured' => false,
+    'remove_thumbnails' => false,
+    'delete_leftmetadata' => false,
+    'clean_metadata' => false,
+    'query_prepare_limit' => 500,
+  );
+
   protected $run_start = 0;
   protected $run_limit = 0;
   protected $memory_limit;
@@ -50,7 +56,7 @@ class Process
         $this->set_process($process);
 
         // Allow this to be filtered.
-      $this->query_prepare_limit = apply_filters('rta/process/prepare_limit', $this->query_prepare_limit);
+      $this->options['query_prepare_limit'] = apply_filters('rta/process/prepare_limit', $this->options['query_prepare_limit']);
       $this->q->setOption('numitems', apply_filters('rta/process/numitems', 3));
 
       $this->memory_limit =$this->unitToInt(ini_get('memory_limit'));
@@ -69,47 +75,54 @@ class Process
       return $this->q;
   }
 
-  public function setTime($start, $end)
-  {
-    $this->startstamp = $start;
-    $this->endstamp = $end;
-  }
-
-  public function setRemoveThumbnails($bool)
-  {
-    $this->remove_thumbnails = $bool;
-  }
 
   public function doRemoveThumbnails()
   {
-    return $this->remove_thumbnails;
+    return $this->options['remove_thumbnails'];
   }
 
-
-  public function setDeleteLeftMeta($bool)
+  public function setOption($options, $value = false)
   {
-    $this->delete_leftmetadata = $bool;
+
+      // Multiple Options.
+      if (is_array($options))
+      {
+         foreach($options as $name => $val)
+         {
+            if (isset($this->options[$name]))
+            {
+               $this->options[$name] = $val;
+            }
+         }
+      }
+      else { // Single Option
+         if (isset($this->options[$options]))
+         {
+            $this->options[$options] = $value;
+         }
+      }
+  }
+
+  public function getOption($name)
+  {
+     if (isset($this->options[$name]))
+     {
+        return $this->options[$name];
+     }
+
+     return null;
   }
 
   public function doDeleteLeftMeta()
   {
-    return $this->delete_leftmetadata;
-  }
-
-  public function setCleanMetadata($bool)
-  {
-    $this->clean_metadata = $bool;
+    return $this->options['delete_leftmetadata'];
   }
 
   public function doCleanMetadata()
   {
-     return $this->clean_metadata;
+     return $this->options['clean_metadata'];
   }
 
-  public function setOnlyFeatured($bool)
-  {
-    $this->only_featured = $bool;
-  }
 
   public function get($name = false)
   {
@@ -193,8 +206,6 @@ class Process
           $this->run_limit = time() + $limit;
       }
 
-Log::addTemp('Run Limit ' . $this->run_limit);
-Log::addTemp('Time      ' . time() );
       if ($this->run_limit <= time())
       {
           return true;
@@ -213,10 +224,8 @@ Log::addTemp('Time      ' . time() );
 
       $limit = round($memory_limit/100 * apply_filters('rta/process/max_memory', $percentage_limit));
 
-Log::addTemp('Current Mem / Limit ' . $current_mem .  ' ' . $limit . ' ( ' . $percentage_limit . ' %)');
       if ($current_mem >= $limit)
       {
-        Log::addTemp('Over Mem!');
          return true;
       }
       else {
@@ -232,11 +241,9 @@ Log::addTemp('Current Mem / Limit ' . $current_mem .  ' ' . $limit . ' ( ' . $pe
       while( $this_result = $this->runEnqueue()  )
       {
 
-        Log::addTemp('This_Result ' . var_export($this_result, true));
           if (false !== $this_result)
           {
             $result += $this_result;
-            Log::addTemp('adding this result ' . $this_result . ' total : ' . $result);
           }
 
           if (true === $this->IsOverTimeLimit() || true === $this->IsOverMemoryLimit($i) )
@@ -255,7 +262,6 @@ Log::addTemp('Current Mem / Limit ' . $current_mem .  ' ' . $limit . ' ( ' . $pe
          Log::addDebug('Preparing done, Starting run status');
       }
 
-Log::addTemp('Return Result ' . $result);
       return $result;
   }
 
@@ -272,18 +278,18 @@ Log::addTemp('Return Result ' . $result);
      $query = 'SELECT ID FROM ' . $wpdb->posts . ' where post_type = %s ';
      $prepare = array('attachment');
 
-     if ($this->startstamp > -1)
+     if ($this->getOption('startstamp') > -1)
      {
        $query .= ' AND post_date >= %s ';
-       $prepare[] = date("Y-m-d H:i:s", $this->startstamp);
+       $prepare[] = date("Y-m-d H:i:s", $this->getOption('startstamp'));
      }
-     if ($this->endstamp > -1)
+     if ($this->getOption('endstamp') > -1)
      {
        $query .= ' AND post_date <= %s ';
-       $prepare[] = date("Y-m-d H:i:s", $this->endstamp);
+       $prepare[] = date("Y-m-d H:i:s", $this->getOption('endstamp'));
      }
 
-     if ($this->only_featured)
+     if (true === $this->getOption('only_featured'))
      {
         $query .= ' and ID in (select meta_value from ' . $wpdb->postmeta . ' where meta_key = "_thumbnail_id")';
      }
@@ -298,11 +304,10 @@ Log::addTemp('Return Result ' . $result);
      $query .= ' order by ID DESC ';
 
      $query .= ' limit %d ';
-     $prepare[] = $this->query_prepare_limit;
+     $prepare[] = $this->getOption('query_prepare_limit');
 
      $sql = $wpdb->prepare($query, $prepare);
 
-     Log::addTemp('SQL', $sql);
      $result = $wpdb->get_results($sql);
      $resultCount = 0;
 
@@ -324,7 +329,6 @@ Log::addTemp('Return Result ' . $result);
 
      }
 
-
      $this->q->addItems($items);
      $this->q->enqueue();
 
@@ -336,7 +340,6 @@ Log::addTemp('Return Result ' . $result);
      /** Keep looping preparing ( possible query limit reached ) until no new items are forthcoming. */
      if ($resultCount > 0)
      {
-       Log::addTemp('ResultCount :' . $resultCount);
       return $resultCount;
      }
      return false;
@@ -353,16 +356,28 @@ Log::addTemp('Return Result ' . $result);
   {
      foreach($process as $name => $value)
      {
-        $this->{$name} = $value;
+        if (property_exists($this, $name))
+        {
+            $this->{$name} = $value;
+        }
+        elseif (isset($this->options[$name]))
+        {
+           $this->options[$name] = $value;
+        }
+
      }
   }
 
   protected function save_process()
   {
-      $data = array('startstamp' => $this->startstamp, 'endstamp' => $this->endstamp, 'only_featured' => $this->only_featured,
+      $data = $this->options;
+
+      /* array('startstamp' => $this->startstamp, 'endstamp' => $this->endstamp, 'only_featured' => $this->only_featured,
                   'remove_thumbnails' => $this->remove_thumbnails, 'delete_leftmetadata' => $this->delete_leftmetadata, 'clean_metadata' => $this->clean_metadata, 'query_prepare_limit' => $this->query_prepare_limit,
 
                 );
+        */
+       Log::addTemp('saving Process', var_export($data, true));
       update_option($this->process_name, $data, false);
   }
 
