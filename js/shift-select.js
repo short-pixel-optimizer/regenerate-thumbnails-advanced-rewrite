@@ -26,7 +26,9 @@ class ShiftSelect
     HandleCheckEvent(event)
     {
         let inBetween = false;
+        let changeEvent = new Event('change');
         var target = event.target;
+
         // Selection happens because of ranges.
         window.getSelection().removeAllRanges();
 
@@ -57,8 +59,8 @@ class ShiftSelect
         {
             for (let i = startindex; i < endindex; i++)
             {
-
                 this.checkList[i].checked = target.checked;
+                this.checkList[i].dispatchEvent(changeEvent);
             }
         }
 

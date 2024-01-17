@@ -41,7 +41,6 @@ class RtaJS
       this.CheckSubmitReady();
 
 
-
    }
 
    InitEvents()
@@ -90,7 +89,7 @@ class RtaJS
 
      for (var i = 0; i < deleteItemToggles.length; i++)
      {
-        deleteItemToggles[i].addEventListener('click', this.ToggleDeleteItems.bind(this));
+        deleteItemToggles[i].addEventListener('change', this.ToggleDeleteItems.bind(this));
      }
 
      var saveIndicatorInputs = document.querySelectorAll('.rta-settings-wrap input, .rta-settings-wrap select');
@@ -180,8 +179,6 @@ class RtaJS
       var startInput = document.querySelector('input[name="start_date"]');
       var endInput = document.querySelector('input[name="end_date"]');
 
-      //var startFormat = startDate.getFullYear() + '-' + startDate.getMonth() + '-' + startDate.getDay();
-      //var endFormat = endDate.getFullYear() + '-' + endDate.getMonth() + '-' + endDate.getDay();
 
       if (startstamp == '0')
       {
@@ -1036,11 +1033,14 @@ class RtaJS
              }
          }
          this.CheckOptionsVisible();
+         var sh = new ShiftSelect('input[name^="regenerate_sizes"]');
+         var shkeep = new ShiftSelect('input[name^="keep"]');
        }
      }
      this.is_saved = true;
      this.settings_doingsave_indicator(false);
      this.CheckSubmitReady();
+
      this.ToggleDeleteItems();
    }
 
