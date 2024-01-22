@@ -111,7 +111,7 @@ class RtaJS
      }
 
      var sh = new ShiftSelect('input[name^="regenerate_sizes"]');
-     var shkeep = new ShiftSelect('input[name^="keep"]');
+     var shkeep = new ShiftSelect('input[name^="overwrite"]');
 
      var toggleWindow = document.querySelector('.toggle-window');
      toggleWindow.addEventListener('click', this.ToggleWindow.bind(this));
@@ -669,6 +669,9 @@ class RtaJS
        var total = (items + done);
        var errors = this.process.errors;
 
+       var thumbs_done = this.process.regenerated;
+       var thumbs_removed = this.process.removed;
+
        if (done == 0 && total > 0)
        {
          var percentage_done = 0;
@@ -689,19 +692,38 @@ class RtaJS
        var circularBar = document.querySelector('.CircularProgressbar-path');
        var circularText = document.querySelector('.CircularProgressbar-text');
 
+       var countElements = document.querySelectorAll('.images_regenerated');
+       for (var i = 0; i < countElements.length; i++)
+       {
+          countElements[i].innerText = thumbs_done + ' ' + this.strings.regenerated;
+       }
+       var countElements = document.querySelectorAll('.images_removed');
+       for (var i = 0; i < countElements.length; i++)
+       {
+          countElements[i].innerText = thumbs_removed + ' ' + this.strings.removed;
+          if (thumbs_removed > 0 && countElements[i].classList.hasClass('rta_hidden'))
+          {
+             countElements[i].classList.remove('rta_hidden');
+          }
+       }
 
        //NEW
        var theBar = document.querySelector('.rta_progressbar');
        var statRight = theBar.querySelector('.right');
-       var statCentre = theBar.querySelector('.centre');
+       var statCentre = theBar.querySelector('.centre .text');
        var percShadow = (percentage_done < 100) ? percentage_done + 2 : 100;
 
 
        theBar.style.background = 'linear-gradient(90deg, rgba(0,188,212,1) ' + percentage_done + '%, rgba(255,255,255,1) ' + percShadow + '%';
 
-       statRight.textContent = percentage_done + '%';
-       statCentre.textContent = done + '/' + total;
+       var statusText = done + '/' + total +  ' ' + this.strings.items;
+       /*if (thumbsdone > 0 || removed > 0)
+       {
+            statusText .= ' ( ' + thumbsdone + ' ' + this.strings.regenerated + ',' + removed + ' ' + this.strings.removed + ')';
+       } */
 
+       statRight.textContent = percentage_done + '%';
+       statCentre.textContent = statusText ;
 
        if (null == circularBar || null == circularText)
        {
@@ -984,8 +1006,8 @@ class RtaJS
            if (input !== null)
            {
              input.value = slug;
-             var inputKeep = document.querySelector('input[name="keep_' + currentName + '"]');
-             inputKeep.name = 'keep_' + slug;
+             var inputKeep = document.querySelector('input[name="overwrite_' + currentName + '"]');
+             inputKeep.name = 'overwrite_' + slug;
            }
 
            nameInput.value = slug;
@@ -1034,7 +1056,7 @@ class RtaJS
          }
          this.CheckOptionsVisible();
          var sh = new ShiftSelect('input[name^="regenerate_sizes"]');
-         var shkeep = new ShiftSelect('input[name^="keep"]');
+         var shkeep = new ShiftSelect('input[name^="overwrite"]');
        }
      }
      this.is_saved = true;

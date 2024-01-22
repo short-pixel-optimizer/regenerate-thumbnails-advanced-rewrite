@@ -41,7 +41,12 @@ if (! defined('ABSPATH')) {
        </div>
 -->
        <div class='rta_progressbar_view rta_panel_off' >
-         <div class='rta_progressbar'><span class='right'>0%</span><span class='centre'>0/100</span>
+         <div class='rta_progressbar'><span class='right'>0%</span><span class='centre'>
+            <span class='text'>0/100</span>
+
+            (<span class="images_regenerated">0 <?php _e('regenerated', 'regenerate-thumbnails-advanced') ?></span>
+              <span class="images_removed rta_hidden">0 <?php _e('removed', 'regenerate-thumbnails-advanced') ?></span>)
+         </span>
          </div>
        </div>
     </div>
@@ -99,8 +104,13 @@ if (! defined('ABSPATH')) {
 
     <div class='rta_success_box rta_hidden'>
         <div class='modal-close'><span class='dashicons dashicons-no ' >&nbsp;</span></div>
-        <h3 class='header'><?php _e('Done!', 'regenerate-thumbnails-advanced'); ?></h3>
-        <p><?php _e('Regenerate Thumbnails Advanced is done with your task', 'regenerate-thumbnails-advanced'); ?></p>
+        <h3 class='header'>
+          <?php _e('Done!', 'regenerate-thumbnails-advanced'); ?>
+          <?php printf(__('%s images regenerated!', 'regenerate-thumbnails-advanced'), '<span class="images_regenerated">0</span>');
+          ?>
+                  </h3>
+        <p><?php printf(__('Regenerate Thumbnails Advanced is done with your task. %s images regenerated and %s removed', 'regenerate-thumbnails-advanced'), '<span class="images_regenerated">0</span>', '<span class="images_removed">0</span>'); ?></p>
+
 
         <div class='shortpixel'>
           <?php if (! $spInstalled): ?>

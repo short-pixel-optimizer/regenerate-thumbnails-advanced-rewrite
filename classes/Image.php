@@ -13,7 +13,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
   protected $is_image = true;
   protected $does_exist = true;
-  protected $do_cleanup =false;
+  protected $do_cleanup = false;
   protected $do_metacheck = false;
   protected $remove_imagetypes = false;
 
@@ -25,6 +25,9 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
   protected $customThumbSuffixes =  array('_c', '_tl', '_tr', '_br', '_bl');
 
   protected $processable_status;
+
+  protected $images_created = 0; // created during process /regenerated
+  protected $images_removed = 0; // removed during cleanup
 
   const P_PROCESSABLE = 0;
   const P_FILE_NOT_EXIST  = 1;
@@ -86,11 +89,8 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
                 $filePath = $fileObj->getFullPath();
                 parent::__construct($filePath);
              }
-
           }
-
       }
-
 
       if (false === $this->exists())
       {
@@ -142,7 +142,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
     {
       $this->setCleanUp(true);
       // Might be it's own setting
-      $this->setRemoveImageTypes(true);
+      $this->setRemoveImageTypes(apply_filters('rta/image/clean_imagetypes', true));
 
       Log::addDebug('Image thumbnails will be cleaned');
     }
@@ -195,7 +195,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
         if($backup && $backup !== $this->getFullPath()) {
             $targetObj->copy($this);
             $targetObj->delete();
-  //          rename($backup . "_optimized_" . $this->id, $this->getFullPath());
         }
 
         //get the attachment name
@@ -232,6 +231,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
         RTA()->ajax()->add_status('regenerate_success',
                 array('image' => $last_success_url,
                 'count' => count($regenSizes),
+                'removed' => $this->images_removed,
                 'name' => $this->getFileName(),
             ));
 
@@ -363,7 +363,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
       // 5. Drop the 'not to be' regen. images from the sizes so it will not process.
       $do_regenerate_sizes = array_diff($do_regenerate_sizes, $prevent_regen);
-      Log::addDebug('Sizes going for regen - ' . count($do_regenerate_sizes) );
+      Log::addDebug('Sizes going for regen amount : ' . count($do_regenerate_sizes) );
 
 
       /* 6. If metadata should be cleansed of undefined sizes, remove them from the imageMetaSizes
@@ -427,7 +427,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
   **/
   protected function clean($result)
   {
-    //$mainFile = $this->getFullPath();
     $exclude = array();
     $fs = RTA()->fs();
 
@@ -440,19 +439,14 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
     }
     $result['excluding'] = $exclude;
 
-
-
     $extension = $this->getExtension();
-
 
 //    $ext = pathinfo($mainFile, PATHINFO_EXTENSION); // file extension
     $base = (string) $this->getFileDir() . $this->getFileBase();
   //  $base = substr($mainFile, 0, strlen($mainFile) - strlen($ext) - 1);
-Log::addTemp('Base/ext -- ' . $base. ' ' . $extension);
     $pattern = '/' . preg_quote($base, '/') . '-\d+x\d+\.'. $extension .'/';
     $thumbsCandidates = @glob($base . "-*." . $extension);
 
-Log::addTemp('ThumbCadndidates', $thumbsCandidates);
     $thumbs = array();
     if(is_array($thumbsCandidates)) {
         foreach($thumbsCandidates as $th) {
@@ -510,10 +504,11 @@ Log::addTemp('ThumbCadndidates', $thumbsCandidates);
           }
 
           $status = $thumbObj->delete();
-//          $status = @unlink($thumb);
           $result['removed'][] = $thumbObj->getFullPath() . "($status)";
         }
     }
+
+    $this->images_removed = count($result['removed']);
 
     return $result;
   }

@@ -96,12 +96,6 @@ class AdminController extends Controller
       $option = array();
       $exclude = array();
 
-    /*  $nonce = isset($_POST['save_nonce']) ? $_POST['save_nonce'] : false;
-      if (! wp_verify_nonce($nonce, 'rta_save_image_sizes'))
-      {
-        $jsonResponse['error'] = 'Invalid Nonce';
-        return $jsonResponse;
-      } */
 
       if (isset($_POST['form']))
           parse_str($_POST['form'], $formpost);
@@ -139,12 +133,12 @@ class AdminController extends Controller
       $size_options = array();
       foreach($sizes as $rsize)
       {
-          if (isset($formpost['keep_' . $rsize]))
+          if (isset($formpost['overwrite_' . $rsize]))
           {
-            $size_options[$rsize] = array('overwrite_files' => false);
+            $size_options[$rsize] = array('overwrite_files' => true);
           }
           else {
-            $size_options[$rsize] = array('overwrite_files' => true);
+            $size_options[$rsize] = array('overwrite_files' => false);
           }
       }
       $option['process_image_sizes'] = array_values($sizes);  // the once that are set to regen. Array values resets index
@@ -188,7 +182,7 @@ class AdminController extends Controller
       $hidden = ($checked == 'checked') ? '' : 'hidden'; // hide add. option if not checked.
 
       $option_in_db = (isset($process_options[$size])) ? true : false;
-      $checked_keep = (isset($process_options[$size]) && isset($process_options[$size]['overwrite_files']) && ! $process_options[$size]['overwrite_files'] )  ? 'checked' : '';
+      $checked_overwrite = (isset($process_options[$size]) && isset($process_options[$size]['overwrite_files']) &&  $process_options[$size]['overwrite_files'] )  ? 'checked' : '';
 
       if ($option_in_db)
         $checked .= ' data-setbyuser=true'; // if value was ever saved in DB, don't change it in the JS.
@@ -198,7 +192,7 @@ class AdminController extends Controller
         <label> <input type='checkbox' id='regenerate_sizes[$i]' name='regenerate_sizes[$i]' value='$size' $checked>
           " .  $name . " ({$width}x{$height})</label>
       </span>";
-      $output .= "<span class='options $hidden'><label><input value='1' type='checkbox' $checked_keep name='keep_" . $size . "'> " . __('Don\'t redo existing', 'regenerate-thumbnails-advanced') . "</label></span>";
+      $output .= "<span class='options $hidden'><label><input value='1' type='checkbox' $checked_overwrite name='overwrite_" . $size . "'> " . __('Force regeneration', 'regenerate-thumbnails-advanced') . "</label></span>";
       $output .= "</div>";
 
       $i++;

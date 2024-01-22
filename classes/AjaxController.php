@@ -62,6 +62,7 @@ class AjaxController
 
      $args = wp_parse_args($args, $defaults);
 
+     $process = RTA()->process();
 
      switch($event_name)
      {
@@ -115,11 +116,14 @@ class AjaxController
          break;
          case 'regenerate_success':
             $status['message'] = sprintf(__('%s Success! %s %s has %s new thumbnails', 'regenerate-thumbnails-advanced'), '<strong>', '</strong>', $args['name'], $args['count'] );
-
             $status['status'] = self::STATUS_SUCCESS;
             $status['image'] = $args['image'];
-
             $status['error'] = false;
+
+            if ($args['count'] > 0 || $args['removed'] > 0)
+            {
+               $process->addCounts($args);
+            }
          break;
 
          default:
@@ -221,6 +225,7 @@ class AjaxController
        //$json = array('running' => false);
        $process = RTA()->process();
 
+       $counter = $process->getSetting('counter');
        $json = $process->getProcessStatus();
        $json['status'] = $this->status;
        return $json;
@@ -261,6 +266,8 @@ class AjaxController
 
             }
           }
+
+          $process->saveCounter();
       }
 
       if ($process->get('finished') == true)

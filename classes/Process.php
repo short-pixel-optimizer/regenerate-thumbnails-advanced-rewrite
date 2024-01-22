@@ -22,9 +22,7 @@ class Process
 
   protected $total = 0;
   protected $current = 0;
-  //protected $running = false;
-  //protected $is_queued = false;
-  //protected $status; // notifications.
+
 
   // options.
 
@@ -41,10 +39,10 @@ class Process
   protected $run_start = 0;
   protected $run_limit = 0;
   protected $memory_limit;
-//  protected $query_chunk_size = 100;
 
   protected $q;
   protected $process_name = 'rta_image_process';
+  protected $counter_name = 'rta_image_counter';
 
   public function __construct()
   {
@@ -65,7 +63,9 @@ class Process
   public static function getInstance()
   {
      if (is_null(self::$instance))
+     {
        self::$instance = new Process();
+     }
 
       return self::$instance;
   }
@@ -81,6 +81,7 @@ class Process
     return $this->options['remove_thumbnails'];
   }
 
+  // Options are RTA-specific options, saved
   public function setOption($options, $value = false)
   {
 
@@ -138,6 +139,7 @@ class Process
       return null;
   }
 
+  // This comes from queue module
   public function getProcessStatus()
   {
     $process = array(
@@ -147,6 +149,8 @@ class Process
       'done' => $this->get('done'),
       'items' => $this->get('items'),
       'errors' => $this->get('errors'),
+      'regenerated' => (isset($this->counter['count'])) ? $this->counter['count'] : 0,
+      'removed' => (isset($this->counter['removed'])) ? $this->counter['removed'] : 0,
     );
 
      return $process;
@@ -349,6 +353,8 @@ class Process
   protected function get_process()
   {
      $process = get_option($this->process_name, false);
+     $counter = get_option($this->counter_name, false);
+     $this->counter = $counter;
      return $process;
   }
 
@@ -381,9 +387,45 @@ class Process
       update_option($this->process_name, $data, false);
   }
 
+  /* Add numbers to the counter.
+  * @param $counts Array  should have index count or index removed to count
+  */
+  public function addCounts($counts)
+  {
+     if (false === $this->counter)
+     {
+        $this->counter = array(
+          'count' => 0,
+          'removed' => 0,
+        );
+     }
+
+
+     if (isset($counts['count']) && $counts['count'] > 0)
+     {
+
+        $this->counter['count'] += $counts['count'];
+        Log::addTemp('Adding Count' . $counts['count'], $this->counter);
+     }
+
+     if (isset($counts['removed']) && $counts['removed'] > 0)
+     {
+        $this->counter['removed'] += $counts['removed'];
+        Log::addTemp('Adding removed', $this->counter);
+     }
+
+  }
+
+  public function saveCounter()
+  {
+      Log::addTemp('Saving Counter', $this->counter);
+      update_option($this->counter_name, $this->counter, false);
+  }
+
   protected function end_process()
   {
       $this->q->resetQueue();
+      delete_option($this->counter_name);
       delete_option($this->process_name);
   }
 
