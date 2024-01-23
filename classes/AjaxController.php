@@ -178,7 +178,6 @@ class AjaxController
 
          $process->setOption($options);
 
-
          $this->add_status(__('Searching for items to add', 'regenerate-thumbnails-advanced') );
          $process->start();
 
@@ -188,6 +187,8 @@ class AjaxController
        Log::addError('Ajax Start Process - Starting without form post');
        exit(0);
      }
+
+
 
      //wp_send_json($this->get_json_process());
    }
@@ -210,11 +211,8 @@ class AjaxController
 
       $options['clean_metadata'] = (isset($data['process_clean_metadata']) && '1' == $data['process_clean_metadata']) ? true : false;
 
-      $data['start_date']  = (isset($data['start_date'])) ? sanitize_text_field($data['start_date']) : 0;
-      $data['end_date']  = (isset($data['end_date'])) ? sanitize_text_field($data['end_date']) : time();
-
-      $options['startstamp']  = ($data['start_date'] == 0) ? -1 : strtotime($data['start_date']);
-      $options['endstamp'] = strtotime($data['end_date'] . ' 23:59:59');
+      $options['startstamp']  = -1;
+      $options['endstamp'] = strtotime(time() . ' 23:59:59');
 
       return $options;
    }

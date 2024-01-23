@@ -3,6 +3,10 @@ namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
 use \ReThumbAdvanced\Controllers\AdminController as AdminController;
 
+if (! defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
+}
+
 
 class Periods {
 
@@ -37,7 +41,6 @@ class Periods {
     {
         return new Period($period_int);
     }
-
 
 }
 
@@ -110,6 +113,11 @@ class Period {
     public function getQueryDate()
     {
         return array('startstamp' => $this->startstamp, 'endstamp' => $this->endstamp);
+    }
+
+    public function isAvailable()
+    {
+       return false;
     }
 
     public function isCustom()

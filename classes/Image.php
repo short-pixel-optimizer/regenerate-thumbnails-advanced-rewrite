@@ -309,7 +309,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
       if (true === $this->do_cleanup)
       {
-        Log::addTemp('Doing Clean');
         $result = $this->clean($result);
       }
 
@@ -489,7 +488,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
           if (true === $this->remove_imagetypes)
           {
              $webpCheck = $fs->getFile($thumbObj->getFileDir() . $thumbObj->getFileBase() . '.webp');
-             Log::addTemp('WebpCheck', $webpCheck);
              if ($webpCheck->exists())
              {
                 $webpCheck->delete();

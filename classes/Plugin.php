@@ -64,7 +64,7 @@ class Plugin
 
     $this->front = new Front();
 
-    $ajax = AjaxController::getInstance(); //init
+    $ajax = $this->ajax(); //init
     $ajax->init();
 
     add_filter('media_row_actions', array($this,'add_media_action'), 10, 2);
@@ -92,6 +92,16 @@ class Plugin
   public function ajax()
   {
      return AjaxController::getInstance();
+  }
+
+  public function getController($name)
+  {
+      switch($name)
+      {
+          case 'AdminController':
+              return new AdminController();
+          break;
+      }
   }
 
   public function process()
@@ -194,7 +204,7 @@ class Plugin
       wp_enqueue_style('rta_css');
       wp_enqueue_script('rta_js');
       //$rta_image_sizes = get_option( 'rta_image_sizes' );
-      $view = new AdminController();
+      $view = $this->getController('AdminController');
       $view->show();
   }
 

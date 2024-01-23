@@ -695,15 +695,31 @@ class RtaJS
        var countElements = document.querySelectorAll('.images_regenerated');
        for (var i = 0; i < countElements.length; i++)
        {
-          countElements[i].innerText = thumbs_done + ' ' + this.strings.regenerated;
+          var element = countElements[i];
+          if (element.classList.contains('add-title'))
+          {
+            element.innerText = thumbs_done + ' ' + this.strings.regenerated;
+          }
+          else {
+            element.innerText = thumbs_done;
+          }
        }
+
        var countElements = document.querySelectorAll('.images_removed');
        for (var i = 0; i < countElements.length; i++)
        {
-          countElements[i].innerText = thumbs_removed + ' ' + this.strings.removed;
-          if (thumbs_removed > 0 && countElements[i].classList.hasClass('rta_hidden'))
+          var element = countElements[i];
+
+          if (element.classList.contains('add-title'))
           {
-             countElements[i].classList.remove('rta_hidden');
+            element.innerText = thumbs_removed + ' ' + this.strings.removed;
+          }
+          else {
+            element.innerText = thumbs_removed;
+          }
+          if (thumbs_removed > 0 && element.classList.contains('rta_hidden'))
+          {
+             element.classList.remove('rta_hidden');
           }
        }
 

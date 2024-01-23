@@ -21,6 +21,9 @@ if (! defined('ABSPATH')) {
             if ($period->isCustom())
               continue;
 
+            $disabled = (! $period->isAvailable()) ? 'disabled="disabled"' : false;
+
+
             $queryDate = $period->getQueryDate();
             $startstamp = $queryDate['startstamp'];
             $endstamp = $queryDate['endstamp'];
@@ -28,7 +31,7 @@ if (! defined('ABSPATH')) {
             $checked = ($period->period_id === PERIODS::PERIOD_ALL) ? 'checked="checked"' : '';
 
              echo "<li><label>
-             <input data-start='$startstamp' data-end='$endstamp' type='radio' name='period' value='" . $period->period_id . "' $checked >" . $period->period_name .
+             <input data-start='$startstamp' data-end='$endstamp' type='radio' name='period' value='" . $period->period_id . "' $checked $disabled>" . $period->period_name .
              '</label></li>';
           }
           ?>
@@ -37,12 +40,16 @@ if (! defined('ABSPATH')) {
     </div>
 
 
+    <?php // Custom
+    $period = $this->getPeriodsClass()::getPeriod(Periods::PERIOD_CUSTOM);
+    $disabled = (! $period->isAvailable()) ? 'disabled="disabled"' : false; ?>
+
     <div class='option custom_date'>
         <div> <label><?php _e('Start date', 'regenerate-thumbnails-advanced'); ?></label>
-          <input type='date' name='start_date' value='' >
+          <input type='date' name='start_date' value='' <?php echo $disabled ?> >
         </div>
         <div> <label><?php _e('End date', 'regenerate-thumbnails-advanced'); ?></label>
-          <input type='date' name='end_date' value='<?php echo date('Y-m-d', time()) ?>'>
+          <input type='date' name='end_date' value='<?php echo date('Y-m-d', time()) ?>' <?php echo $disabled ?>>
         </div>
 
     </div>

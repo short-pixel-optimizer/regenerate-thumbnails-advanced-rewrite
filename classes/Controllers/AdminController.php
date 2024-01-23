@@ -58,13 +58,16 @@ class AdminController extends Controller
     }
     elseif ($name === 'view_rta_regenerate')
     {
-        $view->periods = Periods::getAll();
+        $view->periods = $this->getPeriodsClass()::getAll();
     }
-
-
 
     $html = $this->load_template($name, 'admin', array('view' => $view ));
     echo $html;
+  }
+
+  protected function getPeriodsClass()
+  {
+      return Periods::class;
   }
 
   /** Generate cropOptions

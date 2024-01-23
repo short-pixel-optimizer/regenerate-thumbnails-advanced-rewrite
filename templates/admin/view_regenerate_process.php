@@ -44,8 +44,8 @@ if (! defined('ABSPATH')) {
          <div class='rta_progressbar'><span class='right'>0%</span><span class='centre'>
             <span class='text'>0/100</span>
 
-            (<span class="images_regenerated">0 <?php _e('regenerated', 'regenerate-thumbnails-advanced') ?></span>
-              <span class="images_removed rta_hidden">0 <?php _e('removed', 'regenerate-thumbnails-advanced') ?></span>)
+            (<span class="images_regenerated add-title">0 <?php _e('regenerated', 'regenerate-thumbnails-advanced') ?></span>
+              <span class="images_removed rta_hidden add-title">0 <?php _e('removed', 'regenerate-thumbnails-advanced') ?></span>)
          </span>
          </div>
        </div>
@@ -105,7 +105,6 @@ if (! defined('ABSPATH')) {
     <div class='rta_success_box rta_hidden'>
         <div class='modal-close'><span class='dashicons dashicons-no ' >&nbsp;</span></div>
         <h3 class='header'>
-          <?php _e('Done!', 'regenerate-thumbnails-advanced'); ?>
           <?php printf(__('%s images regenerated!', 'regenerate-thumbnails-advanced'), '<span class="images_regenerated">0</span>');
           ?>
                   </h3>

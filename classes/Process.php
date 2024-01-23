@@ -41,6 +41,8 @@ class Process
   protected $memory_limit;
 
   protected $q;
+  protected $counter = false;
+  
   protected $process_name = 'rta_image_process';
   protected $counter_name = 'rta_image_counter';
 
@@ -320,14 +322,7 @@ class Process
 
      foreach($result as $index => $row)
      {
-      /*    $image_id = $row->ID;
-         $imageObj = new Image($image_id);
-          if (false === $imageObj->isProcessable())
-          {
-          //  Log::addTemp("Not processable $image_id - " . $imageObj->getProcessableReason() );
-             continue;
-          }
-*/
+
           $resultCount++;
           $items[] = array('id' => $row->ID, 'value' => '');
 
@@ -383,7 +378,6 @@ class Process
 
                 );
         */
-       Log::addTemp('saving Process', var_export($data, true));
       update_option($this->process_name, $data, false);
   }
 
@@ -405,20 +399,17 @@ class Process
      {
 
         $this->counter['count'] += $counts['count'];
-        Log::addTemp('Adding Count' . $counts['count'], $this->counter);
      }
 
      if (isset($counts['removed']) && $counts['removed'] > 0)
      {
         $this->counter['removed'] += $counts['removed'];
-        Log::addTemp('Adding removed', $this->counter);
      }
 
   }
 
   public function saveCounter()
   {
-      Log::addTemp('Saving Counter', $this->counter);
       update_option($this->counter_name, $this->counter, false);
   }
 
