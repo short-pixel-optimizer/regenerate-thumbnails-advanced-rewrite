@@ -21,6 +21,8 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
   protected $persistentMeta = array();
   protected $regeneratedSizes = array();
+  protected $sizesToRemove = array();
+
 
   protected $customThumbSuffixes =  array('_c', '_tl', '_tr', '_br', '_bl');
 
@@ -222,6 +224,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
               if ($ext !== 'webp' && $ext !== 'avif')
               {
                 do_action('shortpixel-thumbnails-regenerated', $this->id, $original_meta, $regenSizes, $is_a_bulk);
+                do_action('rta/image/thumbnails_regenerated', $this->id, $regenSizes);
               }
             }
             $last_success_url = $this->getFileUri();
@@ -382,12 +385,10 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
       }
 
       // 7. If unused thumbnails are not set for delete, keep the metadata intact.
+      $other_meta = array_diff( array_keys($imageMetaSizes), $do_regenerate_sizes, $prevent_regen);
+
       if (false === RTA()->process()->doRemoveThumbnails() )
       {
-        Log::addTemp('DoRemove', $imageMetaSizes);
-        Log::addTemp('DoRegenSizes', $do_regenerate_sizes);
-        Log::addTemp('PreventrEGEN', $prevent_regen);
-        $other_meta = array_diff( array_keys($imageMetaSizes), $do_regenerate_sizes, $prevent_regen);
         if (count($other_meta) > 0)
         {
           Log::addDebug('Image sizes not selected, but not up for deletion', $other_meta);
@@ -400,7 +401,15 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
         }
       }
       elseif (true === RTA()->process()->doRemoveThumbnails()) {
-              // @todo Here add something to trigger thumbsizes later when deleting them for SPIO integration
+        // @todo Here add something to trigger thumbsizes later when deleting them for SPIO integration
+        foreach($other_meta as $size)
+        {
+           if (isset($imageMetaSizes[$size]))
+           {
+              $this->sizesToRemove[$size] = $imageMetaSizes[$size];
+           }
+        }
+
       }
 
       $returned_sizes = array();
@@ -510,9 +519,11 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
           }
 
           $status = $thumbObj->delete();
-          $result['removed'][] = $thumbObj->getFullPath() . "($status)";
+          $result['removed'][] = $thumbObj->getFullPath() . " ($status)";
         }
     }
+
+    do_action('rta/image/thumbnails_removed', $this->id, $this->sizesToRemove);
 
     $this->images_removed = count($result['removed']);
 
