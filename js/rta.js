@@ -85,7 +85,7 @@ class RtaJS
       }
 
      // Warnings, errors and such.
-     var deleteItemToggles = document.querySelectorAll('input[name="del_associated_thumbs"], input[name^="regenerate_sizes"]');
+     var deleteItemToggles = document.querySelectorAll('input[name="del_associated_thumbs"]');
 
      for (var i = 0; i < deleteItemToggles.length; i++)
      {
@@ -104,10 +104,12 @@ class RtaJS
         dateInputs[i].addEventListener('click', this.UpdateDateEvent.bind(this));
      }
 
-     var visibleOptions = document.querySelectorAll('input[name^="regenerate_sizes"]');
-     for(var i = 0; i < visibleOptions.length; i++)
+     var options = document.querySelectorAll('input[name^="regenerate_sizes"]');
+     for(var i = 0; i < options.length; i++)
      {
-        visibleOptions[i].addEventListener('change', this.CheckOptionsVisible.bind(this));
+       options[i].addEventListener('change', this.ToggleCheckboxEvent.bind(this));
+      //  visibleOptions[i].addEventListener('change', this.CheckOptionsVisible.bind(this));
+      //
      }
 
      var sh = new ShiftSelect('input[name^="regenerate_sizes"]');
@@ -159,11 +161,18 @@ class RtaJS
        saveNote.classList.remove('rta_hidden');
      }
 
+
    }
 
    UpdateSettingsEvent(event)
    {
       event.preventDefault();
+      // Toggler should not Trigger Save Settings
+      if (event.detail && event.detail.automated)
+      {
+         return;
+      }
+
       this.CheckSubmitReady();
    }
 
@@ -873,7 +882,6 @@ class RtaJS
 
                  if (false == image_added)
                  {
-                   console.log('Adding Image', item.image);
                    this.ShowThumb(item.image);
 
                    var messageElement = document.querySelector('.thumb-message');
@@ -1066,11 +1074,11 @@ class RtaJS
              item.addEventListener('change', this.UpdateSettingsEvent.bind(this));
              if (item.name.indexOf('regenerate_sizes') !== -1)
              {
-                item.addEventListener('click', this.ToggleDeleteItems.bind(this));
-                item.addEventListener('change', this.CheckOptionsVisible.bind(this));
+                item.addEventListener('change', this.ToggleCheckboxEvent.bind(this));
+//                item.addEventListener('change', this.CheckOptionsVisible.bind(this));
              }
          }
-         this.CheckOptionsVisible();
+//         this.CheckOptionsVisible();
          var sh = new ShiftSelect('input[name^="regenerate_sizes"]');
          var shkeep = new ShiftSelect('input[name^="overwrite"]');
        }
@@ -1097,6 +1105,11 @@ class RtaJS
 
    ShowSaveIndicatorEvent(event)
    {
+      if (event.detail && event.detail.automated)
+      {
+          return;
+      }
+
        this.is_saved = false;
        this.CheckSubmitReady();
    }
@@ -1135,7 +1148,8 @@ class RtaJS
 
    CheckOptionsVisible()
    {
-       var thumbnails = document.querySelectorAll('.checkbox-list .item');
+
+/*       var thumbnails = document.querySelectorAll('.checkbox-list .item');
 
        for (var i = 0; i < thumbnails.length; i++)
        {
@@ -1151,8 +1165,7 @@ class RtaJS
            {
                 optionElement.classList.add('hidden');
            }
-       }
-
+       } */
    }
 
    ToggleDeleteItems()
@@ -1162,35 +1175,15 @@ class RtaJS
      var removingUnselected = removeSetting.checked;
      var has_items = false;
 
-     var thumbnails = document.querySelectorAll('.checkbox-list .item');
+     //var thumbnails = document.querySelectorAll('.checkbox-list .item');
+     var thumbnails = document.querySelectorAll('input[name^="regenerate_sizes"]');
+
+     var event = new CustomEvent('change', { detail: {'automated' : true}});
 
      for(var i = 0; i < thumbnails.length; i++)
      {
-        var currentItem = thumbnails[i];
-        var input = currentItem.querySelector('input');
-        var label = currentItem.querySelector('label');
 
-        if (true === removingUnselected && false === input.checked)
-        {
-           has_items = true;
-
-           label.classList.add('warning-removal');
-           var warnNode = currentItem.querySelector('span.icon-warning');
-           if (null === warnNode)
-           {
-             var warnNode = document.createElement('span');
-             warnNode.classList.add('dashicons', 'dashicons-no','icon-warning');
-             label.insertBefore(warnNode, input);
-           }
-
-        } else {
-           label.classList.remove('warning-removal');
-           var warnNode = currentItem.querySelector('span.icon-warning');
-           if (null !== warnNode)
-           {
-             warnNode.remove();
-           }
-        }
+       thumbnails[i].dispatchEvent(event);
      }
 
      var warning = document.getElementById('warn-delete-items');
@@ -1202,6 +1195,85 @@ class RtaJS
      else {
          warning.classList.add('rta_hidden');
      }
+
+   }
+
+   ToggleCheckboxEvent(event)
+   {
+      var target = event.target;
+
+
+      // Second row
+      var forceOption = target.closest('.item').querySelector('.options');
+
+      // Label on first row, to add a strike-through warning class
+      var label = target.closest('label');
+      var warnNode = label.querySelector('span.icon-warning'); // Node inserted before options
+
+      var removeSetting = document.querySelector('input[name="del_associated_thumbs"]');
+      var removing = removeSetting.checked;
+
+
+      // document.querySelector('input[name="overwrite_' + value + '"]');
+      if (true === target.checked)
+      {
+          if ( forceOption.classList.contains('hidden'))
+          {
+            forceOption.classList.remove('hidden');
+          }
+
+          if (true === removing)
+          {
+            if (warnNode !== null)
+            {
+               warnNode.remove();
+            }
+          }
+
+          if (true === label.classList.contains('warning-removal'))
+          {
+            label.classList.remove('warning-removal');
+          }
+
+      }
+      else if (false === target.checked)
+      {
+        if (false === forceOption.classList.contains('hidden'))
+        {
+          forceOption.classList.add('hidden');
+        }
+
+         if (true === removing)
+         {
+
+           if (null == warnNode)
+           {
+             var warnNode = document.createElement('span');
+             warnNode.classList.add('dashicons', 'dashicons-no','icon-warning');
+             label.insertBefore(warnNode, target);
+           }
+
+           if (false === label.classList.contains('warning-removal'))
+           {
+              label.classList.add('warning-removal');
+           }
+
+         }
+         else if (false === removing)
+         {
+           if (warnNode !== null)
+           {
+              warnNode.remove();
+           }
+           if (true === label.classList.contains('warning-removal'))
+           {
+             label.classList.remove('warning-removal');
+           }
+         }
+
+
+
+      }
 
    }
 
@@ -1226,7 +1298,8 @@ class RtaJS
          arrowEl.classList.remove('dashicons-arrow-down');
          arrowEl.classList.add('dashicons-arrow-up');
        }
-       else {
+       else
+        {
          windowElement.classList.add('window-up');
          windowElement.classList.remove('window-down');
 

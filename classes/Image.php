@@ -347,7 +347,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
          if (! $overwrite)
          {
           // thumbFile is RELATIVE. So find dir via main image.
-          // @todo this should be done via FS getFile
            $thumbFile = $fs->getFile($this->getFileDir() . $metaSize['file']);
            //Log::addDebug('Preventing overwrite of - ' . $thumbFile);
            if ($thumbFile->exists()) // 4. Check if file is really there
@@ -385,15 +384,23 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
       // 7. If unused thumbnails are not set for delete, keep the metadata intact.
       if (false === RTA()->process()->doRemoveThumbnails() )
       {
+        Log::addTemp('DoRemove', $imageMetaSizes);
+        Log::addTemp('DoRegenSizes', $do_regenerate_sizes);
+        Log::addTemp('PreventrEGEN', $prevent_regen);
         $other_meta = array_diff( array_keys($imageMetaSizes), $do_regenerate_sizes, $prevent_regen);
         if (count($other_meta) > 0)
+        {
           Log::addDebug('Image sizes not selected, but not up for deletion', $other_meta);
+        }
 
         foreach($other_meta as $size)
         {
            if (isset($imageMetaSizes[$size]))
              $this->addPersistentMeta($size, $imageMetaSizes[$size]);
         }
+      }
+      elseif (true === RTA()->process()->doRemoveThumbnails()) {
+              // @todo Here add something to trigger thumbsizes later when deleting them for SPIO integration
       }
 
       $returned_sizes = array();
@@ -469,6 +476,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
     }
 
     $result['removed'] = array();
+  //  $deleted_thumbs = array();
 
     foreach($thumbs as $thumb) {
 
