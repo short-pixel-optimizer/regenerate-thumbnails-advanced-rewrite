@@ -42,7 +42,7 @@ class Process
 
   protected $q;
   protected $counter = false;
-  
+
   protected $process_name = 'rta_image_process';
   protected $counter_name = 'rta_image_counter';
 
@@ -59,7 +59,8 @@ class Process
       $this->options['query_prepare_limit'] = apply_filters('rta/process/prepare_limit', $this->options['query_prepare_limit']);
       $this->q->setOption('numitems', apply_filters('rta/process/numitems', 3));
 
-      $this->memory_limit =$this->unitToInt(ini_get('memory_limit'));
+      $this->memory_limit = $this->unitToInt(ini_get('memory_limit'));
+
   }
 
   public static function getInstance()
@@ -422,6 +423,11 @@ class Process
 
   private function unitToInt($s)
   {
+    if ((int) $s < 0)
+    {
+       return -1; // unlimited
+    }
+    
     return (int)preg_replace_callback('/(\-?\d+)(.?)/', function ($m) {
         return $m[1] * pow(1024, strpos('BKMG', $m[2]));
     }, strtoupper($s));
