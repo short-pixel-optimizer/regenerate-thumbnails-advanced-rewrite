@@ -105,6 +105,11 @@ class AjaxController
             $status['mask'] = array('name');
             $status['status']  = self::ERROR_NOFILE;
          break;
+         case 'not_writable':
+            $status['message'] = __('%s skipped. File is not writable', 'regenerate-thumbnails-advanced');
+            $status['mask'] = array('name');
+            $status['status']  = self::ERROR_NOFILE;
+         break;
          case 'error_metadata':
            $status['message'] = __('<b>%s</b> failed on metadata. Possible issue with image', 'regenerate-thumbnails-advanced');
            $status['mask'] = array('name');

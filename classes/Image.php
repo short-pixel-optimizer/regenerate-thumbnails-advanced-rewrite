@@ -178,8 +178,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
             $targetObj = $fs->getFile($backup . "_optimized_" . $this->id);
             $this->copy($targetObj);
             $backupObj->copy($this);
-            //copy($this->getFullPath(), $backup . "_optimized_" . $this->id);
-            //copy($backup, $this->getFullPath());
         }
 
         add_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
@@ -255,6 +253,11 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
             {
               Log::addDebug('File virtual', array($this->getFullPath(), $this->id) );
               RTA()->ajax()->add_status('is_virtual', array('name' => basename($debug_filename)));
+            }
+            elseif (false === $this->is_writable())
+            {
+              Log::addDebug('File not writable -', array($this->getFullPath(), $this->id) );
+              RTA()->ajax()->add_status('not_writable', array('name' => basename($debug_filename)) );
             }
             else {
               Log::addDebug('File missing - Current Image reported as not an image', array($this->getFullPath(), $this->id) );

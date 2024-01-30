@@ -64,7 +64,8 @@ class AdminController extends Controller
     }
     elseif ($name === 'view_rta_regenerate')
     {
-        $view->periods = $this->getPeriodsClass()::getAll();
+        $periodsClass = $this->getPeriodsClass(); // compat for 5.6  :(
+        $view->periods = $periodsClass::getAll();
     }
 
     $html = $this->load_template($name, 'admin', array('view' => $view ));
