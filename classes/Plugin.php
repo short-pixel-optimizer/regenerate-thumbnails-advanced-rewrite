@@ -57,6 +57,13 @@ class Plugin
   }
 
 
+
+  public function getTemplatePaths()
+  {
+      return [RTA_PLUGIN_PATH];
+  }
+
+
   // load textdomain, init.
   public function init()
   {

@@ -8,11 +8,15 @@ if (! defined('ABSPATH')) {
 ?>
 
 <form method="post" name="rtaform_process" id="rtaform_process" class="frm_rta" enctype="multipart/form-data">
+
+<?php do_action('rta/ui/start-options'); ?>
+
 <section class='period'>
   <div class='container'>
     <div class='option'>
       <label><?php _e('Regenerate period:','regenerate-thumbnails-advanced'); ?></label>
 
+      <?php echo $this->getProSnippet(); ?>
       <ul class='period-list'>
 
           <?php
@@ -106,7 +110,7 @@ if (! defined('ABSPATH')) {
             <span><?php _e('Remove non-existent images','regenerate-thumbnails-advanced'); ?></span>
           </label>
           <div class='note'>
-            <p><?php _e('If the main image does not exist, removes this image, thumbnails and metadata','regenerate-thumbnails-advanced'); ?></p>
+            <p><?php _e('If the main image does not exist, removes this image, thumbnails and metadata.','regenerate-thumbnails-advanced'); ?></p>
             <p><?php _e('For removing images that are gone on disk, but still in media library', 'regenerate-thumbnails-advanced'); ?></p>
         </div>
       </div>
@@ -116,6 +120,8 @@ if (! defined('ABSPATH')) {
     </div>
   </div> <!-- container -->
 </section>
+
+<?php do_action('rta/ui/end-options'); ?>
 
 <section class='form_controls'>
   <div class='container'>

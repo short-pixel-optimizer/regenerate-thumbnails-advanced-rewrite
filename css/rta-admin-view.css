@@ -1,3 +1,11 @@
+.wrap h1.rta-title {
+  background: #1abdca;
+  background: linear-gradient(90deg, rgb(26, 189, 202) 72%, rgba(255, 255, 255, 0) 99%);
+  color: #fff;
+  font-weight: 700;
+  padding: 8px 0 8px 15px;
+}
+
 .rta-admin .two-panel-wrap {
   display: flex;
   justify-content: space-between;
@@ -35,6 +43,21 @@
 .rta-admin form {
   min-height: 600px;
   padding-bottom: 65px;
+}
+.rta-admin .pro-only {
+  background-color: #1abdca;
+  padding: 1px;
+  max-width: 50px;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  border-radius: 5px;
+  display: inline-block;
+}
+.rta-admin .pro-only a {
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
 }
 .rta-admin .rta-notice {
   margin: 8px 0;
@@ -81,14 +104,13 @@
 }
 .rta-admin .btn_add_more, .rta-admin button {
   color: rgb(255, 255, 255);
-  background: rgb(0, 188, 212);
+  background: #1abdca;
   position: relative;
   box-shadow: none;
   cursor: pointer;
   border: 0;
   border-right: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
-  box-shadow: 0px 0px 4px #aaa;
 }
 .rta-admin .container {
   padding: 20px 8px;
@@ -107,6 +129,13 @@
   vertical-align: top;
   line-height: 15px;
   position: relative;
+  margin-bottom: 10px;
+}
+@media (max-width: 782px) {
+  .rta-admin .option > label {
+    line-height: 1.5625rem;
+    font-size: 15px;
+  }
 }
 .rta-admin .option > label input {
   vertical-align: middle;
@@ -118,6 +147,13 @@
   display: inline-block;
   margin-left: 25px;
   line-height: 20px;
+}
+@media (max-width: 782px) {
+  .rta-admin .option > label span {
+    margin-left: 35px;
+    font-size: 16px;
+    vertical-align: bottom;
+  }
 }
 .rta-admin .option .note {
   margin-left: 15px;
@@ -140,8 +176,18 @@
   margin: 2px 0;
   min-width: 150px;
 }
+@media (max-width: 782px) {
+  .rta-admin .option.custom_date input {
+    min-width: 165px;
+  }
+}
 .rta-admin input.tiny {
   width: 65px;
+}
+@media (max-width: 782px) {
+  .rta-admin input.tiny {
+    width: 75px;
+  }
 }
 .rta-admin button {
   font-size: 14px;
@@ -163,6 +209,7 @@
 }
 .rta-admin .table {
   display: flex;
+  padding: 6px;
   flex-direction: column;
   border-spacing: 10px 0;
   border: 1px solid #eee;
@@ -243,6 +290,11 @@
   border: 1px solid #ccc;
   padding: 8px;
 }
+@media (max-width: 650px) {
+  .rta-admin .select-options {
+    margin-left: 0;
+  }
+}
 .rta-admin .cleanup-wrapper {
   padding: 8px;
   border: 1px solid #ddd;
@@ -264,7 +316,7 @@
   }
   .rta-admin .cleanup-wrapper .option .note {
     width: 100%;
-    margin: 4px 0;
+    margin: 10px 0;
   }
 }
 .rta-admin .warning-removal {
@@ -342,6 +394,7 @@
   font-size: 16px;
   font-weight: 700;
   text-decoration: underline;
+  color: #1abdca;
 }
 
 /*# sourceMappingURL=rta-admin-view.css.map */

@@ -464,6 +464,12 @@ class RtaJS
          this.TogglePanel('loading', false);
          var self = this;
 
+         if (typeof response === 'undefined')
+         {
+            console.error('DoProcessResponse: No response returned');
+            return;
+         }
+
          if (typeof response.items !== 'undefined') // return is a process var..
          {
            this.process = response;

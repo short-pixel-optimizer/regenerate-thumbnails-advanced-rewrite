@@ -14,6 +14,9 @@ class AdminController extends Controller
 {
   protected $cropOptions;
 
+  protected $pageTitle;
+  protected $proLink;
+
   public function __construct()
   {
         wp_enqueue_style( 'rta_css_admin');
@@ -34,6 +37,9 @@ class AdminController extends Controller
             'right_center' => __('Right center','regenerate-thumbnails-advanced'),
             'right_bottom' => __('Right bottom','regenerate-thumbnails-advanced'),
         );
+
+        $this->pageTitle = __('Regenerate Thumbnails Advanced','regenerate-thumbnails-advanced');
+        $this->proLink = 'https://projects.shortpixel.com/regenerate-thumbnails-advanced/';
 
   }
 
@@ -63,6 +69,15 @@ class AdminController extends Controller
 
     $html = $this->load_template($name, 'admin', array('view' => $view ));
     echo $html;
+  }
+
+  public function getProSnippet()
+  {
+      $output =   sprintf('<div class="pro-only">%s %s %s</div>',
+                  '<a href="' . esc_url($this->proLink) . '" target="_blank">',
+                  __('PRO', 'regenerate-thumbnails-advanced'),
+                  '</a>');
+      return $output;
   }
 
   protected function getPeriodsClass()

@@ -102,6 +102,8 @@ if (! defined('ABSPATH')) {
 </div> <!-- container -->
 </section>
 
+<?php do_action('rta/ui/end-settings'); ?>
+
 <section class='form_controls'>
   <div class='container'>
     <button type='submit' name='save_settings' disabled class='disabled'><?php _e('Save Settings', 'regenerate-thumbnails-advanced'); ?> </button>

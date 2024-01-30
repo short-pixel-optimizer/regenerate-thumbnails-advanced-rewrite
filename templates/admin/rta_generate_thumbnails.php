@@ -8,7 +8,9 @@ if (! defined('ABSPATH')) {
 ?>
 
 <div class='wrap'> <!-- this wrap to keep notices and other scum out of the interface -->
-  <h1><?php _e('Regenerate Thumbnails Advanced','regenerate-thumbnails-advanced'); ?></h1>
+  <h1 class="rta-title"><?php echo $this->pageTitle ?>
+
+  </h1>
 
 <div class="rta-admin-wrap rta-admin wrap">
 
