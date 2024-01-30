@@ -45,7 +45,8 @@ if (! defined('ABSPATH')) {
 
 
     <?php // Custom
-    $period = $this->getPeriodsClass()::getPeriod(Periods::PERIOD_CUSTOM);
+    $periodClass = $this->getPeriodsClass();
+    $period = $periodClass::getPeriod(Periods::PERIOD_CUSTOM);
     $disabled = (! $period->isAvailable()) ? 'disabled="disabled"' : false; ?>
 
     <div class='option custom_date'>
