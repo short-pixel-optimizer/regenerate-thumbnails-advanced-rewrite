@@ -31,6 +31,8 @@ $loader = new Build\PackageLoader();
 $loader->setComposerFile(RTA_PLUGIN_PATH . 'classes/plugin.json');
 $loader->load(RTA_PLUGIN_PATH);
 
+
+
 function RTA()
 {
   if (class_exists('\ReThumbAdvanced\PluginPro'))
@@ -46,6 +48,9 @@ function RTA()
 add_action('plugins_loaded', function () {
   RTA();
 });
+
+// Low-init to put the correct path in the manual logger box
+Plugin::checkLogger();
 
 
 

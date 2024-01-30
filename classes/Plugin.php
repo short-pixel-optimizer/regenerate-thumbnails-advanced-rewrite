@@ -23,15 +23,6 @@ class Plugin
 
   public function __construct()
   {
-      $log = Log::getInstance();
-      if (Log::debugIsActive()) // upload dir can be expensive, so only do this when log is actually active.
-      {
-        $uploaddir = wp_upload_dir(null, false, false);
-        if (isset($uploaddir['basedir']))
-          $log->setLogPath($uploaddir['basedir'] . "/rta_log");
-      }
-    //  $this->initRuntime();
-
       add_action( 'after_setup_theme', array( $this, 'add_custom_sizes' ) );
       add_action( 'admin_init', array( $this, 'init' ) );
     //  add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ), 10 );
@@ -56,8 +47,18 @@ class Plugin
     return '\ReThumbAdvanced\\'  . $name;
   }
 
-
-
+  public static function checkLogger()
+  {
+    $log = Log::getInstance();
+    if (Log::debugIsActive()) // upload dir can be expensive, so only do this when log is actually active.
+    {
+      $uploaddir = wp_upload_dir(null, false, false);
+      if (isset($uploaddir['basedir']))
+      {
+        $log->setLogPath($uploaddir['basedir'] . "/rta_log");
+      }
+    }
+  }
   public function getTemplatePaths()
   {
       return [RTA_PLUGIN_PATH];
