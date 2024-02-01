@@ -76,7 +76,7 @@ class AdminController extends Controller
   {
       $output =   sprintf('<div class="pro-only">%s %s %s</div>',
                   '<a href="' . esc_url($this->proLink) . '" target="_blank">',
-                  __('PRO', 'regenerate-thumbnails-advanced'),
+                  __('PRO Only', 'regenerate-thumbnails-advanced'),
                   '</a>');
       return $output;
   }

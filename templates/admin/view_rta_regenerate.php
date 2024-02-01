@@ -49,12 +49,17 @@ if (! defined('ABSPATH')) {
     $period = $periodClass::getPeriod(Periods::PERIOD_CUSTOM);
     $disabled = (! $period->isAvailable()) ? 'disabled="disabled"' : false; ?>
 
+
     <div class='option custom_date'>
         <div> <label><?php _e('Start date', 'regenerate-thumbnails-advanced'); ?></label>
           <input type='date' name='start_date' value='' <?php echo $disabled ?> >
+          <?php echo $this->getProSnippet(); ?>
+
         </div>
         <div> <label><?php _e('End date', 'regenerate-thumbnails-advanced'); ?></label>
           <input type='date' name='end_date' value='<?php echo date('Y-m-d', time()) ?>' <?php echo $disabled ?>>
+          <?php echo $this->getProSnippet(); ?>
+
         </div>
 
     </div>
@@ -79,26 +84,34 @@ if (! defined('ABSPATH')) {
 
       </div>
 
+
       <div class='option'>
           <label>
-            <input type='checkbox' name='process_clean_metadata' value='1'>
+            <input type='checkbox' name='process_clean_metadata' value='1' disabled />
             <span><?php _e('Clean unknown metadata', 'regenerate-thumbnails-advanced'); ?></span>
          </label>
 
-         <div class='note'><p><?php _e('Clean old metadata not defined in system sizes. Use after removing plugins / themes with old definitions. Will not remove thumbnails from disk', 'regenerate-thumbnails-advanced') ?></p></div>
+         <div class='note'>
+           <?php echo $this->getProSnippet(); ?>
+
+           <p><?php _e('Clean old metadata not defined in system sizes. Use after removing plugins / themes with old definitions. Will not remove thumbnails from disk', 'regenerate-thumbnails-advanced') ?></p>
+         </div>
       </div>
 
 
       <div class='option'>
           <label for="del_associated_thumbs">
-            <input type="checkbox" name="del_associated_thumbs" id="del_associated_thumbs" value="1" />
+            <input type="checkbox" name="del_associated_thumbs" id="del_associated_thumbs" value="1" disabled />
             <span><?php _e('Delete Unselected Thumbnails','regenerate-thumbnails-advanced'); ?></span>
           </label>
-          <div class='note'><p><?php _e('Delete thumbnails and metadata not selected in the settings. Will delete thumbnails from disk - be sure they are not in use.  ','regenerate-thumbnails-advanced'); ?></p></div>
+          <div class='note'>
+            <?php echo $this->getProSnippet(); ?>
+
+            <p><?php _e('Delete thumbnails and metadata not selected in the settings. Will delete thumbnails from disk - be sure they are not in use.  ','regenerate-thumbnails-advanced'); ?></p></div>
       </div>
+
       <div class='warning inline rta-notice rta_hidden' id='warn-delete-items'>
       <div class='icon dashicons-info dashicons'></div>
-
 
       <p><?php _e('Not selected thumbnails will be removed from your site. Check your settings if this is intentional.'); ?></p>
 
@@ -107,10 +120,12 @@ if (! defined('ABSPATH')) {
 
       <div class='option'>
           <label for="del_leftover_metadata">
-            <input type="checkbox" name="del_leftover_metadata" id="del_leftover_metadata" value="1" />
+            <input type="checkbox" name="del_leftover_metadata" id="del_leftover_metadata" value="1" disabled />
             <span><?php _e('Remove non-existent images','regenerate-thumbnails-advanced'); ?></span>
           </label>
           <div class='note'>
+            <?php echo $this->getProSnippet(); ?>
+
             <p><?php _e('If the main image does not exist, removes this image, thumbnails and metadata.','regenerate-thumbnails-advanced'); ?></p>
             <p><?php _e('For removing images that are gone on disk, but still in media library', 'regenerate-thumbnails-advanced'); ?></p>
         </div>

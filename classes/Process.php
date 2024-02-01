@@ -7,7 +7,6 @@ if (! defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
-
 /** Class Process
 * This class functions as glue between ShortQ and RTA. Responsible for enqueuing and process monitoring.
 * Main class should be simply able to ask for process and it's status and act upon that.
@@ -23,16 +22,11 @@ class Process
   protected $total = 0;
   protected $current = 0;
 
-
   // options.
-
   protected $options = array(
     'startstamp' => -1,
     'endstamp' => -1,
     'only_featured' => false,
-    'remove_thumbnails' => false,
-    'delete_leftmetadata' => false,
-    'clean_metadata' => false,
     'query_prepare_limit' => 500,
   );
 
@@ -229,7 +223,7 @@ class Process
       {
          return false;
       }
-      
+
       $current_mem = memory_get_usage();
 
       $percentage_limit = 95;
@@ -400,10 +394,8 @@ class Process
         );
      }
 
-
      if (isset($counts['count']) && $counts['count'] > 0)
      {
-
         $this->counter['count'] += $counts['count'];
      }
 
@@ -411,7 +403,6 @@ class Process
      {
         $this->counter['removed'] += $counts['removed'];
      }
-
   }
 
   public function saveCounter()

@@ -46,13 +46,15 @@
 }
 .rta-admin .pro-only {
   background-color: #1abdca;
-  padding: 1px;
-  max-width: 50px;
+  padding: 4px 2px;
+  max-width: 80px;
   width: 100%;
   box-sizing: border-box;
   text-align: center;
   border-radius: 5px;
   display: inline-block;
+  margin: 0 0 4px 0;
+  font-size: 12px;
 }
 .rta-admin .pro-only a {
   color: #fff;

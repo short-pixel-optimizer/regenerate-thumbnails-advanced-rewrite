@@ -38,11 +38,8 @@ class RtaJS
 
       this.InitEvents();
       this.ToggleDeleteItems();
-
       this.InitProcess();
-
       this.CheckSubmitReady();
-
 
    }
 
@@ -91,12 +88,9 @@ class RtaJS
       }
 
      // Warnings, errors and such.
-     var deleteItemToggles = document.querySelectorAll('input[name="del_associated_thumbs"]');
+     var deleteItemToggle = document.querySelector('input[name="del_associated_thumbs"]');
+     deleteItemToggle.addEventListener('change', this.ToggleDeleteItems.bind(this));
 
-     for (var i = 0; i < deleteItemToggles.length; i++)
-     {
-        deleteItemToggles[i].addEventListener('change', this.ToggleDeleteItems.bind(this));
-     }
 
      var saveIndicatorInputs = document.querySelectorAll('.rta-settings-wrap input, .rta-settings-wrap select');
      for(var i = 0; i < saveIndicatorInputs.length; i++)
@@ -973,7 +967,7 @@ class RtaJS
        var height = data.height;
        var hidden = '';
        var checked_overwrite = '';
-console.log(cloneHTML);
+
        if (name.length == 0)
        {
           name = size;
@@ -990,12 +984,13 @@ console.log(cloneHTML);
                 .replaceAll('%%checked_overwrite%%', checked_overwrite);
 
        var checkList = document.querySelector('.checkbox-list');
-console.log(cloneHTML);
+
        cloneNode.innerHTML = cloneHTML;
        cloneNode.classList.remove('stub', 'hidden');
        checkList.insertBefore(cloneNode, clone);
 
        cloneNode.querySelector('input[name^="regenerate_sizes"]').addEventListener('change', this.ToggleCheckboxEvent.bind(this));
+       // Add new node to the shiftselect
        this.shiftSelect.AddElementToList(cloneNode.querySelector('input[name^="regenerate_sizes"]'));
        this.shiftSelectOverwrite.AddElementToList(cloneNode.querySelector('input[name^="overwrite_"]'))
    }
@@ -1016,7 +1011,6 @@ console.log(cloneHTML);
            this.UpdateThumbName(parentElement);
          }
        }
-
    }
 
    UpdateThumbName(row) {
@@ -1118,7 +1112,7 @@ console.log(cloneHTML);
        var data = {
           action: action,
           form: form,
-          success: this.SaveImageSizesEvent,
+          success: this.SaveImageSizesDoneEvent,
        };
 
        this.AjaxCall(data);
@@ -1126,7 +1120,7 @@ console.log(cloneHTML);
    }
 
 
-   SaveImageSizesEvent(response)
+   SaveImageSizesDoneEvent(response)
    {
 
      if (! response.error)
@@ -1218,25 +1212,22 @@ console.log(cloneHTML);
 
    ToggleDeleteItems()
    {
-
      var removeSetting = document.querySelector('input[name="del_associated_thumbs"]');
      var removingUnselected = removeSetting.checked;
      var has_items = false;
 
-     //var thumbnails = document.querySelectorAll('.checkbox-list .item');
-     var thumbnails = document.querySelectorAll('input[name^="regenerate_sizes"]');
-
+     var thumbnails = document.querySelectorAll('input[name^="regenerate_sizes"]:not(:checked)');
      var event = new CustomEvent('change', { detail: {'automated' : true}});
 
      for(var i = 0; i < thumbnails.length; i++)
      {
-
+       has_items = true;
        thumbnails[i].dispatchEvent(event);
      }
 
      var warning = document.getElementById('warn-delete-items');
 
-     if (true === has_items)
+     if (true === removeSetting.checked && true === has_items)
      {
          warning.classList.remove('rta_hidden');
      }
@@ -1249,12 +1240,11 @@ console.log(cloneHTML);
    ToggleCheckboxEvent(event)
    {
       var target = event.target;
-
       var item = target.closest('.item');
+
       // No item, or stub.
       if (null === item || item.classList.contains('stub'))
       {
-        console.log('returning on stub', event);
          return;
       }
 
@@ -1268,11 +1258,9 @@ console.log(cloneHTML);
       var removeSetting = document.querySelector('input[name="del_associated_thumbs"]');
       var removing = removeSetting.checked;
 
-
-      // document.querySelector('input[name="overwrite_' + value + '"]');
       if (true === target.checked)
       {
-          if ( forceOption.classList.contains('hidden'))
+          if (true === forceOption.classList.contains('hidden'))
           {
             forceOption.classList.remove('hidden');
           }
@@ -1289,7 +1277,6 @@ console.log(cloneHTML);
           {
             label.classList.remove('warning-removal');
           }
-
       }
       else if (false === target.checked)
       {
@@ -1300,7 +1287,6 @@ console.log(cloneHTML);
 
          if (true === removing)
          {
-
            if (null == warnNode)
            {
              var warnNode = document.createElement('span');
@@ -1312,7 +1298,6 @@ console.log(cloneHTML);
            {
               label.classList.add('warning-removal');
            }
-
          }
          else if (false === removing)
          {
@@ -1325,9 +1310,16 @@ console.log(cloneHTML);
              label.classList.remove('warning-removal');
            }
          }
+      }
 
-
-
+      // if event automated it comes from deleteItems, so don't loop.
+      if (event.detail && event.detail.automated)
+      {
+        return;
+      }
+      if (removing)  // if we are removing, check the warning.
+      {
+         this.ToggleDeleteItems();
       }
 
    }
@@ -1370,5 +1362,6 @@ console.log(cloneHTML);
 } // Class
 
 
+// @todo Different initiator for JS / PRO 
 var r = new RtaJS();
 r.Init();

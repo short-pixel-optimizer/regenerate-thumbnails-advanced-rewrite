@@ -140,6 +140,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
   public function process()
   {
+    // @todo  doRemoveThumbnails - move to pro-class 
     if (RTA()->process()->doRemoveThumbnails())
     {
       $this->setCleanUp(true);
@@ -149,6 +150,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
       Log::addDebug('Image thumbnails will be cleaned');
     }
 
+    // @todo doDeleteLeftMeta  - move to pro-class
     if(RTA()->process()->doDeleteLeftMeta() && ! $this->exists() )  {
 				$post = get_post($this->id);
 
@@ -354,7 +356,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
          {
           // thumbFile is RELATIVE. So find dir via main image.
            $thumbFile = $fs->getFile($this->getFileDir() . $metaSize['file']);
-           //Log::addDebug('Preventing overwrite of - ' . $thumbFile);
+
            if ($thumbFile->exists()) // 4. Check if file is really there
            {
               $prevent_regen[] = $rsize;
@@ -412,7 +414,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
               $this->sizesToRemove[$size] = $imageMetaSizes[$size];
            }
         }
-
       }
 
       $returned_sizes = array();

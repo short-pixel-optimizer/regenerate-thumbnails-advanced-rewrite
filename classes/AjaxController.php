@@ -210,11 +210,6 @@ class AjaxController
 
       $options['only_featured'] = (isset($data['regenonly_featured']) && '1' == $data['regenonly_featured']) ? true : false;
 
-      $options['remove_thumbnails'] = (isset($data['del_associated_thumbs']) && '1' == $data['del_associated_thumbs']) ? true : false;
-
-      $options['delete_leftmetadata'] = (isset($data['del_leftover_metadata']) && '1' == $data['del_leftover_metadata']) ? true : false;
-
-      $options['clean_metadata'] = (isset($data['process_clean_metadata']) && '1' == $data['process_clean_metadata']) ? true : false;
 
       $options['startstamp']  = -1;
       $options['endstamp'] = strtotime(time() . ' 23:59:59');
