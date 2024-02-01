@@ -69,13 +69,12 @@ class Admin
     *
     *
     */
-    public function getImageSizes()
+    protected function getImageSizes()
     {
       global $_wp_additional_image_sizes;
 
-      $option = get_option('rta_image_sizes');
+      $option = get_option('rta_image_sizes', array());
       $our_image_sizes = isset($option['image_sizes']) ? $option['image_sizes']: array();
-
 
       /* Snips stolen from SPIO */
   			$sizes_names = get_intermediate_image_sizes();

@@ -225,6 +225,11 @@ class Process
   public function IsOverMemoryLimit($runCount)
   {
       $memory_limit = $this->memory_limit;
+      if ($memory_limit < 0) // check for unlimited memory
+      {
+         return false;
+      }
+      
       $current_mem = memory_get_usage();
 
       $percentage_limit = 95;
@@ -427,7 +432,7 @@ class Process
     {
        return -1; // unlimited
     }
-    
+
     return (int)preg_replace_callback('/(\-?\d+)(.?)/', function ($m) {
         return $m[1] * pow(1024, strpos('BKMG', $m[2]));
     }, strtoupper($s));

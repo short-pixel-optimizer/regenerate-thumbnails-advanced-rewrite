@@ -265,12 +265,18 @@
   justify-content: space-between;
   width: 100%;
 }
+.rta-admin .checkbox-list .item.hidden {
+  display: none;
+}
 .rta-admin .checkbox-list .item span {
   display: inline-block;
   margin-right: 14px;
 }
 .rta-admin .checkbox-list .item span.hidden {
   visibility: hidden;
+}
+.rta-admin .checkbox-list .item label {
+  margin-right: 14px;
 }
 .rta-admin .checkbox-list input {
   margin-right: 8px;

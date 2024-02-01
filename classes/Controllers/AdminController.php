@@ -168,6 +168,7 @@ class AdminController extends Controller
 
       $newsizes = $this->generateImageSizeOptions($sizes);
       $jsonResponse = array( 'error' => $error, 'message' => '', 'new_image_sizes' => $newsizes );
+
       return $jsonResponse;
 
   }
@@ -200,24 +201,56 @@ class AdminController extends Controller
       $checked = ($check_all || in_array($size, $checked_ar)) ? 'checked' : '';
       $hidden = ($checked == 'checked') ? '' : 'hidden'; // hide add. option if not checked.
 
-      $option_in_db = (isset($process_options[$size])) ? true : false;
+    //  $option_in_db = (isset($process_options[$size])) ? true : false;
       $checked_overwrite = (isset($process_options[$size]) && isset($process_options[$size]['overwrite_files']) &&  $process_options[$size]['overwrite_files'] )  ? 'checked' : '';
 
-      if ($option_in_db)
-        $checked .= ' data-setbyuser=true'; // if value was ever saved in DB, don't change it in the JS.
+    //  if ($option_in_db)
+      //  $checked .= ' data-setbyuser=true'; // if value was ever saved in DB, don't change it in the JS.
 
-      $output .= "<div class='item'>";
-      $output .= "<span>
-        <label> <input type='checkbox' id='regenerate_sizes[$i]' name='regenerate_sizes[$i]' value='$size' $checked>
-          " .  $name . " ({$width}x{$height})</label>
-      </span>";
-      $output .= "<span class='options $hidden'><label><input value='1' type='checkbox' $checked_overwrite name='overwrite_" . $size . "'> " . __('Force regeneration', 'regenerate-thumbnails-advanced') . "</label></span>";
-      $output .= "</div>";
+
+      $stub = $this->getHTMLStub();
+
+      $replacer = array(
+          '%%class%%' => 'item',
+          '%%index%%' => $i,
+          '%%size%%' => $size,
+          '%%checked%%' => $checked,
+          '%%name%%' => $name,
+          '%%width%%' => $width,
+          '%%height%%' => $height,
+          '%%hidden%%' => $hidden,
+          '%%checked_overwrite%%' => $checked_overwrite,
+
+      );
+
+
+      $output .= str_replace(array_keys($replacer), array_values($replacer), $stub);
 
       $i++;
 
     };
+
+
+    // default and checked gives issues on checkbox
+    $output .= str_replace(array('%%class%%', '%%checked_overwrite%%', '%%checked%%'), array('item stub hidden', '', 'checked'), $stub);
+
     return $output;
+  }
+
+  private function getHTMLStub()
+  {
+      $html = '<div class="%%class%%">
+                <label>
+                  <input type="checkbox" id="regenerate_sizes[%%index%%]" name="regenerate_sizes[%%index%%]" value="%%size%%" %%checked%%>
+                  <span class="text">%%name%% (%%width%%x%%height%%)</span>
+                </label>
+                <span class="options %%hidden%%">
+                  <label>
+                  <input value="1" type="checkbox" %%checked_overwrite%% name="overwrite_%%size%%">' . __('Force regeneration', 'regenerate-thumbnails-advanced') . '</label>
+                </span>
+
+               </div>';
+      return $html;
   }
 
 } // class

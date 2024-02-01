@@ -8,7 +8,7 @@ class ShiftSelect
 
     constructor(selector)
     {
-       var checkList =  document.querySelectorAll(selector);
+       var checkList =  Array.from(document.querySelectorAll(selector));
        if (checkList.length == 0)
        {
           console.error('No Checklist');
@@ -21,6 +21,13 @@ class ShiftSelect
        }
 
        this.checkList = checkList;
+    }
+
+    AddElementToList(checkbox)
+    {
+        checkbox.addEventListener('click', this.HandleCheckEvent.bind(this));
+        this.checkList.push(checkbox);
+
     }
 
     HandleCheckEvent(event)

@@ -14,6 +14,9 @@ class RtaJS
   data = null;
   strings = null;
 
+  shiftSelect = null;
+  shiftSelectOverwrite = null;
+
    constructor()
    {
 
@@ -62,12 +65,15 @@ class RtaJS
       var form = document.getElementById('rtaform_process');
       form.addEventListener('submit', this.StartProcess.bind(this));
 
-      var tableInputs = document.querySelectorAll('.table.imagesizes input, .table.imagesizes select, button[name="save_settings"], input[name="jpeg_quality"]');
+      var tableInputs = document.querySelectorAll('.table.imagesizes input, .table.imagesizes select, input[name="jpeg_quality"]');
       for (var i = 0; i < tableInputs.length; i++)
       {
          var eventName = (tableInputs[i].tagName == 'BUTTON') ? 'click' : 'change';
          tableInputs[i].addEventListener(eventName, this.ImageSizeChangeEvent.bind(this));
       }
+
+      var saveButton = document.querySelector('button[name="save_settings"]');
+      saveButton.addEventListener('click', this.SaveImageSizes.bind(this));
 
       var removeButtons = document.querySelectorAll('.table.imagesizes .btn_remove_row');
       for (var i = 0; i < removeButtons.length; i++)
@@ -108,12 +114,10 @@ class RtaJS
      for(var i = 0; i < options.length; i++)
      {
        options[i].addEventListener('change', this.ToggleCheckboxEvent.bind(this));
-      //  visibleOptions[i].addEventListener('change', this.CheckOptionsVisible.bind(this));
-      //
      }
 
-     var sh = new ShiftSelect('input[name^="regenerate_sizes"]');
-     var shkeep = new ShiftSelect('input[name^="overwrite"]');
+     this.shiftSelect = new ShiftSelect('input[name^="regenerate_sizes"]');
+     this.shiftSelectOverwrite = new ShiftSelect('input[name^="overwrite"]');
 
      var toggleWindow = document.querySelector('.toggle-window');
      toggleWindow.addEventListener('click', this.ToggleWindow.bind(this));
@@ -748,10 +752,6 @@ class RtaJS
        theBar.style.background = 'linear-gradient(90deg, rgba(0,188,212,1) ' + percentage_done + '%, rgba(255,255,255,1) ' + percShadow + '%';
 
        var statusText = done + '/' + total +  ' ' + this.strings.items;
-       /*if (thumbsdone > 0 || removed > 0)
-       {
-            statusText .= ' ( ' + thumbsdone + ' ' + this.strings.regenerated + ',' + removed + ' ' + this.strings.removed + ')';
-       } */
 
        statRight.textContent = percentage_done + '%';
        statCentre.textContent = statusText ;
@@ -925,12 +925,9 @@ class RtaJS
      previewImage.src = imgUrl;
    }
 
-   AddImageRowEvent() {
-
-      // var $ = jQuery;
-      //
-       var container = document.querySelector('.table.imagesizes'); // $('.table.imagesizes'); // $("#rta_add_image_size_container");
-
+   AddImageRowEvent(event)
+   {
+       var container = document.querySelector('.table.imagesizes'); // $('.table.imagesizes'); //
        var uniqueId = Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
 
        var proto = document.querySelector('.row.proto');
@@ -944,16 +941,13 @@ class RtaJS
        {
           var eventName = (tableInputs[i].tagName == 'BUTTON') ? 'click' : 'change';
           tableInputs[i].addEventListener(eventName, this.ImageSizeChangeEvent.bind(this));
+          tableInputs[i].addEventListener(eventName, this.ShowSaveIndicatorEvent.bind(this));
+
        }
 
        var removeButton = row.querySelector('.btn_remove_row');
-      // for (var i = 0; i < removeButtons.length; i++)
-    //   {
-          removeButton.addEventListener('click', this.RemoveRowEvent.bind(this));
-    //   }
+       removeButton.addEventListener('click', this.RemoveRowEvent.bind(this));
 
-       //$(row).attr('id', uniqueId);
-       //$(row).removeClass('proto');
        container.append(row); // row.css('display', 'flex')
 
        var header = container.querySelector('.header');
@@ -961,7 +955,49 @@ class RtaJS
        {
           header.classList.remove('rta_hidden');
        }
-    //   container.find('.header').removeClass('rta_hidden');
+   }
+
+   CloneImageRow(data)
+   {
+       var clone = document.querySelector('.checkbox-list .item.stub');
+
+       var cloneNode = clone.cloneNode(true);
+       var cloneHTML = cloneNode.innerHTML;
+
+       var index = document.querySelectorAll('input[name^="regenerate_sizes"]').length - 1;
+
+       var size = data.slug;
+       var checked = 'checked';
+       var name = data.pname;
+       var width = data.width;
+       var height = data.height;
+       var hidden = '';
+       var checked_overwrite = '';
+console.log(cloneHTML);
+       if (name.length == 0)
+       {
+          name = size;
+       }
+
+       cloneHTML = cloneHTML
+                .replaceAll('%%index%%', index)
+                .replaceAll('%%size%%', size)
+                .replaceAll('%%checked%%', checked)
+                .replaceAll('%%name%%', name)
+                .replaceAll('%%width%%', width)
+                .replaceAll('%%height%%', height)
+                .replaceAll('%%hidden%%', hidden)
+                .replaceAll('%%checked_overwrite%%', checked_overwrite);
+
+       var checkList = document.querySelector('.checkbox-list');
+console.log(cloneHTML);
+       cloneNode.innerHTML = cloneHTML;
+       cloneNode.classList.remove('stub', 'hidden');
+       checkList.insertBefore(cloneNode, clone);
+
+       cloneNode.querySelector('input[name^="regenerate_sizes"]').addEventListener('change', this.ToggleCheckboxEvent.bind(this));
+       this.shiftSelect.AddElementToList(cloneNode.querySelector('input[name^="regenerate_sizes"]'));
+       this.shiftSelectOverwrite.AddElementToList(cloneNode.querySelector('input[name^="overwrite_"]'))
    }
 
    // Image size changed or save Needed.
@@ -981,7 +1017,6 @@ class RtaJS
          }
        }
 
-       this.SaveImageSizes();
    }
 
    UpdateThumbName(row) {
@@ -1029,8 +1064,34 @@ class RtaJS
            if (height <= 0) height = '';
            var slug = (name+" "+cropping+" "+width+"x"+height).toLowerCase().replace(/ /g, '_');
 
+
+
            // update the image size selection so it keeps checked indexes.
            var input = document.querySelector('input[name^="regenerate_sizes"][value="' + currentName + '"]');
+           if (null === input)
+           {
+              var data = {};
+              data.width = width;
+              data.height = height;
+              data.slug = slug;
+              data.pname = pname;
+              currentName = slug;
+              this.CloneImageRow(data);
+
+               var input = document.querySelector('input[name^="regenerate_sizes"][value="' + currentName + '"]');
+           }
+           var item = input.closest('.item');
+
+           var textItem = item.querySelector('label .text');
+
+
+           var displayName;
+           if (pname)
+              displayName = pname + ' (' + width + ' x ' + height + ')';
+          else
+              displayName = slug;
+
+           textItem.textContent = displayName;
 
            // If item is new, this won't exist, skip?
            if (input !== null)
@@ -1044,7 +1105,9 @@ class RtaJS
 
    }
 
-   SaveImageSizes() {
+    SaveImageSizes(event) {
+      event.preventDefault();
+
        this.settings_doingsave_indicator(true);
        var action = 'rta_save_image_sizes';
        var the_nonce = rta_data.nonce_savesizes;
@@ -1062,11 +1125,13 @@ class RtaJS
 
    }
 
+
    SaveImageSizesEvent(response)
    {
 
      if (! response.error)
      {
+       /*
        if (response.new_image_sizes)
        {
          var list = document.querySelector('.thumbnail_select .checkbox-list');
@@ -1088,6 +1153,7 @@ class RtaJS
          var sh = new ShiftSelect('input[name^="regenerate_sizes"]');
          var shkeep = new ShiftSelect('input[name^="overwrite"]');
        }
+       */
      }
      this.is_saved = true;
      this.settings_doingsave_indicator(false);
@@ -1095,6 +1161,7 @@ class RtaJS
 
      this.ToggleDeleteItems();
    }
+
 
    settings_doingsave_indicator(show)
    {
@@ -1143,35 +1210,10 @@ class RtaJS
              var inputParent = input.closest('.item');
              inputParent.remove();
            }
-
-           //$('input[name^="regenerate_sizes"][value="' + intName + '"]').remove(); // remove the checkbox as well, otherwise this will remain saved.
-
            parentElement.remove();
 
-           this.SaveImageSizes();
+           this.ShowSaveIndicatorEvent(event);
        }
-   }
-
-   CheckOptionsVisible()
-   {
-
-/*       var thumbnails = document.querySelectorAll('.checkbox-list .item');
-
-       for (var i = 0; i < thumbnails.length; i++)
-       {
-           var currentItem = thumbnails[i];
-           var input = currentItem.querySelector('input');
-           var optionElement = currentItem.querySelector('.options');
-
-           if (true === input.checked)
-           {
-                optionElement.classList.remove('hidden');
-           }
-           else
-           {
-                optionElement.classList.add('hidden');
-           }
-       } */
    }
 
    ToggleDeleteItems()
@@ -1208,9 +1250,16 @@ class RtaJS
    {
       var target = event.target;
 
+      var item = target.closest('.item');
+      // No item, or stub.
+      if (null === item || item.classList.contains('stub'))
+      {
+        console.log('returning on stub', event);
+         return;
+      }
 
       // Second row
-      var forceOption = target.closest('.item').querySelector('.options');
+      var forceOption = item.querySelector('.options');
 
       // Label on first row, to add a strike-through warning class
       var label = target.closest('label');

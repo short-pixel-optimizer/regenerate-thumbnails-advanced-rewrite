@@ -367,6 +367,7 @@
       clear: both;
       justify-content: space-between;
       width: 100%;
+      &.hidden { display: none; }
       span
       {
         display: inline-block;
@@ -375,6 +376,9 @@
       span.hidden {
          visibility: hidden;
 
+      }
+      label {
+        margin-right: 14px;
       }
 
     }
