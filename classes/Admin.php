@@ -144,7 +144,8 @@ class Admin
     public function regenerate_single_image($attach_id)
     {
 
-        $image = new Image($attach_id);
+        $imageClass = RTA()->getClass('Image');
+        $image = new $imageClass($attach_id);
         $image->process();
 
         $status = RTA()->ajax()->get_status();

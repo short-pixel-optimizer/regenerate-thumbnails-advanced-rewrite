@@ -252,6 +252,8 @@ class AjaxController
 
       if ($process->get('running') == true)
       {
+          $imageClass = RTA()->getClass('Image');
+
           $items = $process->dequeueItems();
 
           if (is_array($items))
@@ -259,9 +261,8 @@ class AjaxController
             foreach($items as $item)
             {
               $item_id = $item->item_id;
-              $image = new Image($item_id);
+              $image = new $imageClass($item_id);
               $status = $image->process();
-
             }
           }
 
@@ -297,7 +298,8 @@ class AjaxController
    public function view_generate_thumbnails_save()
    {
      $json = true;
-     $view = new AdminController($this);
+     $controller =  RTA()->getClass('AdminController');
+     $view = new $controller();
 
      $this->checkNonce('rta_save_image_sizes');
      $response = $view->save_image_sizes();

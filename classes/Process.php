@@ -111,17 +111,6 @@ class Process
      return null;
   }
 
-  public function doDeleteLeftMeta()
-  {
-    return $this->options['delete_leftmetadata'];
-  }
-
-  public function doCleanMetadata()
-  {
-     return $this->options['clean_metadata'];
-  }
-
-
   public function get($name = false)
   {
       return $this->q->getStatus($name);

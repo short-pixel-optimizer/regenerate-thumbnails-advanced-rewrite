@@ -149,6 +149,9 @@ class AdminController extends Controller
 
       // redo the thumbnail options, apply changes
       $sizes = isset($formpost['regenerate_sizes']) ? $formpost['regenerate_sizes'] : array();
+      // filter out stub
+      $sizes = array_filter($sizes, 'is_numeric', ARRAY_FILTER_USE_KEY);
+
       $size_options = array();
       foreach($sizes as $rsize)
       {
@@ -170,12 +173,14 @@ class AdminController extends Controller
       $jsonResponse = array( 'error' => $error, 'message' => '', 'new_image_sizes' => $newsizes );
 
       return $jsonResponse;
-
   }
 
+  protected function isFeatureActive($name = '')
+  {
+     return false;
+  }
 
-
-  public function generateImageSizeOptions($checked_ar = false)
+  protected function generateImageSizeOptions($checked_ar = false)
   {
     $output = '';
     $i = 0;
@@ -223,13 +228,10 @@ class AdminController extends Controller
 
       );
 
-
       $output .= str_replace(array_keys($replacer), array_values($replacer), $stub);
 
       $i++;
-
     };
-
 
     // default and checked gives issues on checkbox
     $output .= str_replace(array('%%class%%', '%%checked_overwrite%%', '%%checked%%'), array('item stub hidden', '', 'checked'), $stub);
@@ -252,5 +254,7 @@ class AdminController extends Controller
                </div>';
       return $html;
   }
+
+
 
 } // class

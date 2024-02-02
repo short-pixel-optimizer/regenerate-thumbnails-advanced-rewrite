@@ -13,16 +13,12 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
   protected $is_image = true;
   protected $does_exist = true;
-  protected $do_cleanup = false;
-  protected $do_metacheck = false;
-  protected $remove_imagetypes = false;
+
 
   protected $metadata = array();
 
   protected $persistentMeta = array();
-  protected $regeneratedSizes = array();
-  protected $sizesToRemove = array();
-
+//  protected $regeneratedSizes = array();
 
   protected $customThumbSuffixes =  array('_c', '_tl', '_tr', '_br', '_bl');
 
@@ -43,6 +39,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
   {
       $this->id = $image_id;
       $fs = RTA()->fs();
+
 
       if (function_exists('wp_get_original_image_path')) // WP 5.3+
       {
@@ -74,6 +71,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
       }
 
       parent::__construct($filePath);
+
 
       // If Pdf, check for PDF thumbnail main file.
       if ('pdf' == $this->getExtension())
@@ -140,30 +138,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
   public function process()
   {
-    // @todo  doRemoveThumbnails - move to pro-class 
-    if (RTA()->process()->doRemoveThumbnails())
-    {
-      $this->setCleanUp(true);
-      // Might be it's own setting
-      $this->setRemoveImageTypes(apply_filters('rta/image/clean_imagetypes', true));
-
-      Log::addDebug('Image thumbnails will be cleaned');
-    }
-
-    // @todo doDeleteLeftMeta  - move to pro-class
-    if(RTA()->process()->doDeleteLeftMeta() && ! $this->exists() )  {
-				$post = get_post($this->id);
-
-				// Ugly exception for a plugin that doesn't play by the rules
-				// @todo add a mechanism so we can cater for more bad plugins here.
-				if ($post->post_mime_type == 'video/videopress')
-				{
-					return false;
-				}
-        Log::addDebug('Deleting post ' . $this->id);
-        wp_delete_post($this->id, true);
-
-    }
 
     if ($this->isProcessable() ) {
 
@@ -258,6 +232,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
             }
             elseif (false === $this->is_writable())
             {
+
               Log::addDebug('File not writable -', array($this->getFullPath(), $this->id) );
               RTA()->ajax()->add_status('not_writable', array('name' => basename($debug_filename)) );
             }
@@ -274,7 +249,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
   }
 
   // Todo before doing this, function to remove thumbnails need to run somehow, without killing all.
-  public function saveNewMeta($updated_meta)
+  protected function saveNewMeta($updated_meta)
   {
       if (count($this->persistentMeta) > 0)
       {
@@ -298,6 +273,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
       $result = array();
 
+      /* Seems unused / done already in process
       if ($this->do_metacheck && isset($updated_meta['sizes']))
       {
         Log::addDebug('Do metaCheck now for ' . $this->id);
@@ -311,14 +287,9 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
            }
         }
       }
-
+      */
       $result['update'] = wp_update_attachment_metadata($this->id, $updated_meta);
       $this->metadata = wp_get_attachment_metadata($this->id);
-
-      if (true === $this->do_cleanup)
-      {
-        $result = $this->clean($result);
-      }
 
       return $result;
   }
@@ -344,7 +315,8 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
         // 1. Check if size exists, if not, needs generation anyhow.
         if (! isset($imageMetaSizes[$rsize]))
         {
-          Log::addDebug("Image Meta size setting missing - $rsize ");
+          Log::addDebug("Image Meta size setting missing - $rsize ", $do_regenerate_sizes);
+
           continue;
         }
 
@@ -375,46 +347,14 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
       /* 6. If metadata should be cleansed of undefined sizes, remove them from the imageMetaSizes
       *   This is for sizes that are -undefined- in total by system sizes.
       */
-      if (RTA()->process()->doCleanMetadata())
-      {
-          $system_sizes = RTA()->admin()->getOption('system_image_sizes'); //$this->viewControl->system_image_sizes;
 
-          $not_in_system = array_diff( array_keys($imageMetaSizes), array_keys($system_sizes) );
-          if (count($not_in_system) > 0)
-            Log::addDebug('Cleaning not in system', $not_in_system);
-
-          foreach($not_in_system as $index => $unset)
-          {
-            unset($imageMetaSizes[$unset]);
-          }
-      }
+      $imageMetaSizes = $this->filterMetaSizes($imageMetaSizes);
 
       // 7. If unused thumbnails are not set for delete, keep the metadata intact.
       $other_meta = array_diff( array_keys($imageMetaSizes), $do_regenerate_sizes, $prevent_regen);
 
-      if (false === RTA()->process()->doRemoveThumbnails() )
-      {
-        if (count($other_meta) > 0)
-        {
-          Log::addDebug('Image sizes not selected, but not up for deletion', $other_meta);
-        }
+      $this->handleNotSelectedSizes($other_meta);
 
-        foreach($other_meta as $size)
-        {
-           if (isset($imageMetaSizes[$size]))
-             $this->addPersistentMeta($size, $imageMetaSizes[$size]);
-        }
-      }
-      elseif (true === RTA()->process()->doRemoveThumbnails()) {
-        // @todo Here add something to trigger thumbsizes later when deleting them for SPIO integration
-        foreach($other_meta as $size)
-        {
-           if (isset($imageMetaSizes[$size]))
-           {
-              $this->sizesToRemove[$size] = $imageMetaSizes[$size];
-           }
-        }
-      }
 
       $returned_sizes = array();
       foreach($full_sizes as $key => $data)
@@ -425,8 +365,28 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
           }
       }
 
-      $this->setRegeneratedSizes($do_regenerate_sizes);
+      //  Seems unused?
+    //  $this->setRegeneratedSizes($do_regenerate_sizes);
       return $returned_sizes;
+  }
+
+  protected function filterMetaSizes($imageMetaSizes)
+  {
+      return $imageMetaSizes;
+  }
+
+  protected function handleNotSelectedSizes($other_meta)
+  {
+    if (count($other_meta) > 0)
+    {
+      Log::addDebug('Image sizes not selected, adding to Persistent Meta ', $other_meta);
+    }
+
+    foreach($other_meta as $size)
+    {
+       if (isset($imageMetaSizes[$size]))
+         $this->addPersistentMeta($size, $imageMetaSizes[$size]);
+    }
   }
 
   public function getFileUri()
@@ -437,101 +397,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
       $fileUri = wp_get_attachment_url($this->id);
 
     return $fileUri;
-  }
-
-  /** This function tries to find related thumbnails to the current image. If there are not in metadata after our process, assume cleanup.
-  * This removes thumbnail files.
-  * See ShortPixel Image Optimiser's findThumbs method
-  **
-  **/
-  protected function clean($result)
-  {
-    $exclude = array();
-    $fs = RTA()->fs();
-
-    if (isset($this->metadata['sizes']))
-    {
-      foreach($this->metadata['sizes'] as $size => $data)
-      {
-         $exclude[] = $data['file'];
-      }
-    }
-    $result['excluding'] = $exclude;
-
-    $extension = $this->getExtension();
-
-//    $ext = pathinfo($mainFile, PATHINFO_EXTENSION); // file extension
-    $base = (string) $this->getFileDir() . $this->getFileBase();
-  //  $base = substr($mainFile, 0, strlen($mainFile) - strlen($ext) - 1);
-    $pattern = '/' . preg_quote($base, '/') . '-\d+x\d+\.'. $extension .'/';
-    $thumbsCandidates = @glob($base . "-*." . $extension);
-
-    $thumbs = array();
-    if(is_array($thumbsCandidates)) {
-        foreach($thumbsCandidates as $th) {
-            if(preg_match($pattern, $th)) {
-                $thumbs[]= $th;
-            }
-        }
-        if( count($this->customThumbSuffixes)
-           && !(   is_plugin_active('envira-gallery/envira-gallery.php')
-                || is_plugin_active('soliloquy/soliloquy.php')
-                || is_plugin_active('soliloquy-lite/soliloquy-lite.php'))){
-            foreach ($this->customThumbSuffixes as $suffix){
-                $pattern = '/' . preg_quote($base, '/') . '-\d+x\d+'. $suffix . '\.'. $extension .'/';
-                foreach($thumbsCandidates as $th) {
-                    if(preg_match($pattern, $th)) {
-                        $thumbs[]= $th;
-                    }
-                }
-            }
-        }
-    }
-
-    $result['removed'] = array();
-  //  $deleted_thumbs = array();
-
-    foreach($thumbs as $thumb) {
-
-        $thumbObj = $fs->getFile($thumb);
-
-        if($thumbObj->getFullPath() === $this->getFullPath())
-        {
-          continue;
-        }
-        if (in_array($thumbObj->getFileName(), $exclude))
-        {
-          continue;
-        }
-
-        if($thumbObj->getFullPath() !== $this->getFullPath()) {
-
-          if (true === $this->remove_imagetypes)
-          {
-             $webpCheck = $fs->getFile($thumbObj->getFileDir() . $thumbObj->getFileBase() . '.webp');
-             if ($webpCheck->exists())
-             {
-                $webpCheck->delete();
-                $result['removed'][] = $webpCheck->getFullPath();
-             }
-             $avifCheck = $fs->getFile($thumbObj->getFileDir() . $thumbObj->getFileBase() . '.avif');
-             if ($avifCheck->exists())
-             {
-               $result['removed'][] = $avif->getFullPath();
-                $avifCheck->delete();
-             }
-          }
-
-          $status = $thumbObj->delete();
-          $result['removed'][] = $thumbObj->getFullPath() . " ($status)";
-        }
-    }
-
-    do_action('rta/image/thumbnails_removed', $this->id, $this->sizesToRemove);
-
-    $this->images_removed = count($result['removed']);
-
-    return $result;
   }
 
 
@@ -555,27 +420,20 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
   {
       $this->persistentMeta[$size] = $data;
   }
-
+/*
   public function setRegeneratedSizes($sizes)
   {
     $this->regeneratedSizes = $sizes;
   }
+  */
 
-  public function setCleanUp($clean)
-  {
-    $this->do_cleanup = $clean;
-  }
 
-  public function setRemoveImageTypes($bool)
-  {
-     $this->remove_imagetypes = $bool;
-  }
-
+  /* Seems unused
   public function setMetaCheck($bool)
   {
     $this->do_metacheck = $bool;
   }
-
+  */
   public function fixMimeType($image_id)
   {
       $post = get_post($image_id);

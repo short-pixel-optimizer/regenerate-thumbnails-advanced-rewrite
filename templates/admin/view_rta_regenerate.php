@@ -73,7 +73,9 @@ if (! defined('ABSPATH')) {
   <input type='hidden' name='posts_per_page' value='3' />
 </section>
 
+
 <section class='extra_options'>
+  <?php  $active = ($this->isFeatureActive()) ? '' : 'disabled'; ?> 
   <div class='container'>
     <div class='toggle-window' data-window='advanced-window'>
         <h4><?php _e('Advanced options', 'regenerate-thumbnails-advanced') ?></h4>
@@ -87,12 +89,14 @@ if (! defined('ABSPATH')) {
 
       <div class='option'>
           <label>
-            <input type='checkbox' name='process_clean_metadata' value='1' disabled />
+            <input type='checkbox' name='process_clean_metadata' value='1' <?php echo $active ?> />
             <span><?php _e('Clean unknown metadata', 'regenerate-thumbnails-advanced'); ?></span>
          </label>
 
          <div class='note'>
-           <?php echo $this->getProSnippet(); ?>
+           <?php echo $this->getProSnippet();
+
+           ?>
 
            <p><?php _e('Clean old metadata not defined in system sizes. Use after removing plugins / themes with old definitions. Will not remove thumbnails from disk', 'regenerate-thumbnails-advanced') ?></p>
          </div>
@@ -101,7 +105,7 @@ if (! defined('ABSPATH')) {
 
       <div class='option'>
           <label for="del_associated_thumbs">
-            <input type="checkbox" name="del_associated_thumbs" id="del_associated_thumbs" value="1" disabled />
+            <input type="checkbox" name="del_associated_thumbs" id="del_associated_thumbs" value="1" <?php echo $active ?> />
             <span><?php _e('Delete Unselected Thumbnails','regenerate-thumbnails-advanced'); ?></span>
           </label>
           <div class='note'>
@@ -120,7 +124,7 @@ if (! defined('ABSPATH')) {
 
       <div class='option'>
           <label for="del_leftover_metadata">
-            <input type="checkbox" name="del_leftover_metadata" id="del_leftover_metadata" value="1" disabled />
+            <input type="checkbox" name="del_leftover_metadata" id="del_leftover_metadata" value="1" <?php echo $active ?> />
             <span><?php _e('Remove non-existent images','regenerate-thumbnails-advanced'); ?></span>
           </label>
           <div class='note'>

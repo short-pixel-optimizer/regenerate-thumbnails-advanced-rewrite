@@ -102,12 +102,15 @@ class Plugin
      return AjaxController::getInstance();
   }
 
-  public function getController($name)
+  public function getClass($name)
   {
       switch($name)
       {
           case 'AdminController':
-              return new AdminController();
+              return AdminController::class;
+          break;
+          case 'Image':
+              return Image::class;
           break;
       }
   }
@@ -212,7 +215,8 @@ class Plugin
       wp_enqueue_style('rta_css');
       wp_enqueue_script('rta_js');
       //$rta_image_sizes = get_option( 'rta_image_sizes' );
-      $view = $this->getController('AdminController');
+      $class = $this->getClass('AdminController');
+      $view = new $class();
       $view->show();
   }
 
@@ -286,7 +290,8 @@ class Plugin
     $editurl = $this->getRegenerateLink($post->ID, $url);
     $link = "href=\"$editurl\"";
 
-    $image = new Image($post->ID);
+    $imageClass = RTA()->getClass('Image');
+    $image = new $imageClass($post->ID);
     if (true === $image->isProcessable())
     {
     echo "<p><a class='button-secondary' $link>" . esc_html__("Regenerate Thumbnails", "regenerate-thumbnails-advanced") . "</a></p>";
