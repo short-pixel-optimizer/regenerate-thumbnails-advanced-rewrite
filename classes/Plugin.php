@@ -177,10 +177,10 @@ class Plugin
                           'nonce_generate' => wp_create_nonce('rta_generate'), // start / stop
                           'strings' => array(
                           'confirm_delete' => __('Are you sure you want to delete this image size?', 'regenerate-thumbnails-advanced'),
-                          'confirm_stop' => __("This will stop the regeneration process. You want to stop?", 'regenerate-thumbnails-advanced' ),
-                          'status_resume' => __("Interrupted process resumed", 'regenerate-thumbnails-advanced'),
-                          'status_start' => __('New Process started', 'regenerate-thumbnails-advanced'),
-                          'status_finish' => __('Process finished','regenerate-thumbnails-advanced' ),
+                          'confirm_stop' => __("This will stop the regeneration process. Are you sure you want to stop?", 'regenerate-thumbnails-advanced' ),
+                          'status_resume' => __("Interrupted process resumed.", 'regenerate-thumbnails-advanced'),
+                          'status_start' => __('New Process started.', 'regenerate-thumbnails-advanced'),
+                          'status_finish' => __('Process finished.','regenerate-thumbnails-advanced' ),
                           'status_fatal' => __('A fatal error occured!', 'regenerate-thumbnails-advanced'),
                           'items' => __('items', 'regenerate-thumbnails-advanced'),
                           'regenerated' => __('regenerated', 'regenerate-thumbnails-advanced'),

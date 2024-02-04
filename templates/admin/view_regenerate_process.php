@@ -81,16 +81,16 @@ if (! defined('ABSPATH')) {
         <div class="rta_wait_paused rta_panel_off" >
           <span class='dashicons dashicons-controls-pause'>&nbsp;</span>
           <div class='resume'>
-            <h4 ><?php _e('Process is paused', 'regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></h4>
-            <p><?php _e('Click Resume Process to continue','regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></p>
+            <h4 ><?php _e('The process is paused', 'regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></h4>
+            <p><?php _e('Click on Resume Process to continue','regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></p>
           </div>
         </div>
 
         <div class="rta_wait_pausing rta_panel_off" >
           <span class='dashicons dashicons-update'>&nbsp;</span>
           <div class='pausing'>
-                <h4><?php _e('Process is pausing, please wait', 'regenerate-thumbnails-advanced'); ?></h4>
-                <p><?php _e('This can take a few seconds', 'regenerate-thumbnails-advanced') ?></p>
+                <h4><?php _e('The process is pausing, please wait...', 'regenerate-thumbnails-advanced'); ?></h4>
+                <p><?php _e('This may take a few seconds...', 'regenerate-thumbnails-advanced') ?></p>
           </div>
         </div>
 
@@ -108,7 +108,7 @@ if (! defined('ABSPATH')) {
           <?php printf(__('%s images regenerated!', 'regenerate-thumbnails-advanced'), '<span class="images_regenerated">0</span>');
           ?>
                   </h3>
-        <p><?php printf(__('Regenerate Thumbnails Advanced is done with your task. %s images regenerated and %s removed', 'regenerate-thumbnails-advanced'), '<span class="images_regenerated">0</span>', '<span class="images_removed">0</span>'); ?></p>
+        <p><?php printf(__('Regenerate Thumbnails Advanced is finished with your task. %s images regenerated and %s removed', 'regenerate-thumbnails-advanced'), '<span class="images_regenerated">0</span>', '<span class="images_removed">0</span>'); ?></p>
 
 
         <div class='shortpixel'>
@@ -124,7 +124,7 @@ if (! defined('ABSPATH')) {
     				</a>
     			</div>
     			<p>
-    				<?php echo esc_html__("Get more Google love by compressing your site's images! Check out how much ShortPixel can save your site and get +50% credits when signing up as an Regenerate Thumbnails Advanced user! Forever!", 'regenerate-thumbnails-advanced'); ?>
+    				<?php echo esc_html__("Get more Google love by compressing your website's images! Test how much ShortPixel can save your website and get +50% credits when you sign up as a Regenerate Thumbnails Advanced user! Forever!", 'regenerate-thumbnails-advanced'); ?>
     			</p>
     			<div><div>
     					<a class="button button-primary" id="shortpixel-image-optimiser-info" href="https://shortpixel.com/otp/af/TFXUHHC28044" target="_blank">
@@ -134,7 +134,7 @@ if (! defined('ABSPATH')) {
     			</div>
           <?php endif; ?>
           <?php if ($spInstalled && $spActive): ?>
-           <p class='gotobulk'><?php printf(__('Thumbnails successfully regenerated. <strong>Go to %s ShortPixel Bulk page %s to optimize the updated thumbnails.</strong>', 'regenerate-thumbnails-advanced'), '<a href="' . admin_url('upload.php?page=wp-short-pixel-bulk') . '">', '</a>'); ?></p>
+           <p class='gotobulk'><?php printf(__('The thumbnails have been successfully regenerated. <strong>Go to the%s ShortPixel Bulk Processing page %s to optimize the updated thumbnails.</strong>', 'regenerate-thumbnails-advanced'), '<a href="' . admin_url('upload.php?page=wp-short-pixel-bulk') . '">', '</a>'); ?></p>
          <?php elseif($spInstalled):
            $path = 'shortpixel-image-optimiser/wp-shortpixel.php';
            $activate_url = wp_nonce_url(admin_url('plugins.php?action=activate&plugin='.$path), 'activate-plugin_'.$path);

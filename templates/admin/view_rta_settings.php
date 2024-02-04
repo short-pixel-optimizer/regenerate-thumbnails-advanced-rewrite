@@ -87,7 +87,7 @@ if (! defined('ABSPATH')) {
           <div class='note'>
             <ul>
             <li><?php _e('Select the thumbnails you want to regenerate. ', 'regenerate-thumbnails-advanced') ?></li>
-            <li><?php printf(__('%s Don\'t redo existing %s  - prevent regenerating images that already have these sizes as a thumbnail file. ', 'regenerate-thumbnails-advanced'), '<strong>','</strong>'); ?></li>
+            <li><?php printf(__('%s Force regeneration %s - if this box is checked, the corresponding size of the thumbnails will be regenerated, even if the files already exist on the hard disk. This is useful if the size of the thumbnails has changed while the definition/name has remained the same (either via the theme panel or via Settings -> Media).', 'regenerate-thumbnails-advanced'), '<strong>','</strong>'); ?></li>
            </ul>
          </div>
 
@@ -96,7 +96,7 @@ if (! defined('ABSPATH')) {
       </div> <!-- option -->
 
     <div class='option'>
-      <label><?php _e('Default JPEG Quality','regenerate-thumbnails-advanced'); ?></label>
+      <label><?php _e('Default JPEG Quality:','regenerate-thumbnails-advanced'); ?></label>
       <input type="number" name="jpeg_quality" id="jpeg_quality" value="<?php echo $view->jpeg_quality ?>" />
     </div>
 </div> <!-- container -->
