@@ -39,7 +39,7 @@ class AdminController extends Controller
         );
 
         $this->pageTitle = __('Regenerate Thumbnails Advanced','regenerate-thumbnails-advanced');
-        $this->proLink = 'https://projects.shortpixel.com/regenerate-thumbnails-advanced/';
+        $this->proLink = 'https://shortpixel.com/products/regenerate-thumbnails-advanced-pro';
 
   }
 
