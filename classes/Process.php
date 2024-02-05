@@ -30,9 +30,6 @@ class Process
     'query_prepare_limit' => 500,
   );
 
-  protected $run_start = 0;
-  protected $run_limit = 0;
-  protected $memory_limit;
 
   protected $q;
   protected $counter = false;
@@ -53,7 +50,6 @@ class Process
       $this->options['query_prepare_limit'] = apply_filters('rta/process/prepare_limit', $this->options['query_prepare_limit']);
       $this->q->setOption('numitems', apply_filters('rta/process/numitems', 3));
 
-      $this->memory_limit = $this->unitToInt(ini_get('memory_limit'));
 
   }
 
@@ -186,53 +182,13 @@ class Process
      $this->end_process();
   }
 
-  // function to limit runtimes in seconds..
-  protected function IsOverTimeLimit($limit = 6)
-  {
-      $limit = apply_filters('rta/process/prepare_limit', $limit);
-      if (0 == $this->run_limit )
-      {
-          $this->run_start = time();
-          $this->run_limit = time() + $limit;
-      }
 
-      if ($this->run_limit <= time())
-      {
-          return true;
-      }
-
-
-      return false;
-  }
-
-  public function IsOverMemoryLimit($runCount)
-  {
-      $memory_limit = $this->memory_limit;
-      if ($memory_limit < 0) // check for unlimited memory
-      {
-         return false;
-      }
-
-      $current_mem = memory_get_usage();
-
-      $percentage_limit = 95;
-
-      $limit = round($memory_limit/100 * apply_filters('rta/process/max_memory', $percentage_limit));
-
-      if ($current_mem >= $limit)
-      {
-         return true;
-      }
-      else {
-        return false;
-      }
-
-  }
 
   public function prepare()
   {
       $result = 0;
       $i = 0;
+      $env = RTA()->env();
       while( $this_result = $this->runEnqueue()  )
       {
 
@@ -241,7 +197,7 @@ class Process
             $result += $this_result;
           }
 
-          if (true === $this->IsOverTimeLimit() || true === $this->IsOverMemoryLimit($i) )
+          if (true === $env->IsOverTimeLimit() || true === $env->IsOverMemoryLimit($i) )
           {
             Log::addDebug('Prepare went over time or Memory, breaking');
             break;
@@ -406,17 +362,7 @@ class Process
       delete_option($this->process_name);
   }
 
-  private function unitToInt($s)
-  {
-    if ((int) $s < 0)
-    {
-       return -1; // unlimited
-    }
 
-    return (int)preg_replace_callback('/(\-?\d+)(.?)/', function ($m) {
-        return $m[1] * pow(1024, strpos('BKMG', $m[2]));
-    }, strtoupper($s));
-  }
 
 
 

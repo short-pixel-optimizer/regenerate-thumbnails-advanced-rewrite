@@ -247,7 +247,7 @@ class AdminController extends Controller
                   <span class="text">%%name%% (%%width%%x%%height%%)</span>
                 </label>
                 <span class="options %%hidden%%">
-                  <label>
+                  <label title="' . __('If this option is enabled, the thumbnails will be regenerated even if the files already exist.', 'regenerate-thumbnails-advanced') . '">
                   <input value="1" type="checkbox" %%checked_overwrite%% name="overwrite_%%size%%">' . __('Force regeneration', 'regenerate-thumbnails-advanced') . '</label>
                 </span>
 

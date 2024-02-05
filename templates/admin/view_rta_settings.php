@@ -77,19 +77,21 @@ if (! defined('ABSPATH')) {
 <section class='thumbnail_select'>
   <div class='container'>
 
+
       <div class='option'>
+        <div class='note'>
+          <ul>
+          <li><?php _e('Select the thumbnails you want to regenerate. ', 'regenerate-thumbnails-advanced') ?></li>
+          <li><?php printf(__('%s Force regeneration %s - if this box is checked, the corresponding size of the thumbnails will be regenerated, even if the files already exist on the hard disk. This is useful if the size of the thumbnails has changed while the definition/name has remained the same (either via the theme panel or via Settings -> Media).', 'regenerate-thumbnails-advanced'), '<strong>','</strong>'); ?></li>
+         </ul>
+       </div>
         <label><?php _e('Regenerate these thumbnails:', 'regenerate-thumbnails-advanced') ?></label>
         <div class='checkbox-list'>
             <?php echo $this->generateImageSizeOptions($view->process_image_sizes); ?>
         </div>
         <div class='select-options'><span class='select' data-action='select' data-target='regenerate_sizes'><?php _e('Select All', 'regenerate-thumbnails-advanced'); ?></span>
           <span class='deselect' data-action='deselect' data-target='regenerate_sizes'><?php _e('Deselect All', 'regenerate-thumbnails-advanced'); ?></span>
-          <div class='note'>
-            <ul>
-            <li><?php _e('Select the thumbnails you want to regenerate. ', 'regenerate-thumbnails-advanced') ?></li>
-            <li><?php printf(__('%s Force regeneration %s - if this box is checked, the corresponding size of the thumbnails will be regenerated, even if the files already exist on the hard disk. This is useful if the size of the thumbnails has changed while the definition/name has remained the same (either via the theme panel or via Settings -> Media).', 'regenerate-thumbnails-advanced'), '<strong>','</strong>'); ?></li>
-           </ul>
-         </div>
+
 
         </div>
 

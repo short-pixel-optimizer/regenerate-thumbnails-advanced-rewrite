@@ -6,6 +6,7 @@ if (! defined('ABSPATH')) {
 }
 
 ?>
+<?php  $active = ($this->isFeatureActive()) ? '' : 'disabled'; ?>
 
 <form method="post" name="rtaform_process" id="rtaform_process" class="frm_rta" enctype="multipart/form-data">
 
@@ -13,6 +14,12 @@ if (! defined('ABSPATH')) {
 
 <section class='period'>
   <div class='container'>
+
+    <div class='option'>
+      <label for='regenonly_featured'><?php printf(__('Regenerate %sonly%s Featured Images','regenerate-thumbnails-advanced'), '<strong>','</strong>');  ?></label>
+      <input type='checkbox' id='regenonly_featured' name="regenonly_featured" value="1">
+    </div>
+
     <div class='option'>
       <label><?php _e('Regenerate period:','regenerate-thumbnails-advanced'); ?></label>
 
@@ -64,24 +71,19 @@ if (! defined('ABSPATH')) {
 
     </div>
 
-    <div class='option'>
-      <label for='regenonly_featured'><?php printf(__('Regenerate %sonly%s Featured Images','regenerate-thumbnails-advanced'), '<strong>','</strong>');  ?></label>
-      <input type='checkbox' id='regenonly_featured' name="regenonly_featured" value="1">
-    </div>
-  </div>
 
-  <input type='hidden' name='posts_per_page' value='3' />
+  </div> <!-- container -->
+
 </section>
 
 
 <section class='extra_options'>
-  <?php  $active = ($this->isFeatureActive()) ? '' : 'disabled'; ?> 
   <div class='container'>
     <div class='toggle-window' data-window='advanced-window'>
         <h4><?php _e('Advanced options', 'regenerate-thumbnails-advanced') ?></h4>
-        <span class='dashicons dashicons-arrow-down'>&nbsp;</span>
+        <span class='dashicons dashicons-arrow-up'>&nbsp;</span>
     </div>
-    <div class='cleanup-wrapper window-up' id='advanced-window'>
+    <div class='cleanup-wrapper window-down' id='advanced-window'>
       <div class='option'>
 
       </div>
@@ -130,20 +132,39 @@ if (! defined('ABSPATH')) {
           <div class='note'>
             <?php echo $this->getProSnippet(); ?>
 
-            <p><?php _e('If the main image does not exist, removes this image, thumbnails and metadata.','regenerate-thumbnails-advanced'); ?></p>
-            <p><?php _e('For removing images that are gone on disk, but still in media library', 'regenerate-thumbnails-advanced'); ?></p>
+            <p><?php _e('If the main image does not exist, removes this image, thumbnails and metadata.','regenerate-thumbnails-advanced'); ?>
+            <?php _e('For removing images that are gone on disk, but still in media library.', 'regenerate-thumbnails-advanced'); ?></p>
         </div>
       </div>
 
+      <?php if (RTA()->env()->plugin_active('shortpixel'))
+      { ?>
+      <div class="option">
+          <label for="optimize_shortpixel" >
+              <input type="checkbox" id="optimize_shortpixel" name="optimize_shortpixel" value="1" <?php echo $active ?>>
+              <span><?php _e('Optimize regenerated thumbnails with ShortPixel', 'regenerate-thumbnails-advanced'); ?></span>
+          </label>
+          <div class='note'>
+            <?php echo $this->getProSnippet(); ?>
+            <p><?php _e('After creating new thumbnails add them to the Shortpixel queue for processing', 'regenerate-thumbnails-advanced'); ?></p>
+          </div>
+        </div>
+      <?php } ?>
+
+      <div class='readmore'>
         <a href="https://help.shortpixel.com/article/233-quick-guide-to-using-regenerate-thumbnails-advanced-settings" target="_blank">
             <span class="dashicons dashicons-editor-help"></span>Read more</a>
+      </div>
     </div>
+
+
+
   </div> <!-- container -->
 </section>
 
 <?php do_action('rta/ui/end-options'); ?>
 
-<section class='form_controls'>
+<section class='form_controls regenerate-button'>
   <div class='container'>
     <button type='submit' disabled class='rta_regenerate disabled'><span class='dashicons dashicons-controls-play'>&nbsp;</span> <?php _e('Regenerate', 'regenerate-thumbnails-advanced'); ?></button>
     <p class='save_note rta_hidden'><?php _e('Save your settings first','regenerate-thumbnails-advanced'); ?></p>

@@ -358,6 +358,16 @@
     display: flex;
   }
 
+  .thumbnail_select
+  {
+     .note {
+       margin-left: 0;
+       border: 1px solid #ccc;
+       padding: 8px;
+       margin-left: 200px;
+       margin-bottom: 25px;
+     }
+  }
   .checkbox-list
   {
     //margin-left: 200px;
@@ -409,9 +419,21 @@
     border: 1px solid #ddd;
     .option
     {
-      display: flex;
-      flex: 1;
-      .note { flex: 2; display: inline-block; }
+    //  display: flex;
+    //  flex: 1;
+      .note {
+      //  flex: 2;
+        display: inline-block;
+      }
+
+      label {
+         width: auto;
+      }
+
+      span {
+      //  display: inline-block;
+      }
+
     }
     @include breakpoint(0,1500px)
     {
@@ -421,6 +443,16 @@
         label { width: 100%; }
         .note { width: 100%; margin: 10px 0;  }
       }
+    }
+
+    .readmore {
+       margin: 8px 0;
+       text-align: right;
+       a { text-decoration: none;
+          span {
+            margin-right: 4px;
+          }
+       }
     }
   }
 
@@ -453,6 +485,17 @@
     position: absolute;
     left: 45px;
     bottom: 0px;
+
+    .container
+    {
+       padding-left: 0;
+    }
+
+    &.regenerate-button
+    {
+       left: unset;
+       right: 0;
+    }
 
     .save_indicator
     {

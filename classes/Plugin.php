@@ -130,6 +130,11 @@ class Plugin
     return Admin::getInstance();
   }
 
+  public function env()
+  {
+     return Environment::getInstance();
+  }
+
   public function check_media_action()
   {
         if (isset($_GET['regen_action']) && $_GET['regen_action'] == 'regenerate_image_thumbnail')

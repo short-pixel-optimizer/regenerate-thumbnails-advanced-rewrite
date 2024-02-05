@@ -1,7 +1,8 @@
 <?php
 namespace ReThumbAdvanced\Integrations;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
-use \ReThumbAdvanced\RTA as RTA;
+use \ReThumbAdvanced\Environment as Environment;
+use function ReThumbAdvanced\RTA;
 
 if ( ! defined( 'ABSPATH' ) ) {
  exit; // Exit if accessed directly.
@@ -21,14 +22,10 @@ class ShortPixel
 
   protected function hooks()
   {
-      // @todo This is asking for an Environment Controller.
-      if (!function_exists('is_plugin_active')) {
-       include_once(ABSPATH . 'wp-admin/includes/plugin.php');
-      }
+      $env = Environment::getInstance();
 
-      if (\is_plugin_active('shortpixel-image-optimiser/wp-shortpixel.php'))
+      if ($env->plugin_active('shortpixel'))
       {
-
          add_filter('rta/get_backup', array($this, 'spio_get_backup'),10,2);
       }
 
@@ -91,8 +88,10 @@ class ShortPixel
           if (false !== $index)
           {
              $nicename = $custom_images['pname'][$index];
-             $sizes[$sizeName]['nice-name'] = $nicename;
-
+             if (strlen(trim($nicename)) > 0)
+             {
+               $sizes[$sizeName]['nice-name'] = $nicename;
+             }
           }
        }
     }

@@ -256,6 +256,13 @@
 .rta-admin .flex {
   display: flex;
 }
+.rta-admin .thumbnail_select .note {
+  margin-left: 0;
+  border: 1px solid #ccc;
+  padding: 8px;
+  margin-left: 200px;
+  margin-bottom: 25px;
+}
 .rta-admin .checkbox-list {
   display: inline-block;
 }
@@ -307,13 +314,11 @@
   padding: 8px;
   border: 1px solid #ddd;
 }
-.rta-admin .cleanup-wrapper .option {
-  display: flex;
-  flex: 1;
-}
 .rta-admin .cleanup-wrapper .option .note {
-  flex: 2;
   display: inline-block;
+}
+.rta-admin .cleanup-wrapper .option label {
+  width: auto;
 }
 @media (max-width: 1500px) {
   .rta-admin .cleanup-wrapper .option {
@@ -326,6 +331,16 @@
     width: 100%;
     margin: 10px 0;
   }
+}
+.rta-admin .cleanup-wrapper .readmore {
+  margin: 8px 0;
+  text-align: right;
+}
+.rta-admin .cleanup-wrapper .readmore a {
+  text-decoration: none;
+}
+.rta-admin .cleanup-wrapper .readmore a span {
+  margin-right: 4px;
 }
 .rta-admin .warning-removal {
   position: relative;
@@ -346,6 +361,13 @@
   position: absolute;
   left: 45px;
   bottom: 0px;
+}
+.rta-admin .form_controls .container {
+  padding-left: 0;
+}
+.rta-admin .form_controls.regenerate-button {
+  left: unset;
+  right: 0;
 }
 .rta-admin .form_controls .save_indicator {
   display: none;
