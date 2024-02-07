@@ -72,8 +72,11 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
       parent::__construct($filePath);
 
+      // testPath to check file status. In case of PDF should be different, but PDF should not put parent fullpath main to that image.
+      $testPath = $this->getFullPath();
 
       // If Pdf, check for PDF thumbnail main file.
+      /*  This causes thumbnail duplications.
       if ('pdf' == $this->getExtension())
       {
           $size = image_get_intermediate_size($image_id, 'full');
@@ -86,11 +89,13 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
              if ($fileObj->exists())
              {
-                $filePath = $fileObj->getFullPath();
-                parent::__construct($filePath);
+              //  $filePath = $fileObj->getFullPath();
+                //echo "FP PDF" . $filePath;
+                //parent::__construct($filePath);
+                $testPath = $fileObj->getFullPath();
              }
           }
-      }
+      } */
 
       if (false === $this->exists())
       {
@@ -103,7 +108,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
           $this->processable_status = self::P_ISVIRTUAL;
           $this->is_image = false;
       }
-      elseif (false === $this->exists() || false === file_is_displayable_image($this->getFullPath())) // this is based on getimagesize
+      elseif (false === $this->exists() || false === file_is_displayable_image($testPath)) // this is based on getimagesize
 			{
           $this->processable_status = self::P_NOTDISPLAYABLE;
           $this->is_image = false;
@@ -156,16 +161,11 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
             $backupObj->copy($this);
         }
 
-        add_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
-        // RTA should never touch source files. This happens when redoing scaling. This would also be problematic in combination with optimisers. Disable scaling when doing thumbs.
-        add_filter('big_image_size_threshold', array($this, 'disable_scaling'));
 
-        $new_metadata = wp_generate_attachment_metadata($this->id, $this->getFullPath());
 
-        remove_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
-        remove_filter('big_image_size_threshold', array($this, 'disable_scaling'));
-
+        $new_metadata = $this->generateImages();
         Log::addDebug('New Attachment metadata generated', $new_metadata);
+
 
         //restore the optimized main image
         if($backup && $backup !== $this->getFullPath()) {
@@ -248,13 +248,35 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
     return true;
   }
 
+  protected function generateImages()
+  {
+    add_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
+    //add_filter('fallback_intermediate_image_sizes', array($this, 'capture_fallback_image_sizes'));
+
+
+    // RTA should never touch source files. This happens when redoing scaling. This would also be problematic in combination with optimisers. Disable scaling when doing thumbs.
+    add_filter('big_image_size_threshold', array($this, 'disable_scaling'));
+
+    //Log::addTemp("Generating new thumbnails, base : " . $this->getFullPath());
+    $new_metadata = wp_generate_attachment_metadata($this->id, $this->getFullPath());
+
+    remove_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
+    //remove_filter('fallback_intermediate_image_sizes', array($this, 'capture_fallback_image_sizes'));
+
+    remove_filter('big_image_size_threshold', array($this, 'disable_scaling'));
+
+    return $new_metadata;
+  }
+
   // Todo before doing this, function to remove thumbnails need to run somehow, without killing all.
   protected function saveNewMeta($updated_meta)
   {
+      Log::addTemp('persistent Meta', $this->persistentMeta);
       if (count($this->persistentMeta) > 0)
       {
         foreach($this->persistentMeta as $rsize => $add)
         {
+          Log::addTemp('Adding Pers. Meta for ' . $rsize);
           $updated_meta['sizes'][$rsize] = $add;
         }
       }
@@ -288,9 +310,9 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
         }
       }
       */
-      $result['update'] = wp_update_attachment_metadata($this->id, $updated_meta);
+    //  $result['update'] = wp_update_attachment_metadata($this->id, $updated_meta);
       $this->metadata = wp_get_attachment_metadata($this->id);
-
+Log::addTemp('New saved Metadata', $this->metadata);
       return $result;
   }
 
@@ -301,12 +323,13 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
   public function capture_generate_sizes($full_sizes)
   {
-
-      $do_regenerate_sizes = RTA()->admin()->getOption('process_image_sizes'); // $this->viewControl->process_image_sizes; // to images to be regenerated.
+Log::addTemp('Capture Generate Sizes Filter');
+      $do_regenerate_sizes = RTA()->admin()->getOption('process_image_sizes'); // $this->viewControl->process_image_sizes; // the images to be regenerated, selected in RTA.
       $process_options = RTA()->admin()->getOption('process_image_options'); // $this->viewControl->process_image_options; // the setting options for each size.
 
       // imageMetaSizes is sizeName => Data based array of WP metadata.
       $imageMetaSizes = $this->getCurrentSizes();
+      Log::addTemp('imageMetaSizes', $imageMetaSizes);
       $fs = RTA()->fs();
 
       $prevent_regen = array();
@@ -315,7 +338,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
         // 1. Check if size exists, if not, needs generation anyhow.
         if (! isset($imageMetaSizes[$rsize]))
         {
-          Log::addDebug("Image Meta size setting missing - $rsize ", $do_regenerate_sizes);
+          Log::addDebug("Image Meta size setting missing - $rsize ");
 
           continue;
         }
@@ -340,20 +363,19 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
       }
 
       // 5. Drop the 'not to be' regen. images from the sizes so it will not process.
+      // If image is small bigger sizes will be requested but not created because of image size
       $do_regenerate_sizes = array_diff($do_regenerate_sizes, $prevent_regen);
-      Log::addDebug('Sizes going for regen amount : ' . count($do_regenerate_sizes) );
-
+      Log::addDebug('Sizes selected for possible creation : ' . count($do_regenerate_sizes), $do_regenerate_sizes);
 
       /* 6. If metadata should be cleansed of undefined sizes, remove them from the imageMetaSizes
       *   This is for sizes that are -undefined- in total by system sizes.
       */
-
       $imageMetaSizes = $this->filterMetaSizes($imageMetaSizes);
 
       // 7. If unused thumbnails are not set for delete, keep the metadata intact.
       $other_meta = array_diff( array_keys($imageMetaSizes), $do_regenerate_sizes, $prevent_regen);
 
-      $this->handleNotSelectedSizes($other_meta);
+      $this->handleNotSelectedSizes($other_meta, $imageMetaSizes);
 
 
       $returned_sizes = array();
@@ -367,6 +389,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
       //  Seems unused?
     //  $this->setRegeneratedSizes($do_regenerate_sizes);
+    Log::addTemp('Returned Sizes', $returned_sizes);
       return $returned_sizes;
   }
 
@@ -375,7 +398,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
       return $imageMetaSizes;
   }
 
-  protected function handleNotSelectedSizes($other_meta)
+  protected function handleNotSelectedSizes($other_meta, $imageMetaSizes)
   {
     if (count($other_meta) > 0)
     {
@@ -420,20 +443,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
   {
       $this->persistentMeta[$size] = $data;
   }
-/*
-  public function setRegeneratedSizes($sizes)
-  {
-    $this->regeneratedSizes = $sizes;
-  }
-  */
 
-
-  /* Seems unused
-  public function setMetaCheck($bool)
-  {
-    $this->do_metacheck = $bool;
-  }
-  */
   public function fixMimeType($image_id)
   {
       $post = get_post($image_id);
@@ -481,6 +491,8 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
 
     return $message;
   }
+
+
 
 
 

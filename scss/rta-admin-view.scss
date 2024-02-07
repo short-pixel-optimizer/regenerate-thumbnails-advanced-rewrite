@@ -1,6 +1,7 @@
 
 // Base color, breakpoints are in mixins
 @import 'mixins';
+@import 'rta-ad';
 
 // Title
 .wrap h1.rta-title
@@ -545,7 +546,7 @@
     opacity: 100;
   }
 
-  .rta-ad
+/*  .rta-ad
   {
     background: #fff;
     border: 1px solid #eee;
@@ -565,7 +566,7 @@
        color: $base_color;
     }
 
-  }
+  } */
 
 
 } // class rta-admin

@@ -1,0 +1,61 @@
+
+.rta-ad
+{
+
+    width: 100%;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    margin-top: 35px;
+    margin-bottom: 45px;
+    position: relative;
+
+    span {
+      text-align: center;
+      color: #ff0000;
+    }
+
+  .image {
+     flex: 1;
+     text-align: right;
+     a { display: inline-block;
+       outline: none;
+       border: 0;
+       text-decoration: none;
+
+       &:focus {
+         box-shadow: none;
+       }
+     }
+     img {  width: 180px}
+
+  }
+  .line {
+     flex: 2;
+
+     h3 {
+       color: #00d0e5;
+       font-size: 22px;
+     };
+
+  }
+  .button-wrap
+  {
+    flex: 1;
+    text-align: left;
+    .button {
+       background: #ff0000;
+       padding: 4px 12px;
+       font-weight: 700;
+       font-size: 20px;
+       margin: 12px;
+       color: #fff;
+       text-transform: uppercase;
+       text-decoration: none;
+       border: 0;
+       //height: 45px;
+    }
+  }
+
+}

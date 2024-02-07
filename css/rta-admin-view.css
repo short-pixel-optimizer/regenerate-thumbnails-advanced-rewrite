@@ -1,3 +1,56 @@
+.rta-ad {
+  width: 100%;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  margin-top: 35px;
+  margin-bottom: 45px;
+  position: relative;
+}
+.rta-ad span {
+  text-align: center;
+  color: #ff0000;
+}
+.rta-ad .image {
+  flex: 1;
+  text-align: right;
+}
+.rta-ad .image a {
+  display: inline-block;
+  outline: none;
+  border: 0;
+  text-decoration: none;
+}
+.rta-ad .image a:focus {
+  box-shadow: none;
+}
+.rta-ad .image img {
+  width: 180px;
+}
+.rta-ad .line {
+  flex: 2;
+}
+.rta-ad .line h3 {
+  color: #00d0e5;
+  font-size: 22px;
+}
+.rta-ad .button-wrap {
+  flex: 1;
+  text-align: left;
+}
+.rta-ad .button-wrap .button {
+  background: #ff0000;
+  padding: 4px 12px;
+  font-weight: 700;
+  font-size: 20px;
+  margin: 12px;
+  color: #fff;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 0;
+}
+
 .wrap h1.rta-title {
   background: #1abdca;
   background: linear-gradient(90deg, rgb(26, 189, 202) 72%, rgba(255, 255, 255, 0) 99%);
@@ -6,6 +59,29 @@
   padding: 8px 0 8px 15px;
 }
 
+.rta-admin {
+  /*  .rta-ad
+    {
+      background: #fff;
+      border: 1px solid #eee;
+      padding: 16px;
+      margin: 20px 0;
+      display: flex;
+      align-items: center;
+      .img-wrapper {
+      //  float: left;
+        margin-right: 25px;
+      }
+      h3, p { margin: 6px 0; }
+      a {
+         font-size: 16px;
+         font-weight: 700;
+         text-decoration: underline;
+         color: $base_color;
+      }
+
+    } */
+}
 .rta-admin .two-panel-wrap {
   display: flex;
   justify-content: space-between;
@@ -405,26 +481,6 @@
 }
 .rta-admin .window-down {
   opacity: 100;
-}
-.rta-admin .rta-ad {
-  background: #fff;
-  border: 1px solid #eee;
-  padding: 16px;
-  margin: 20px 0;
-  display: flex;
-  align-items: center;
-}
-.rta-admin .rta-ad .img-wrapper {
-  margin-right: 25px;
-}
-.rta-admin .rta-ad h3, .rta-admin .rta-ad p {
-  margin: 6px 0;
-}
-.rta-admin .rta-ad a {
-  font-size: 16px;
-  font-weight: 700;
-  text-decoration: underline;
-  color: #1abdca;
 }
 
 /*# sourceMappingURL=rta-admin-view.css.map */
