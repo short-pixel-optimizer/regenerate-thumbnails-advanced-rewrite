@@ -161,8 +161,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
             $backupObj->copy($this);
         }
 
-
-
         $new_metadata = $this->generateImages();
         Log::addDebug('New Attachment metadata generated', $new_metadata);
 
@@ -257,7 +255,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
     // RTA should never touch source files. This happens when redoing scaling. This would also be problematic in combination with optimisers. Disable scaling when doing thumbs.
     add_filter('big_image_size_threshold', array($this, 'disable_scaling'));
 
-    //Log::addTemp("Generating new thumbnails, base : " . $this->getFullPath());
     $new_metadata = wp_generate_attachment_metadata($this->id, $this->getFullPath());
 
     remove_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
@@ -271,12 +268,10 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
   // Todo before doing this, function to remove thumbnails need to run somehow, without killing all.
   protected function saveNewMeta($updated_meta)
   {
-      Log::addTemp('persistent Meta', $this->persistentMeta);
       if (count($this->persistentMeta) > 0)
       {
         foreach($this->persistentMeta as $rsize => $add)
         {
-          Log::addTemp('Adding Pers. Meta for ' . $rsize);
           $updated_meta['sizes'][$rsize] = $add;
         }
       }
@@ -312,7 +307,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
       */
     //  $result['update'] = wp_update_attachment_metadata($this->id, $updated_meta);
       $this->metadata = wp_get_attachment_metadata($this->id);
-Log::addTemp('New saved Metadata', $this->metadata);
       return $result;
   }
 
@@ -323,13 +317,11 @@ Log::addTemp('New saved Metadata', $this->metadata);
 
   public function capture_generate_sizes($full_sizes)
   {
-Log::addTemp('Capture Generate Sizes Filter');
       $do_regenerate_sizes = RTA()->admin()->getOption('process_image_sizes'); // $this->viewControl->process_image_sizes; // the images to be regenerated, selected in RTA.
       $process_options = RTA()->admin()->getOption('process_image_options'); // $this->viewControl->process_image_options; // the setting options for each size.
 
       // imageMetaSizes is sizeName => Data based array of WP metadata.
       $imageMetaSizes = $this->getCurrentSizes();
-      Log::addTemp('imageMetaSizes', $imageMetaSizes);
       $fs = RTA()->fs();
 
       $prevent_regen = array();
@@ -389,7 +381,6 @@ Log::addTemp('Capture Generate Sizes Filter');
 
       //  Seems unused?
     //  $this->setRegeneratedSizes($do_regenerate_sizes);
-    Log::addTemp('Returned Sizes', $returned_sizes);
       return $returned_sizes;
   }
 

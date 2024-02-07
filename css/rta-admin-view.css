@@ -339,6 +339,11 @@
   margin-left: 200px;
   margin-bottom: 25px;
 }
+@media (max-width: 650px) {
+  .rta-admin .thumbnail_select .note {
+    margin-left: 0;
+  }
+}
 .rta-admin .checkbox-list {
   display: inline-block;
 }
