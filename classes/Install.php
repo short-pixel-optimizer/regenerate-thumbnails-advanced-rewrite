@@ -2,8 +2,12 @@
 namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
 use \ReThumbAdvanced\Notices\NoticeController as Notice;
-
 use \ReThumbAdvanced\ShortQ as ShortQ;
+
+if (! defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
+}
+
 
 class Install
 {

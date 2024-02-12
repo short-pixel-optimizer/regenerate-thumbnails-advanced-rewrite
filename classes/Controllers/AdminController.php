@@ -1,19 +1,21 @@
 <?php
 namespace ReThumbAdvanced\Controllers;
+
 use function ReThumbAdvanced\RTA;
+use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
+use \ReThumbAdvanced\Periods as Periods;
+
+if (! defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
+}
+
 
 class AdminController extends Controller
 {
-  //protected $controller;
-
-  /** Settings saved in the option table. Being set on construct. Refreshed on save */
-/*  protected $custom_image_sizes = array();
-  protected $process_image_sizes = false;
-  protected $process_image_options = array();
-  protected $system_image_sizes = array();
-  protected $jpeg_quality = 90; */
-
   protected $cropOptions;
+
+  protected $pageTitle;
+  protected $proLink;
 
   public function __construct()
   {
@@ -36,11 +38,10 @@ class AdminController extends Controller
             'right_bottom' => __('Right bottom','regenerate-thumbnails-advanced'),
         );
 
-      //  $this->setOptionData();
+        $this->pageTitle = __('Regenerate Thumbnails Advanced','regenerate-thumbnails-advanced');
+        $this->proLink = 'https://shortpixel.com/products/regenerate-thumbnails-advanced-pro';
 
   }
-
-
 
   public function show()
   {
@@ -59,10 +60,30 @@ class AdminController extends Controller
       $view->process_image_sizes = RTA()->admin()->getOption('process_image_sizes');
       $view->process_image_options = RTA()->admin()->getOption('process_image_options');
       $view->jpeg_quality = RTA()->admin()->getOption('jpeg_quality');
+
+    }
+    elseif ($name === 'view_rta_regenerate')
+    {
+        $periodsClass = $this->getPeriodsClass(); // compat for 5.6  :(
+        $view->periods = $periodsClass::getAll();
     }
 
     $html = $this->load_template($name, 'admin', array('view' => $view ));
     echo $html;
+  }
+
+  public function getProSnippet()
+  {
+      $output =   sprintf('<div class="pro-only">%s %s %s</div>',
+                  '<a href="' . esc_url($this->proLink) . '" target="_blank">',
+                  __('PRO Only', 'regenerate-thumbnails-advanced'),
+                  '</a>');
+      return $output;
+  }
+
+  protected function getPeriodsClass()
+  {
+      return Periods::class;
   }
 
   /** Generate cropOptions
@@ -80,15 +101,6 @@ class AdminController extends Controller
     return $output;
   }
 
-/*
-  public function __get($name)
-  {
-    if (isset($this->{$name}))
-    {
-      return $this->{$name};
-    }
-    return false;
-  } */
 
   /** Save thumbnail settings.
   *
@@ -103,15 +115,9 @@ class AdminController extends Controller
       $option = array();
       $exclude = array();
 
-      $nonce = isset($_POST['save_nonce']) ? $_POST['save_nonce'] : false;
-      if (! wp_verify_nonce($nonce, 'rta_save_image_sizes'))
-      {
-        $jsonResponse['error'] = 'Invalid Nonce';
-        return $jsonResponse;
-      }
 
-      if (isset($_POST['saveform']))
-          parse_str($_POST['saveform'], $formpost);
+      if (isset($_POST['form']))
+          parse_str($_POST['form'], $formpost);
        else
           $formpost = array();
 
@@ -143,33 +149,38 @@ class AdminController extends Controller
 
       // redo the thumbnail options, apply changes
       $sizes = isset($formpost['regenerate_sizes']) ? $formpost['regenerate_sizes'] : array();
+      // filter out stub
+      $sizes = array_filter($sizes, 'is_numeric', ARRAY_FILTER_USE_KEY);
+
       $size_options = array();
       foreach($sizes as $rsize)
       {
-          if (isset($formpost['keep_' . $rsize]))
+          if (isset($formpost['overwrite_' . $rsize]))
           {
-            $size_options[$rsize] = array('overwrite_files' => false);
+            $size_options[$rsize] = array('overwrite_files' => true);
           }
           else {
-            $size_options[$rsize] = array('overwrite_files' => true);
+            $size_options[$rsize] = array('overwrite_files' => false);
           }
       }
       $option['process_image_sizes'] = array_values($sizes);  // the once that are set to regen. Array values resets index
       $option['process_image_options'] = $size_options;
 
       update_option( 'rta_image_sizes', $option );
-      //$this->setOptionData();
       RTA()->admin()->resetOptionData();
 
       $newsizes = $this->generateImageSizeOptions($sizes);
       $jsonResponse = array( 'error' => $error, 'message' => '', 'new_image_sizes' => $newsizes );
 
       return $jsonResponse;
-
   }
 
+  protected function isFeatureActive($name = '')
+  {
+     return false;
+  }
 
-  public function generateImageSizeOptions($checked_ar = false)
+  protected function generateImageSizeOptions($checked_ar = false)
   {
     $output = '';
     $i = 0;
@@ -179,33 +190,71 @@ class AdminController extends Controller
     $process_options = RTA()->admin()->getOption('process_image_options');
 
     $system_image_sizes = RTA()->admin()->getOption('system_image_sizes');
+    $image_sizes = array();
 
     // size here is a name, value is how the name is found in the system (in interface, the technical name)
-    foreach($system_image_sizes as $value => $size):
+    foreach($system_image_sizes as $size => $item)
+    {
+
+      $width = isset($item['width']) ? $item['width'] : '*';
+      $height = isset($item['height']) ? $item['height'] : '*';
+      $name = isset($item['nice-name']) ? $item['nice-name'] : ucfirst($size);
+    //  $size = $item['name']
 
       //if ($check_all)
         //$checked = 'checked';
-      $checked = ($check_all || in_array($value, $checked_ar)) ? 'checked' : '';
+      $checked = ($check_all || in_array($size, $checked_ar)) ? 'checked' : '';
       $hidden = ($checked == 'checked') ? '' : 'hidden'; // hide add. option if not checked.
 
-      $option_in_db = (isset($process_options[$value])) ? true : false;
-      $checked_keep = (isset($process_options[$value]) && isset($process_options[$value]['overwrite_files']) && ! $process_options[$value]['overwrite_files'] )  ? 'checked' : '';
+    //  $option_in_db = (isset($process_options[$size])) ? true : false;
+      $checked_overwrite = (isset($process_options[$size]) && isset($process_options[$size]['overwrite_files']) &&  $process_options[$size]['overwrite_files'] )  ? 'checked' : '';
 
-      if ($option_in_db)
-        $checked .= ' data-setbyuser=true'; // if value was ever saved in DB, don't change it in the JS.
+    //  if ($option_in_db)
+      //  $checked .= ' data-setbyuser=true'; // if value was ever saved in DB, don't change it in the JS.
 
-      $output .= "<div class='item'>";
-      $output .= "<span>
-        <label> <input type='checkbox' id='regenerate_sizes[$i]' name='regenerate_sizes[$i]' value='$value' $checked>
-          " .  ucfirst($size) . "</label>
-      </span>";
-      $output .= "<span class='options $hidden'><label><input value='1' type='checkbox' $checked_keep name='keep_" . $value . "'> " . __('Don\'t redo existing', 'regenerate-thumbnails-advanced') . "</label></span>";
-      $output .= "</div>";
+
+      $stub = $this->getHTMLStub();
+
+      $replacer = array(
+          '%%class%%' => 'item',
+          '%%index%%' => $i,
+          '%%size%%' => $size,
+          '%%checked%%' => $checked,
+          '%%name%%' => $name,
+          '%%width%%' => $width,
+          '%%height%%' => $height,
+          '%%hidden%%' => $hidden,
+          '%%checked_overwrite%%' => $checked_overwrite,
+
+      );
+
+      $output .= str_replace(array_keys($replacer), array_values($replacer), $stub);
 
       $i++;
+    };
 
-    endforeach;
+    // default and checked gives issues on checkbox
+    $output .= str_replace(array('%%class%%', '%%checked_overwrite%%', '%%checked%%'), array('item stub hidden', '', 'checked'), $stub);
+
     return $output;
   }
+
+  private function getHTMLStub()
+  {
+      $html = '<div class="%%class%%">
+                <label>
+                  <input type="checkbox" id="regenerate_sizes[%%index%%]" name="regenerate_sizes[%%index%%]" value="%%size%%" %%checked%%>
+                  <span class="text">%%name%% (%%width%%x%%height%%)</span>
+                </label>
+                <span class="options %%hidden%%">
+                  <label title="' . __('If this option is enabled, the thumbnails will be regenerated even if the files already exist.', 'regenerate-thumbnails-advanced') . '">
+                  <input value="1" type="checkbox" %%checked_overwrite%% name="overwrite_%%size%%">' . __('Force regeneration', 'regenerate-thumbnails-advanced') . '</label>
+                </span>
+
+               </div>';
+      return $html;
+  }
+
+
 
 } // class

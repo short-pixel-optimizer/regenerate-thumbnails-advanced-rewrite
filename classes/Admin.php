@@ -69,19 +69,27 @@ class Admin
     *
     *
     */
-    public function getImageSizes()
+    protected function getImageSizes()
     {
       global $_wp_additional_image_sizes;
 
-      $option = get_option('rta_image_sizes');
+      $option = get_option('rta_image_sizes', array());
       $our_image_sizes = isset($option['image_sizes']) ? $option['image_sizes']: array();
 
-      $imageSizes = array();
-      foreach ( get_intermediate_image_sizes() as $_size )
-      {
-         if ( strpos($_size, 'rta_') === false)
-          $imageSizes[$_size] = $_size;
-      }
+      /* Snips stolen from SPIO */
+  			$sizes_names = get_intermediate_image_sizes();
+  			$sizes = array();
+  			foreach ( $sizes_names as $size ) {
+  					$sizes[ $size ][ 'width' ] = intval( get_option( "{$size}_size_w" ) );
+  					$sizes[ $size ][ 'height' ] = intval( get_option( "{$size}_size_h" ) );
+  					$sizes[ $size ][ 'crop' ] = get_option( "{$size}_crop" ) ? get_option( "{$size}_crop" ) : false;
+            $sizes[ $size ][ 'nice-name'] = ucfirst($size);
+  			}
+  			if(function_exists('wp_get_additional_image_sizes')) {
+  					$sizes = array_merge($sizes, wp_get_additional_image_sizes());
+  			} elseif(is_array($_wp_additional_image_sizes)) {
+  					$sizes = array_merge($sizes, $_wp_additional_image_sizes);
+  			}
 
       // put our defined images manually, to properly update when sizes /names change.
       if (isset($our_image_sizes['pname']))
@@ -93,10 +101,15 @@ class Admin
           if (strlen($name) == 0) // can't since name is tied to what it gives back to the process
               $name = $int_name;
 
-          $imageSizes[$int_name] = $name;
+          $sizes[$int_name] = array(
+            'width' => $our_image_sizes['width'][$i],
+            'height' => $our_image_sizes['height'][$i],
+            'nice-name' => $name,
+          );
         }
       }
-      return $imageSizes;
+
+      return $sizes;
 
     }
 
@@ -130,28 +143,21 @@ class Admin
 
     public function regenerate_single_image($attach_id)
     {
-      /*  $form = $this->getFormData();
-        $form['posts_per_page'] = -1;
-        $form['attach_id'] = $attach_id;
-*/
-        $image = new Image($attach_id);
-        $image->regenerate();
 
-        /*if ($this->start_process($form))
-        {
-          $this->regenerate_thumbnails();
-        }
- */
+        $imageClass = RTA()->getClass('Image');
+        $image = new $imageClass($attach_id);
+        $image->process();
+
         $status = RTA()->ajax()->get_status();
 
         foreach($status as $statusName => $statusItem)
         {
             if ($statusItem['error'])
-              Notice::addError($statusItem['message']);
+              Notice::addError('<p>' . $statusItem['message'] . '</p>');
             elseif ($statusItem['status'] == 1)
-              Notice::addSuccess(__('Image thumbnails regenerated', 'regenerate-thumbnails-advanced'));
+              Notice::addSuccess('<p>' . __('Image thumbnails regenerated', 'regenerate-thumbnails-advanced') . '</p>');
             else
-              Notice::addNormal($statusItem['message']);
+              Notice::addNormal('<p>' . $statusItem['message'] . '</p>');
         }
 
       //  $this->end_process();

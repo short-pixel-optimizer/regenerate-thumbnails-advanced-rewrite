@@ -1,4 +1,19 @@
+
+// Base color, breakpoints are in mixins
 @import 'mixins';
+@import 'rta-ad';
+
+// Title
+.wrap h1.rta-title
+{
+   background: $base_color;
+   background: linear-gradient(90deg, rgba(26,189,202,1) 72%, rgba(255,255,255,0) 99%);
+   color : #fff;
+   //text-transform: uppercase;
+   font-weight: 700;
+   padding: 8px 0 8px 15px;
+
+}
 
 .rta-admin
 {
@@ -20,7 +35,28 @@
         }
 
       }
+
     }
+    &.process-wrap
+    {
+      @include breakpoint(0,1200px)
+      {
+         button.resume-process, button.stop-process, button.pause-process
+         {
+            max-width: none;
+            width: 80%;
+            left: 5%;
+            right: 5px;
+
+         }
+         button.resume-process, button.pause-process
+         {
+            bottom: 15%;
+         }
+
+      }
+    }
+
   }
 
   h2 {
@@ -38,6 +74,27 @@
     min-height: 600px;
   //  background: #fff;
     padding-bottom: 65px;
+  }
+
+  .pro-only
+  {
+     background-color: $base_color;
+     padding: 4px 2px;
+     max-width: 80px;
+     width: 100%;
+     box-sizing: border-box;
+     text-align: center;
+     border-radius: 5px;
+     display: inline-block;
+     margin: 0 0 4px 0;
+     font-size: 12px;
+
+
+     a {
+       color: #fff;
+       font-weight: 700;
+       text-decoration: none;
+     }
   }
 
   .rta-notice
@@ -103,14 +160,14 @@
   %button
   {
     color: rgb(255, 255, 255);
-    background: rgb(0, 188, 212);
+    background: $base_color;
     position: relative;
     box-shadow: none;
     cursor: pointer;
     border: 0;
     border-right: 1px solid #ccc;
     border-bottom: 1px solid #ccc;
-    box-shadow: 0px 0px 4px #aaa;
+    //box-shadow: 0px 0px 4px #aaa;
   }
   .container
   {
@@ -135,6 +192,13 @@
       vertical-align: top;
       line-height: 15px;
       position:relative;
+      margin-bottom: 10px;
+      @include breakpoint(0, 782px)
+      {
+         line-height: 1.5625rem;
+         font-size: 15px;
+      }
+
       input
       {
         vertical-align: middle;
@@ -149,6 +213,12 @@
         display: inline-block;
         margin-left: 25px;
         line-height: 20px;
+        @include breakpoint(0, 782px)
+        {
+           margin-left: 35px;
+           font-size: 16px;
+           vertical-align: bottom;
+        }
 
       }
     }
@@ -161,6 +231,31 @@
         margin-top: 0;
       }
     }
+
+    .period-list {
+       margin-left: 15px;
+    }
+  }
+
+  .option.custom_date
+  {
+     margin-left: 18px;
+     margin-bottom: 10px;
+     label
+     {
+        width: 90px;
+        display: inline-block;
+
+
+     }
+     input {
+       margin: 2px 0;
+       min-width: 150px;
+       @include breakpoint(0, 782px)
+       {
+          min-width: 165px;
+       }
+     }
   }
 
   input
@@ -168,6 +263,10 @@
     &.tiny
     {
       width: 65px;
+      @include breakpoint(0, 782px)
+      {
+         width: 75px;
+      }
     }
   }
 
@@ -203,6 +302,7 @@
     //grid-template-columns: 3fr 2fr 2fr 4fr 2fr 2fr; // 120px 95px 95px repeat(3, 2fr);
   //  grid-template-rows: 50px;
   //  grid-gap: 1rem;
+    padding: 6px;
     flex-direction: column;
     border-spacing: 10px 0;
     border: 1px solid #eee;
@@ -259,6 +359,20 @@
     display: flex;
   }
 
+  .thumbnail_select
+  {
+     .note {
+       margin-left: 0;
+       border: 1px solid #ccc;
+       padding: 8px;
+       margin-left: 200px;
+       margin-bottom: 25px;
+       @include breakpoint(0, 650px)
+       {
+         margin-left: 0;
+       }
+     }
+  }
   .checkbox-list
   {
     //margin-left: 200px;
@@ -270,6 +384,7 @@
       clear: both;
       justify-content: space-between;
       width: 100%;
+      &.hidden { display: none; }
       span
       {
         display: inline-block;
@@ -278,6 +393,9 @@
       span.hidden {
          visibility: hidden;
 
+      }
+      label {
+        margin-right: 14px;
       }
 
     }
@@ -293,6 +411,11 @@
     margin-top: 15px;
     > span { cursor: pointer; color: #222; margin-right: 12px; display: inline-block }
     .note { margin-left: 0; border: 1px solid #ccc; padding: 8px;  }
+
+    @include breakpoint(0, 650px)
+    {
+       margin-left: 0;
+    }
   }
 
   .cleanup-wrapper
@@ -301,9 +424,21 @@
     border: 1px solid #ddd;
     .option
     {
-      display: flex;
-      flex: 1;
-      .note { flex: 2; display: inline-block; }
+    //  display: flex;
+    //  flex: 1;
+      .note {
+      //  flex: 2;
+        display: inline-block;
+      }
+
+      label {
+         width: auto;
+      }
+
+      span {
+      //  display: inline-block;
+      }
+
     }
     @include breakpoint(0,1500px)
     {
@@ -311,8 +446,18 @@
       {
         flex-wrap:wrap;
         label { width: 100%; }
-        .note { width: 100%; margin: 4px 0;  }
+        .note { width: 100%; margin: 10px 0;  }
       }
+    }
+
+    .readmore {
+       margin: 8px 0;
+       text-align: right;
+       a { text-decoration: none;
+          span {
+            margin-right: 4px;
+          }
+       }
     }
   }
 
@@ -345,6 +490,17 @@
     position: absolute;
     left: 45px;
     bottom: 0px;
+
+    .container
+    {
+       padding-left: 0;
+    }
+
+    &.regenerate-button
+    {
+       left: unset;
+       right: 0;
+    }
 
     .save_indicator
     {
@@ -387,13 +543,14 @@
   .window-up
   {
     opacity: 0;
+    display: none;
   }
   .window-down
   {
     opacity: 100;
   }
 
-  .rta-ad
+/*  .rta-ad
   {
     background: #fff;
     border: 1px solid #eee;
@@ -410,9 +567,10 @@
        font-size: 16px;
        font-weight: 700;
        text-decoration: underline;
+       color: $base_color;
     }
 
-  }
+  } */
 
 
 } // class rta-admin

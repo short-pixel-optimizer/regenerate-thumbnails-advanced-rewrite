@@ -1,53 +1,88 @@
 === reGenerate Thumbnails Advanced ===
 Contributors: ShortPixel
 Donate link: https://www.paypal.me/resizeImage
-Tags: regenerate, thumbnail, thumbnails, thumb, thumbs, easy, media, force regenerate, image, images, pics, date
+Tags: regenerate, regenerate thumbnails wordpress, regenerate thumbnails, regenerate thumbnails woocommerce, wordpress regenerate thumbnails, wordpress thumbnails, force regenerate thumbnails
 Requires at least: 4.0
-Tested up to: 6.2
-Requires PHP: 5.3
-Stable tag: 2.4.1
+Tested up to: 6.4
+Requires PHP: 5.6
+Stable tag: 2.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Regenerate thumbnails fast and easy while removing unused thumbnails of existing images; very useful when changing a theme.
+Regenerate thumbnails quickly and easily, including forced regeneration; very useful when changing a theme or adding new thumbnail sizes.
 
 == Description ==
 
-**A free, fast and easy to use regenerate thumbnails plugin supported by ShortPixel :)**
+**A free, fast, and easy-to-use Regenerate Thumbnails plugin, created and maintained by the team behind <a target="_blank" href="https://wordpress.org/plugins/shortpixel-image-optimiser/">ShortPixel Image Optimizer</a>.**
 
-Regenerate Thumbnails Advanced (RTA) plugin comes in handy when you install a new WordPress theme on your site that has different image sizes. While the newly uploaded images will be cropped and resized to fit your new theme, the old thumbnails will remain unchanged. Using RTA you can regenerate the thumbnails for all your existing images.
-It is also very useful when you have many not-used-anymore thumbnails and you want to remove them while making sure you have all the needed thumbnails generated.
+The reGenerate Thumbnails Advanced (RTA) plugin is ideal if you are switching to a new WordPress theme with different image sizes. It updates your old thumbnails to fit your new theme and the Pro version helps you clean up unused thumbnails, to ensure all your images have the perfect size.
 
-Features:
+**Simplicity is the key** with our plugin, it's as easy as 3 clicks and you're good to go ;-)
 
-* Choose the quality of the regenerated thumbs.
-* Option to remove not-used-anymore thumbnails.
-* Remove metadata for missing images and thumbnails
-* Fully integrated with <a href="https://wordpress.org/plugins/shortpixel-image-optimiser/">ShortPixel Image Optimizer</a>.
-* Option to select the thumbnail size for featured and non-featured images.
-* Option to easily add as many extra thumbnail sizes as you wish.
-* Interval selection (last day, week, month, all) for the thumbs that will be regenerated.
-* Clean and simple interface where you have a progress bar showing you the percentage of images regenerated.
-* Resume function - the regeneration process will continue from where it was left in case you accidentally close the processing tab in your browser.
+**Features:**
+- You can choose to regenerate thumbnails only for **featured images**;
+- You can **easily customize** the thumbnail list by adding any number of additional thumbnail sizes to suit your needs;
+- You can select the **preferred image quality** for the regenerated thumbnails;
+- Clean, **simple** and user-friendly interface with a progress bar showing the percentage of regenerated images;
+- Statistics at the end of the process showing the total number of **thumbnails regenerated**;
+- **"Resume" feature** that picks up the regeneration process exactly where you left off if your browser processing tab closes unexpectedly or you have manually paused the process;
+- And fully integrated with <a target="_blank" href="https://wordpress.org/plugins/shortpixel-image-optimiser/">ShortPixel Image Optimizer</a> for **thumbnails compression** and enhanced functionality;
+
+**PRO Features:**
+You will find exciting features in the <a href="https://shortpixel.com/products/regenerate-thumbnails-advanced-pro?source=WPORG" target="_blank">PRO version</a>, with more to come:
+- **WP-CLI support** to regenerate thumbnails. Especially useful for websites with a **very large number of images**, or when wp-admin resources are limited;
+- **Automatic removal** of outdated thumbnails that are no longer used;
+- You can choose to **delete the metadata** for missing images and thumbnails;
+- **Remove missing images** and thumbnails from the media library if they no longer exist on the disk, along with the associated metadata;
+- Automatically start **image optimization** with ShortPixel Image Optimizer immediately after regenerating the thumbnails;
+- **Select intervals** (last day, last week, last month or all images at once) for thumbnails regeneration as well as a custom interval of your choice;
+
+**Enhance Your WordPress website with the reGenerate Thumbnails Advanced Plugin**
+
+Managing images in the WordPress environment can sometimes be complex, but the reGenerate Thumbnails Advanced plugin simplifies this task, enhancing your website's visual esthetics. More than just a standard WP thumbnail plugin, it offers unique features to improve the functionality and appeal of your website.
+
+**Easy Image Management for WordPress Users**
+
+One of the biggest challenges for WordPress website owners is keeping image sizes consistent. This is where our plugin comes into play, not only regenerating thumbnails but also changing the visual presentation of your website. Whether you're updating a theme or revamping the look of your website, the reGenerate Thumbnails Advanced plugin will help you keep your images consistent and professional.
+
+**Regenerate Thumbnails Made Easy**
+
+For anyone who has ever experienced the need to regenerate thumbnails WordPress-wide, our plugin offers an intuitive and user-friendly approach. It is designed to fit perfectly in the WordPress environment, and ensures that your images are always presented in the best possible way without you having to laboriously adjust them manually.
+
+**Optimized Thumbnails for Improved Performance**
+
+Once you've successfully regenerated your thumbnails with Regenerate Thumbnails Advanced, the next step is a breeze. Easily optimize these thumbnails with ShortPixel Image Optimizer to significantly boost their performance. This integration not only ensures that your images are of the highest quality but also increases the overall efficiency of your website. With ShortPixel's powerful optimization features, you can look forward to **faster load times, improved SEO, and a better user experience**.
+
+**A Versatile Tool for Different Needs**
+
+Whether you run a personal blog or a large e-commerce platform with WooCommerce, the reGenerate Thumbnails Advanced plugin is versatile enough to meet a variety of needs. It’s more than just regenerate thumbnails WooCommerce-style; it's a comprehensive image management solution.
+
+**Optimize WordPress Thumbnails for Peak Performance**
+
+In the WordPress domain, the impact of thumbnails on website esthetics and performance cannot be overstated. Our plugin not only helps WordPress regenerate thumbnails but also optimizes these thumbnails for improved loading speed and quality, enhancing the overall user experience.
+
+**Full Control Over Your Thumbnails**
+
+The ability to **force regenerate thumbnails** gives you complete control over how your images are displayed. This aspect of the reGenerate Thumbnails Advanced plugin is particularly useful for those who frequently update their content and need their images to reflect these changes immediately.
 
 Support:
-For support please contact us <a href="https://shortpixel.com/contact">here</a> making sure you mention RTA plugin.
+For support please contact us <a target="_blank" href="https://shortpixel.com/contact">here</a> making sure you mention reGenerate Thumbnails Advanced (RTA) plugin.
 
 **Other plugins by [ShortPixel](https://shortpixel.com)**
 
 * [ShortPixel Image Optimizer](https://wordpress.org/plugins/shortpixel-image-optimiser/) - Image optimization & compression for all the images on your website, including WebP & AVIF delivery
+* [FastPixel Website Accelerator](https://fastpixel.io/) - The all-in-one WP website accelerator. Image optimization and CDN included.
 * [ShortPixel Adaptive Images](https://wordpress.org/plugins/shortpixel-adaptive-images/) - On-the-fly image optimization & CDN delivery
 * [Enable Media Replace](https://wordpress.org/plugins/enable-media-replace/) - Easily replace images or files in Media Library
 * [Resize Image After Upload](https://wordpress.org/plugins/resize-image-after-upload/) - Automatically resize each uploaded image
 * [WP SVG Images](https://wordpress.org/plugins/wp-svg-images/) - Secure upload of SVG files to Media Library
 * [ShortPixel Critical CSS](https://wordpress.org/plugins/shortpixel-critical-css/) - Automatically generate above-the-fold CSS for fatster loading times and better SEO scores
 
+
 **Get in touch!**
 
 * Email <a href="https://shortpixel.com/contact" target="_blank">https://shortpixel.com/contact</a>
 * Twitter <a href="https://twitter.com/shortpixel" target="_blank">https://twitter.com/shortpixel</a>
-* Facebook <a href="https://www.facebook.com/ShortPixel" target="_blank">https://www.facebook.com/ShortPixel</a>
-* LinkedIn <a href="https://www.linkedin.com/company/shortpixel" target="_blank">https://www.linkedin.com/company/shortpixel</a>
 
 == Installation ==
 
@@ -69,6 +104,22 @@ The script stops but it will resume after you open the settings page of the plug
 2. Thumbnail regeneration process in action
 
 == Changelog ==
+
+= 2.5.0 =
+
+Release date: February 12, 2024
+* New: Added a statistic at the end of the process that shows the total number of thumbnails regenerated;
+* New: <a href="https://shortpixel.com/products/regenerate-thumbnails-advanced-pro?source=WPORG" target="_blank">Regenerate Thumbnails Advanced PRO</a> is now available with exciting new features;
+* New: Thumbnail sizes are now displayed in the plugin settings;
+* Tweak: Added clear wording and explanation for the "Force Regenerate Thumbnails" feature;
+* Tweak: Reorganized the plugin settings, updated the wording and links of the plugin.
+* Compat: Updated the integration with ShortPixel Image Optimizer;
+* Fix: Compatibility with PHP 8.1, 8.2 and 8.3;
+* Fix: The plugin settings look better on mobile;
+* Fix: Regenerating thumbnails for WebP files now works properly;
+* Fix: SHIFT+select works correctly in the plugin settings;
+* Fix: All plugin strings can now be translated;
+* Fix: Files that are not processed by the plugin (e.g. SVG, PDF, etc.) are skipped instead of displayng errors.
 
 = 2.4.1 =
 
@@ -139,7 +190,7 @@ Release date: 16th April 2019
 * Select which thumbnails to regenerate
 * Regenerate thumbnails only for the featured images
 * Rewrite the existing thumbnails or not depending on the selected options
-* Integrate seamlessly with <a href="https://wordpress.org/plugins/shortpixel-image-optimiser/">ShortPixel Image Optimizer</a>
+* Integrate seamlessly with <a target="_blank" href="https://wordpress.org/plugins/shortpixel-image-optimiser/">ShortPixel Image Optimizer</a>
 * Delete unused thumbnails from disk
 * Remove metadata for missing images and thumbnails
 

@@ -10,6 +10,7 @@ namespace ReThumbAdvanced\ShortPixelLogger;
  {
    static protected $instance = null;
    protected $start_time;
+   protected $memoryLimit; // to be used for memory logs only.
 
    protected $is_active = false;
    protected $is_manual_request = false;
@@ -24,6 +25,8 @@ namespace ReThumbAdvanced\ShortPixelLogger;
    protected $format_data = "\t %%data%% ";
 
    protected $hooks = array();
+
+	 private $logFile; // pointer resource to the logFile.
 /*   protected $hooks = array(
       'shortpixel_image_exists' => array('numargs' => 3),
       'shortpixel_webp_image_base' => array('numargs' => 2),
@@ -49,16 +52,19 @@ namespace ReThumbAdvanced\ShortPixelLogger;
       $ns = __NAMESPACE__;
       $this->namespace = substr($ns, 0, strpos($ns, '\\')); // try to get first part of namespace
 
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended  -- This is not a form
       if (isset($_REQUEST['SHORTPIXEL_DEBUG'])) // manual takes precedence over constants
       {
         $this->is_manual_request = true;
         $this->is_active = true;
 
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended  -- This is not a form
         if ($_REQUEST['SHORTPIXEL_DEBUG'] === 'true')
         {
           $this->logLevel = DebugItem::LEVEL_INFO;
         }
         else {
+					// phpcs:ignore WordPress.Security.NonceVerification.Recommended  -- This is not a form
           $this->logLevel = intval($_REQUEST['SHORTPIXEL_DEBUG']);
         }
 
@@ -75,8 +81,6 @@ namespace ReThumbAdvanced\ShortPixelLogger;
 
       if (defined('SHORTPIXEL_DEBUG_TARGET') && SHORTPIXEL_DEBUG_TARGET || $this->is_manual_request)
       {
-          //$this->logPath = SHORTPIXEL_BACKUP_FOLDER . "/shortpixel_log";
-          //$this->logMode = defined('SHORTPIXEL_LOG_OVERWRITE') ? 0 : FILE_APPEND;
           if (defined('SHORTPIXEL_LOG_OVERWRITE')) // if overwrite, do this on init once.
             file_put_contents($this->logPath,'-- Log Reset -- ' .PHP_EOL);
 
@@ -103,14 +107,19 @@ namespace ReThumbAdvanced\ShortPixelLogger;
 
      if ($this->is_active && $this->is_manual_request && $user_is_administrator )
      {
-          $content_url = content_url();
-          $logPath = $this->logPath;
-          $pathpos = strpos($logPath, 'wp-content') + strlen('wp-content');
-          $logPart = substr($logPath, $pathpos);
-          $logLink = $content_url . $logPart;
+
+         $logPath = $logLink = $this->logPath; // default
+         $uploads = wp_get_upload_dir();
+
+
+     		  if ( 0 === strpos( $logPath, $uploads['basedir'] ) ) { // Simple as it should, filepath and basedir share.
+                     // Replace file location with url location.
+                     $logLink = str_replace( $uploads['basedir'], $uploads['baseurl'], $logPath );
+     		  }
+
 
          $this->view = new \stdClass;
-         $this->view->logLink = $logLink;
+         $this->view->logLink = 'view-source:' . esc_url($logLink);
          add_action('admin_footer', array($this, 'loadView'));
      }
    }
@@ -127,6 +136,7 @@ namespace ReThumbAdvanced\ShortPixelLogger;
    public function setLogPath($logPath)
    {
       $this->logPath = $logPath;
+			$this->getWriteFile(true); // reset the writeFile here.
    }
    protected function addLog($message, $level, $data = array())
    {
@@ -174,7 +184,7 @@ namespace ReThumbAdvanced\ShortPixelLogger;
    {
       $items = $debugItem->getForFormat();
       $items['time_passed'] =  round ( ($items['time'] - $this->start_time), 5);
-      $items['time'] =  date('Y-m-d H:i:s', $items['time'] );
+      $items['time'] =  date('Y-m-d H:i:s', (int) $items['time'] );
 
       if ( ($items['caller']) && is_array($items['caller']) && count($items['caller']) > 0)
       {
@@ -184,15 +194,61 @@ namespace ReThumbAdvanced\ShortPixelLogger;
 
       $line = $this->formatLine($items);
 
+			$file = $this->getWriteFile();
+
       // try to write to file. Don't write if directory doesn't exists (leads to notices)
-      if ($this->logPath && is_dir(dirname($this->logPath)) )
+      if ($file )
       {
-        file_put_contents($this->logPath,$line, FILE_APPEND);
+				fwrite($file, $line);
+//        file_put_contents($this->logPath,$line, FILE_APPEND);
       }
       else {
-        error_log($line);
+       // error_log($line);
       }
    }
+
+	 protected function getWriteFile($reset = false)
+	 {
+		 	if (! is_null($this->logFile) && $reset === false)
+			{
+					return $this->logFile;
+			}
+			elseif(is_object($this->logFile))
+			{
+				fclose($this->logFile);
+			}
+
+			$logDir = dirname($this->logPath);
+		  if (! is_dir($logDir) || ! is_writable($logDir))
+			{
+				error_log('ShortpixelLogger: Log Directory is not writable : ' . $logDir);
+				$this->logFile = false;
+				return false;
+			}
+
+      $file = false;
+      if (file_exists($this->logPath))
+      {
+         if (! is_writable($this->logPath))
+         {
+            error_log('ShortPixelLogger: File Exists, but not writable: ' . $this->logPath);
+            $this->logFile = false;
+            return $file;
+         }
+      }
+
+			$file = fopen($this->logPath, 'a');
+
+      if ($file === false)
+			{
+				 error_log('ShortpixelLogger: File could not be opened / created: ' . $this->logPath);
+				 $this->logFile = false;
+				 return $file;
+			}
+
+			$this->logFile = $file;
+			return $file;
+	 }
 
    protected function formatLine($args = array() )
    {
@@ -210,8 +266,13 @@ namespace ReThumbAdvanced\ShortPixelLogger;
         $data = array_filter($args['data']);
         if (count($data) > 0)
         {
+          // @todo This should probably be a formatter function to handle multiple stuff?
           foreach($data as $item)
           {
+              if (is_bool($item))
+              {
+                 $item = (true === $item) ? 'true' : 'false';
+              }
               $line .= $item . PHP_EOL;
           }
         }
@@ -234,6 +295,94 @@ namespace ReThumbAdvanced\ShortPixelLogger;
      else {
        return false;
      }
+   }
+
+
+   protected function monitorHooks()
+   {
+
+      foreach($this->hooks as $hook => $data)
+      {
+        $numargs = isset($data['numargs']) ? $data['numargs'] : 1;
+        $prio = isset($data['priority']) ? $data['priority'] : 10;
+
+        add_filter($hook, function($value) use ($hook) {
+              $args = func_get_args();
+              return $this->logHook($hook, $value, $args); }, $prio, $numargs);
+      }
+   }
+
+   public function logHook($hook, $value, $args)
+   {
+      array_shift($args);
+      self::addInfo('[Hook] - ' . $hook . ' with ' . var_export($value,true), $args);
+      return $value;
+   }
+
+   public function loadView()
+   {
+       // load either param or class template.
+       $template = $this->template;
+
+       $view = $this->view;
+       $view->namespace = $this->namespace;
+       $controller = $this;
+
+       $template_path = __DIR__ . '/' . $this->template  . '.php';
+       if (file_exists($template_path))
+       {
+
+         include($template_path);
+       }
+       else {
+         self::addError("View $template for ShortPixelLogger could not be found in " . $template_path,
+         array('class' => get_class($this)));
+       }
+   }
+
+   public function addMemoryLog($message, $args = array())
+   {
+      if (is_null($this->memoryLimit))
+      {
+        $this->memoryLimit = $this->unitToInt(ini_get('memory_limit'));
+      }
+
+      $usage = memory_get_usage();
+      $percentage = round(($usage / $this->memoryLimit) * 100, 2);
+      $memmsg = sprintf("( %s / %s - %s %%)",
+         $this->formatBytes($usage),
+         $this->formatBytes($this->memoryLimit),
+         $percentage
+      );
+      $level = DebugItem::LEVEL_DEBUG;
+      $this->addLog($message . ' ' . $memmsg, $level, $args);
+
+   }
+
+   private function unitToInt($s)
+   {
+     return (int)preg_replace_callback('/(\-?\d+)(.?)/', function ($m) {
+         return $m[1] * pow(1024, strpos('BKMG', $m[2]));
+     }, strtoupper($s));
+   }
+
+   private function formatBytes($size, $precision = 2)
+   {
+       $base = log($size, 1024);
+       $suffixes = array('', 'K', 'M', 'G', 'T');
+
+       if (0 === $size)
+       {
+         return 0;
+       }
+
+      $calculation = pow(1024, $base - floor($base));
+      if (is_nan($calculation))
+      {
+         return 0;
+      }
+
+       return round($calculation, $precision) .' '. $suffixes[floor($base)];
    }
 
    public static function addError($message, $args = array())
@@ -264,6 +413,12 @@ namespace ReThumbAdvanced\ShortPixelLogger;
      $level = DebugItem::LEVEL_DEBUG;
      $log = self::getInstance();
      $log->addLog($message, $level, $args);
+   }
+
+   public static function addMemory($message, $args = array())
+   {
+      $log = self::getInstance();
+      $log->addMemoryLog($message, $args);
    }
 
    /** These should be removed every release. They are temporary only for d'bugging the current release */
@@ -305,49 +460,4 @@ namespace ReThumbAdvanced\ShortPixelLogger;
       $log = self::getInstance();
       return $log->getEnv('is_active');
    }
-
-   protected function monitorHooks()
-   {
-
-      foreach($this->hooks as $hook => $data)
-      {
-        $numargs = isset($data['numargs']) ? $data['numargs'] : 1;
-        $prio = isset($data['priority']) ? $data['priority'] : 10;
-
-        add_filter($hook, function($value) use ($hook) {
-              $args = func_get_args();
-              return $this->logHook($hook, $value, $args); }, $prio, $numargs);
-      }
-   }
-
-   public function logHook($hook, $value, $args)
-   {
-      array_shift($args);
-      self::addInfo('[Hook] - ' . $hook . ' with ' . var_export($value,true), $args);
-      return $value;
-   }
-
-   public function loadView()
-   {
-       // load either param or class template.
-       $template = $this->template;
-
-       $view = $this->view;
-       $view->namespace = $this->namespace;
-       $controller = $this;
-
-       $template_path = __DIR__ . '/' . $this->template  . '.php';
-      // var_dump( $template_path);
-       if (file_exists($template_path))
-       {
-
-         include($template_path);
-       }
-       else {
-         self::addError("View $template could not be found in " . $template_path,
-         array('class' => get_class($this), 'req' => $_REQUEST));
-       }
-   }
-
-
  } // class debugController

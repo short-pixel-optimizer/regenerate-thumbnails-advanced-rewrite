@@ -3,6 +3,13 @@ namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
 use \ReThumbAdvanced\Notices\NoticeController as Notice;
 use \ReThumbAdvanced\Controllers\AdminController as AdminController;
+use \ReThumbAdvanced\FileSystem\Controller\FileSystemController as FileSystemController;
+
+use \ReThumbAdvanced\Integrations\ShortPixel as ShortPixel;
+
+if (! defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
+}
 
 // load runtime.
 class Plugin
@@ -16,15 +23,6 @@ class Plugin
 
   public function __construct()
   {
-      $log = Log::getInstance();
-      if (Log::debugIsActive()) // upload dir can be expensive, so only do this when log is actually active.
-      {
-        $uploaddir = wp_upload_dir(null, false, false);
-        if (isset($uploaddir['basedir']))
-          $log->setLogPath($uploaddir['basedir'] . "/rta_log");
-      }
-    //  $this->initRuntime();
-
       add_action( 'after_setup_theme', array( $this, 'add_custom_sizes' ) );
       add_action( 'admin_init', array( $this, 'init' ) );
     //  add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ), 10 );
@@ -32,6 +30,8 @@ class Plugin
       add_action( 'admin_menu', array( $this, 'admin_menus' ) );
 
       add_filter( 'plugin_action_links_' . plugin_basename(RTA_PLUGIN_FILE), array($this, 'generate_plugin_links'));//for plugin settings page
+
+      ShortPixel::getInstance();
   }
 
   public static function getInstance()
@@ -47,28 +47,23 @@ class Plugin
     return '\ReThumbAdvanced\\'  . $name;
   }
 
-
-  /*public function initRuntime()
+  public static function checkLogger()
   {
-
-    foreach($this->paths as $short_path)
+    $log = Log::getInstance();
+    if (Log::debugIsActive()) // upload dir can be expensive, so only do this when log is actually active.
     {
-      $directory_path = realpath(RTA_PLUGIN_PATH . $short_path);
-
-      if ($directory_path !== false)
+      $uploaddir = wp_upload_dir(null, false, false);
+      if (isset($uploaddir['basedir']))
       {
-        $it = new \DirectoryIterator($directory_path);
-        foreach($it as $file)
-        {
-          $file_path = $file->getRealPath();
-          if ($file->isFile() && pathinfo($file_path, PATHINFO_EXTENSION) == 'php')
-          {
-            require_once($file_path);
-          }
-        }
+        $log->setLogPath($uploaddir['basedir'] . "/rta_log");
       }
     }
-  } */
+  }
+  public function getTemplatePaths()
+  {
+      return [RTA_PLUGIN_PATH];
+  }
+
 
   // load textdomain, init.
   public function init()
@@ -77,7 +72,7 @@ class Plugin
 
     $this->front = new Front();
 
-    $ajax = AjaxController::getInstance(); //init
+    $ajax = $this->ajax(); //init
     $ajax->init();
 
     add_filter('media_row_actions', array($this,'add_media_action'), 10, 2);
@@ -88,6 +83,13 @@ class Plugin
     //add_action('upload.php', array($this, 'check_media_action'), 10);
 
     $notices = Notice::getInstance();
+
+    $notices->loadIcons(array(
+        'normal' => '<img class="short-pixel-notice-icon" src="' . plugins_url('/images/notices/slider.png', RTA_PLUGIN_FILE) . '">',
+        'success' => '<img class="short-pixel-notice-icon" src="' . plugins_url('/images/notices/robo-cool.png', RTA_PLUGIN_FILE) . '">',
+        'warning' => '<img class="short-pixel-notice-icon" src="' . plugins_url('/images/notices/robo-scared.png', RTA_PLUGIN_FILE) . '">',
+        'error' => '<img class="short-pixel-notice-icon" src="' . plugins_url('/images/notices/robo-scared.png', RTA_PLUGIN_FILE) . '">',
+    ));
 
     // Enqueue notices
     add_action('admin_notices', array($notices, 'admin_notices')); // previous page / init time
@@ -100,14 +102,37 @@ class Plugin
      return AjaxController::getInstance();
   }
 
+  public function getClass($name)
+  {
+      switch($name)
+      {
+          case 'AdminController':
+              return AdminController::class;
+          break;
+          case 'Image':
+              return Image::class;
+          break;
+      }
+  }
+
   public function process()
   {
     return Process::getInstance();
   }
 
+  public function fs()
+  {
+     return new FileSystemController();
+  }
+
   public function admin()
   {
     return Admin::getInstance();
+  }
+
+  public function env()
+  {
+     return Environment::getInstance();
   }
 
   public function check_media_action()
@@ -138,7 +163,7 @@ class Plugin
   public function enqueue_scripts() {
 
       //wp_enqueue_script( 'jquery' );
-      wp_register_script('rta_js', RTA_PLUGIN_URL.'js/rta.js', array( 'jquery' ), RTA_PLUGIN_VERSION );
+      wp_register_script('rta_js', RTA_PLUGIN_URL.'js/rta.js', array('rta_shift-select'), RTA_PLUGIN_VERSION );
       wp_register_style( 'rta_css', RTA_PLUGIN_URL.'css/rta.css', array(), RTA_PLUGIN_VERSION );
       wp_register_style( 'rta_css_admin', RTA_PLUGIN_URL.'css/rta-admin-view.css', array(), RTA_PLUGIN_VERSION );
       wp_register_style( 'rta_css_admin_progress', RTA_PLUGIN_URL.'css/rta-admin-progress.css', array('rta_css_admin'), RTA_PLUGIN_VERSION );
@@ -157,16 +182,22 @@ class Plugin
                           'nonce_generate' => wp_create_nonce('rta_generate'), // start / stop
                           'strings' => array(
                           'confirm_delete' => __('Are you sure you want to delete this image size?', 'regenerate-thumbnails-advanced'),
-                          'confirm_stop' => __("This will stop the regeneration process. You want to stop?", 'regenerate-thumbnails-advanced' ),
-                          'status_resume' => __("Interrupted process resumed", 'regenerate-thumbnails-advanced'),
-                          'status_start' => __('New Process started', 'regenerate-thumbnails-advanced'),
-                          'status_finish' => __('Process finished','regenerate-thumbnails-advanced' ),
+                          'confirm_stop' => __("This will stop the regeneration process. Are you sure you want to stop?", 'regenerate-thumbnails-advanced' ),
+                          'status_resume' => __("Interrupted process resumed.", 'regenerate-thumbnails-advanced'),
+                          'status_start' => __('New Process started.', 'regenerate-thumbnails-advanced'),
+                          'status_finish' => __('Process finished.','regenerate-thumbnails-advanced' ),
                           'status_fatal' => __('A fatal error occured!', 'regenerate-thumbnails-advanced'),
+                          'items' => __('items', 'regenerate-thumbnails-advanced'),
+                          'regenerated' => __('regenerated', 'regenerate-thumbnails-advanced'),
+                          'removed' => __('removed', 'regenerate-thumbnails-advanced'),
                           ),
                           'blog_id' => get_current_blog_id(),
                           'process' => $this->ajax()->get_json_process(),
                           'is_debug' => (Log::debugIsActive()) ? 1 : 0,
                           ));
+
+      wp_register_script('rta_shift-select', RTA_PLUGIN_URL.'js/shift-select.js', array(), RTA_PLUGIN_VERSION );
+
 
       do_action('rta_enqueue_scripts');
   }
@@ -189,7 +220,8 @@ class Plugin
       wp_enqueue_style('rta_css');
       wp_enqueue_script('rta_js');
       //$rta_image_sizes = get_option( 'rta_image_sizes' );
-      $view = new AdminController();
+      $class = $this->getClass('AdminController');
+      $view = new $class();
       $view->show();
   }
 
@@ -241,6 +273,11 @@ class Plugin
           'attachment_id' => $post_id,
       ), $url);
 
+    if ( Log::isManualDebug())
+    {
+       $url = add_query_arg('SHORTIXEL_DEBUG', Log::getLogLevel(), $url);
+    }
+
     $editurl = wp_nonce_url( $url, $action );
     return $editurl;
 
@@ -258,7 +295,17 @@ class Plugin
     $editurl = $this->getRegenerateLink($post->ID, $url);
     $link = "href=\"$editurl\"";
 
+    $imageClass = RTA()->getClass('Image');
+    $image = new $imageClass($post->ID);
+    if (true === $image->isProcessable())
+    {
     echo "<p><a class='button-secondary' $link>" . esc_html__("Regenerate Thumbnails", "regenerate-thumbnails-advanced") . "</a></p>";
+    }
+    else {
+        echo $image->getProcessableReason();
+    }
+
+
   }
 
   /** Adding a button to the attachements view popup */

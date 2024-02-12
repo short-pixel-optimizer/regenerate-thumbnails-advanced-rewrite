@@ -3,11 +3,16 @@ namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
 use \ReThumbAdvanced\Controllers\AdminController as AdminController;
 
+if (! defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
+}
+
+
 // For communication with the Javascripting.
 class AjaxController
 {
    protected static $instance;
-   protected $status; // /for the status.s
+   protected $status; // /for the status.
 
    // Ok status
    const STATUS_OK  = 0;
@@ -20,14 +25,6 @@ class AjaxController
    const ERROR_NOFILE = -2;
    const ERROR_METADATA = -3;
 
-   /** PERIOD OPTIONS */
-   const PERIOD_ALL = 0;
-   const PERIOD_DAY = 1;
-   const PERIOD_WEEK = 2;
-   const PERIOD_MONTH = 3;
-   const PERIOD_3MONTH = 4;
-   const PERIOD_6MONTH = 5;
-   const PERIOD_YEAR = 6;
 
    public static function getInstance()
    {
@@ -52,19 +49,22 @@ class AjaxController
 
    }
 
-   public function add_status($name, $args = array() )
+   public function add_status($event_name, $args = array() )
    {
      $status = array('error' => true, 'message' => __('Unknown Error occured', 'regenerate-thumbnails-advanced'), 'status' => 0);
 
      $defaults =  array(
          'name' => false,
-         'thumb' => false,
+         'image' => $this->getURL('images/placeholder.svg'),  // @todo Add a placeholder here
          'count' => false,
+
      );
 
      $args = wp_parse_args($args, $defaults);
 
-     switch($name)
+     $process = RTA()->process();
+
+     switch($event_name)
      {
          case 'no_nonce':
              $status['message'] = __('Site error, Invalid Nonce', 'regenerate-thumbnails-advanced');
@@ -95,8 +95,18 @@ class AjaxController
             $status['mask'] = array('name');
             $status['status'] = self::ERROR_NOFILE;
          break;
+         case 'is_virtual':
+            $status['message'] =  __('<b>%s</b> is offloaded', 'regenerate-thumbnails-advanced');
+            $status['mask'] = array('name');
+            $status['status'] = self::ERROR_NOFILE;
+         break;
          case 'not_image':
             $status['message'] = __('<b>%s</b> skipped. MimeType is an image, but reports non-displayable', 'regenerate-thumbnails-advanced');
+            $status['mask'] = array('name');
+            $status['status']  = self::ERROR_NOFILE;
+         break;
+         case 'not_writable':
+            $status['message'] = __('%s skipped. File is not writable', 'regenerate-thumbnails-advanced');
             $status['mask'] = array('name');
             $status['status']  = self::ERROR_NOFILE;
          break;
@@ -110,14 +120,19 @@ class AjaxController
             $status['status'] = self::STATUS_STOPPED;
          break;
          case 'regenerate_success':
-            $status['message'] = '%s';
-            $status['mask'] = array('thumb');
+            $status['message'] = sprintf(__('%s Success! %s %s has %s new thumbnails', 'regenerate-thumbnails-advanced'), '<strong>', '</strong>', $args['name'], $args['count'] );
             $status['status'] = self::STATUS_SUCCESS;
+            $status['image'] = $args['image'];
             $status['error'] = false;
+
+            if ($args['count'] > 0 || $args['removed'] > 0)
+            {
+               $process->addCounts($args);
+            }
          break;
 
          default:
-            $status['message']  = '[' . $name . ']';
+            $status['message']  = '[' . $args['name'] . ']';
 
          break;
      }
@@ -150,31 +165,27 @@ class AjaxController
      return $this->status;
    }
 
+   public function clear_status()
+   {
+      $this->status = array();
+   }
+
+
    public function ajax_start_process()
    {
 
      $this->checkNonce('rta_generate');
 
-     if (isset($_POST['genform']))
+     if (isset($_POST['form']))
      {
-         $form = $this->getFormData();
+         $options = $this->getFormData();
          $process = RTA()->process();
 
-         $process->setRemoveThumbnails($form['del_associated_thumbs']);
-         $process->setDeleteLeftMeta($form['del_leftover_metadata']);
-         $process->setCleanMetadata($form['process_clean_metadata']);
-         $process->setOnlyFeatured($form['regenonly_featured']);
+         $process->setOption($options);
 
-         $stamps = $this->getQueryDate($form['period']);
-      //   if ($period['date'] !== false)
-         //{
-           $startstamp = $stamps['startstamp']; // $period['args']['startstamp'];
-           $endstamp = $stamps['endstamp']; // period['args']['endstamp'];
-           $process->setTime($startstamp, $endstamp);
-         //}
-
-         $this->add_status('preparing');
+         $this->add_status(__('Searching for items to add', 'regenerate-thumbnails-advanced') );
          $process->start();
+
          $result = $this->runprocess(); // This would mostly be preparing.
      }
      else {
@@ -182,25 +193,28 @@ class AjaxController
        exit(0);
      }
 
+
+
      //wp_send_json($this->get_json_process());
    }
 
    /** Collect form data, make a storable process array out of it */
    protected function getFormData()
    {
-       $defaults = array(
-           //'period' => self::PERIOD_ALL,
-           'regenonly_featured' => false,
-           'del_associated_thumbs' => false,
-           'del_leftover_metadata' => false,
-           'process_clean_metadata' => false,
-       );
-
        $data = array();
-       $form = isset($_POST['genform']) ? $_POST['genform'] : '';
+       $options = array();
+
+       // fill from FORM to data, sanitize and then move to options for process
+       $form = isset($_POST['form']) ? $_POST['form'] : '';
        parse_str($form, $data);
 
-       return wp_parse_args($data, $defaults);
+      $options['only_featured'] = (isset($data['regenonly_featured']) && '1' == $data['regenonly_featured']) ? true : false;
+
+
+      $options['startstamp']  = -1;
+      $options['endstamp'] = strtotime(time() . ' 23:59:59');
+
+      return $options;
    }
 
    // retrieve JS friendly overview, if we are in process and if yes, what are we doing here.
@@ -208,15 +222,12 @@ class AjaxController
    {
        //$json = array('running' => false);
        $process = RTA()->process();
-       $json = array();
-       $json['running'] = $process->get('running');
-       $json['preparing'] = $process->get('preparing');
-       $json['finished'] = $process->get('finished');
-       $json['done'] = $process->get('done');
-       $json['items'] = $process->get('items');
-       $json['errors'] = $process->get('errors');
+
+       $counter = $process->getSetting('counter');
+       $json = $process->getProcessStatus();
        $json['status'] = $this->status;
        return $json;
+
    }
 
    public function ajax_do_process()
@@ -241,26 +252,33 @@ class AjaxController
 
       if ($process->get('running') == true)
       {
-          $items = $process->getItems();
+          $imageClass = RTA()->getClass('Image');
 
-          if ($items)
+          $items = $process->dequeueItems();
+
+          if (is_array($items))
           {
             foreach($items as $item)
             {
               $item_id = $item->item_id;
-              $image = new Image($item_id);
-              $status = $image->regenerate();
+              $image = new $imageClass($item_id);
+              $status = $image->process();
             }
           }
-      }
 
+          $process->saveCounter();
+      }
 
       if ($process->get('finished') == true)
       {
          if ($process->get('done') == 0) // if Q is finished with 0 done, it was empty.
-           $this->add_status('no_images');
+         {
+             $this->add_status('no_images');
+         }
 
-         $this->jsonResponse($this->get_json_process());
+         $stats = $this->get_json_process();
+         $process->end();
+         $this->jsonResponse($stats);
       }
    }
 
@@ -280,7 +298,10 @@ class AjaxController
    public function view_generate_thumbnails_save()
    {
      $json = true;
-     $view = new AdminController($this);
+     $controller =  RTA()->getClass('AdminController');
+     $view = new $controller();
+
+     $this->checkNonce('rta_save_image_sizes');
      $response = $view->save_image_sizes();
 
      if ($json)
@@ -293,38 +314,6 @@ class AjaxController
      }
    }
 
-   // period comes from form.
-   protected function getQueryDate($period)
-     {
-       $now = time();
-       $endstamp = current_time('timestamp');
-       switch (intval($period)) {
-           case self::PERIOD_ALL:
-             $startstamp = 0;
-           break;
-           case self::PERIOD_DAY:
-             $startstamp = $now - DAY_IN_SECONDS;
-          break;
-           case self::PERIOD_WEEK:
-             $startstamp = $now - WEEK_IN_SECONDS;
-             break;
-           case self::PERIOD_MONTH:
-             $startstamp = $now - MONTH_IN_SECONDS;
-             break;
-         case self::PERIOD_3MONTH:
-             $startstamp = $now - (3* MONTH_IN_SECONDS);
-         break;
-         case self::PERIOD_6MONTH:
-             $startstamp = $now - (6* MONTH_IN_SECONDS);
-             break;
-         case self::PERIOD_YEAR:
-             $startstamp = $now - YEAR_IN_SECONDS;
-         break;
-       }
-    //   $result = array('date' => $date, 'args' => $args);
-       $result = array('startstamp' => $startstamp, 'endstamp' => $endstamp);
-       return $result;
-     }
 
    // No Noncense function.
    protected function checkNonce($action)
@@ -347,6 +336,12 @@ class AjaxController
    {
      wp_send_json($response);
      exit();
+   }
+
+   // @todo  This should probably be mergen with the one in @controller and AjaxController should move to Controllers . ( And distinction made between ViewControl and Control)
+   private function getURL($path)
+   {
+       return plugins_url($path, RTA_PLUGIN_FILE);
    }
 
 }

@@ -3,6 +3,10 @@ namespace ReThumbAdvanced;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
 use \ReThumbAdvanced\ShortQ as ShortQ;
 
+if (! defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
+}
+
 /** Class Process
 * This class functions as glue between ShortQ and RTA. Responsible for enqueuing and process monitoring.
 * Main class should be simply able to ask for process and it's status and act upon that.
@@ -17,25 +21,21 @@ class Process
 
   protected $total = 0;
   protected $current = 0;
-  //protected $running = false;
-  //protected $is_queued = false;
-  //protected $status; // notifications.
 
   // options.
-  protected $startstamp = -1;
-  protected $endstamp = -1;
-  protected $only_featured = false;
-  protected $remove_thumbnails = false;
-  protected $delete_leftmetadata = false;
-  protected $clean_metadata = false;
+  protected $options = array(
+    'startstamp' => -1,
+    'endstamp' => -1,
+    'only_featured' => false,
+    'query_prepare_limit' => 500,
+  );
 
-  protected $query_prepare_limit = 1000; // amount of records to enqueue per go.
-  protected $run_start = 0;
-  protected $run_limit = 0;
-//  protected $query_chunk_size = 100;
 
   protected $q;
+  protected $counter = false;
+
   protected $process_name = 'rta_image_process';
+  protected $counter_name = 'rta_image_counter';
 
   public function __construct()
   {
@@ -46,13 +46,19 @@ class Process
       if ($process !== false)
         $this->set_process($process);
 
+        // Allow this to be filtered.
+      $this->options['query_prepare_limit'] = apply_filters('rta/process/prepare_limit', $this->options['query_prepare_limit']);
       $this->q->setOption('numitems', apply_filters('rta/process/numitems', 3));
+
+
   }
 
   public static function getInstance()
   {
      if (is_null(self::$instance))
+     {
        self::$instance = new Process();
+     }
 
       return self::$instance;
   }
@@ -62,52 +68,102 @@ class Process
       return $this->q;
   }
 
-  public function setTime($start, $end)
-  {
-    $this->startstamp = $start;
-    $this->endstamp = $end;
-  }
-
-  public function setRemoveThumbnails($bool)
-  {
-    $this->remove_thumbnails = $bool;
-  }
 
   public function doRemoveThumbnails()
   {
-    return $this->remove_thumbnails;
+    return $this->options['remove_thumbnails'];
   }
 
-
-  public function setDeleteLeftMeta($bool)
+  // Options are RTA-specific options, saved
+  public function setOption($options, $value = false)
   {
-    $this->delete_leftmetadata = $bool;
+
+      // Multiple Options.
+      if (is_array($options))
+      {
+         foreach($options as $name => $val)
+         {
+            if (isset($this->options[$name]))
+            {
+               $this->options[$name] = $val;
+            }
+         }
+      }
+      else { // Single Option
+         if (isset($this->options[$options]))
+         {
+            $this->options[$options] = $value;
+         }
+      }
   }
 
-  public function doDeleteLeftMeta()
+  public function getOption($name)
   {
-    return $this->delete_leftmetadata;
-  }
+     if (isset($this->options[$name]))
+     {
+        return $this->options[$name];
+     }
 
-  public function setCleanMetadata($bool)
-  {
-    $this->clean_metadata = $bool;
-  }
-
-  public function doCleanMetadata()
-  {
-     return $this->clean_metadata;
-  }
-
-  public function setOnlyFeatured($bool)
-  {
-    $this->only_featured = $bool;
+     return null;
   }
 
   public function get($name = false)
   {
       return $this->q->getStatus($name);
   }
+
+  public function getSetting($name)
+  {
+      if (property_exists($this, $name))
+      {
+         return $this->{$name};
+      }
+      return null;
+  }
+
+  // This comes from queue module
+  public function getProcessStatus()
+  {
+    $process = array(
+      'running' => $this->get('running'),
+      'preparing' => $this->get('preparing'),
+      'finished' => $this->get('finished'),
+      'done' => $this->get('done'),
+      'items' => $this->get('items'),
+      'errors' => $this->get('errors'),
+      'regenerated' => (isset($this->counter['count'])) ? $this->counter['count'] : 0,
+      'removed' => (isset($this->counter['removed'])) ? $this->counter['removed'] : 0,
+    );
+
+     return $process;
+
+  }
+
+  public function isRunning()
+  {
+      return (true == $this->get('running')) ? true : false;
+  }
+
+  public function isPreparing()
+  {
+      return (true == $this->get('preparing')) ? true : false;
+  }
+
+  public function isFinished()
+  {
+      return (true == $this->get('finished')) ? true : false;
+  }
+
+
+  public function isUnemployed()
+  {
+     if (false === $this->isRunning() && false === $this->isPreparing())
+     {
+        return true;
+     }
+     return false;
+  }
+
 
   /** Starts a new generate process. Queries the totals based on form input
   * @param $form Array with FormData
@@ -126,45 +182,31 @@ class Process
      $this->end_process();
   }
 
-  // function to limit runtimes in seconds..
-  public function limitTime($limit = 6)
-  {
-      $limit = apply_filters('rta/process/prepare_limit', $limit); 
-      if ($this->run_limit == 0)
-      {
-          $this->run_start = time();
-          $this->run_limit = time() + $limit;
-      }
 
-      if ($this->run_start <= $this->run_limit)
-      {
-          return true;
-      }
-      else
-      {
-         $this->run_limit = 0;
-         $this->run_start = 0;
-      }
-      return false;
-  }
 
   public function prepare()
   {
       $result = 0;
       $i = 0;
+      $env = RTA()->env();
       while( $this_result = $this->runEnqueue()  )
       {
-          if (! $this->limitTime() )
+
+          if (false !== $this_result)
           {
-            Log::addDebug('Prepare went over time, breaking');
+            $result += $this_result;
+          }
+
+          if (true === $env->IsOverTimeLimit() || true === $env->IsOverMemoryLimit($i) )
+          {
+            Log::addDebug('Prepare went over time or Memory, breaking');
             break;
           }
 
-          $result += $this_result;
           $i++;
       }
 
-      if ($this_result == false)
+      if ($this_result === false)
       {
          $this->q->setStatus('preparing', false, false);
          $this->q->setStatus('running', true);
@@ -174,7 +216,7 @@ class Process
       return $result;
   }
 
-  public function getItems()
+  public function dequeueItems()
   {
      return $this->q->dequeue();
   }
@@ -187,18 +229,18 @@ class Process
      $query = 'SELECT ID FROM ' . $wpdb->posts . ' where post_type = %s ';
      $prepare = array('attachment');
 
-     if ($this->startstamp > -1)
+     if ($this->getOption('startstamp') > -1)
      {
        $query .= ' AND post_date >= %s ';
-       $prepare[] = date("Y-m-d H:i:s", $this->startstamp);
+       $prepare[] = date("Y-m-d H:i:s", $this->getOption('startstamp'));
      }
-     if ($this->endstamp > -1)
+     if ($this->getOption('endstamp') > -1)
      {
        $query .= ' AND post_date <= %s ';
-       $prepare[] = date("Y-m-d H:i:s", $this->endstamp);
+       $prepare[] = date("Y-m-d H:i:s", $this->getOption('endstamp'));
      }
 
-     if ($this->only_featured)
+     if (true === $this->getOption('only_featured'))
      {
         $query .= ' and ID in (select meta_value from ' . $wpdb->postmeta . ' where meta_key = "_thumbnail_id")';
      }
@@ -207,34 +249,43 @@ class Process
      {
        $query .= ' and ID < %d'; // note the reverse here, due to order!
        $prepare[] = $lastId;
-       Log::addDebug('Adding Last ID' . $lastId);
+
      }
 
      $query .= ' order by ID DESC ';
 
      $query .= ' limit %d ';
-     $prepare[] = $this->query_prepare_limit;
+     $prepare[] = $this->getOption('query_prepare_limit');
 
      $sql = $wpdb->prepare($query, $prepare);
-     //Log::addTemp('Preparing SQL' . $sql);
+
      $result = $wpdb->get_results($sql);
-     $resultCount = count($result);
+     $resultCount = 0;
 
     // $chunks =
      $items = array();
 
      foreach($result as $index => $row)
      {
+
+          $resultCount++;
           $items[] = array('id' => $row->ID, 'value' => '');
+
      }
 
      $this->q->addItems($items);
      $this->q->enqueue();
 
+     if (0 === count($items) && isset($image_id))
+     {
+        $this->q->setStatus('last_item_id', $image_id);
+     }
+
      /** Keep looping preparing ( possible query limit reached ) until no new items are forthcoming. */
      if ($resultCount > 0)
+     {
       return $resultCount;
-
+     }
      return false;
 
   }
@@ -242,6 +293,8 @@ class Process
   protected function get_process()
   {
      $process = get_option($this->process_name, false);
+     $counter = get_option($this->counter_name, false);
+     $this->counter = $counter;
      return $process;
   }
 
@@ -249,24 +302,67 @@ class Process
   {
      foreach($process as $name => $value)
      {
-        $this->{$name} = $value;
+        if (property_exists($this, $name))
+        {
+            $this->{$name} = $value;
+        }
+        elseif (isset($this->options[$name]))
+        {
+           $this->options[$name] = $value;
+        }
+
      }
   }
 
   protected function save_process()
   {
-      $data = array('startstamp' => $this->startstamp, 'endstamp' => $this->endstamp, 'only_featured' => $this->only_featured,
+      $data = $this->options;
+
+      /* array('startstamp' => $this->startstamp, 'endstamp' => $this->endstamp, 'only_featured' => $this->only_featured,
                   'remove_thumbnails' => $this->remove_thumbnails, 'delete_leftmetadata' => $this->delete_leftmetadata, 'clean_metadata' => $this->clean_metadata, 'query_prepare_limit' => $this->query_prepare_limit,
 
                 );
+        */
       update_option($this->process_name, $data, false);
+  }
+
+  /* Add numbers to the counter.
+  * @param $counts Array  should have index count or index removed to count
+  */
+  public function addCounts($counts)
+  {
+     if (false === $this->counter)
+     {
+        $this->counter = array(
+          'count' => 0,
+          'removed' => 0,
+        );
+     }
+
+     if (isset($counts['count']) && $counts['count'] > 0)
+     {
+        $this->counter['count'] += $counts['count'];
+     }
+
+     if (isset($counts['removed']) && $counts['removed'] > 0)
+     {
+        $this->counter['removed'] += $counts['removed'];
+     }
+  }
+
+  public function saveCounter()
+  {
+      update_option($this->counter_name, $this->counter, false);
   }
 
   protected function end_process()
   {
       $this->q->resetQueue();
+      delete_option($this->counter_name);
       delete_option($this->process_name);
   }
+
+
 
 
 

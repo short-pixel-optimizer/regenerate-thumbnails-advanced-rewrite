@@ -1,1 +1,1 @@
-{"name":"ReThumbAdvanced\/shortpixelmodules","description":"ShortPixel submodules","type":"function","autoload":{"psr-4":{"ReThumbAdvanced\\ShortPixelLogger":"log\/src","ReThumbAdvanced\\Notices":"notices\/src","ReThumbAdvanced\\ShortQ":"shortq\/src"}}}
+{"name":"ReThumbAdvanced\/shortpixelmodules","description":"ShortPixel submodules","type":"function","autoload":{"psr-4":{"ReThumbAdvanced\\ShortQ":"shortq\/src","ReThumbAdvanced\\Notices":"notices\/src","ReThumbAdvanced\\ShortPixelLogger":"log\/src","ReThumbAdvanced\\FileSystem":"filesystem\/src"}}}

@@ -1,15 +1,24 @@
 <?php
 namespace ReThumbAdvanced;
+
+if (! defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
+}
+
 ?>
 
 <section class='regenerate rta_hidden'>
-  <div class='container two-panel-wrap'>
+  <div class='container two-panel-wrap process-wrap'>
 
-    <div class="rta_progress two-panel-wrap">
+    <div class="rta_progress no-panel-wrap">
+
       <div class="images rta_thumbnail_view rta_panel_off">
-          <h4 class='thumb-label'><?php _e('Last Regenerated Image:','regenerate-thumbnails-advanced'); ?></h4>
-          <div class='thumbnail'> <img src="" alt=""> </div>
+          <h4 class='thumb-label'><?php _e('Last Regenerated','regenerate-thumbnails-advanced'); ?></h4>
+          <p class='thumb-message'>&nbsp;</p>
+          <div class='thumbnail'> <img src="<?php echo $this->getURL('images/placeholder.svg') ?>" alt=""> </div>
       </div>
+
+      <!--
         <div class='rta_progress_view rta_panel_off'>
           <svg class="CircularProgressbar" viewBox="0 0 100 100">
               <path class="CircularProgressbar-trail" d="
@@ -30,15 +39,29 @@ namespace ReThumbAdvanced;
               <text class="progress-count" x="50" y="70"><tspan class='current'>0</tspan> / <tspan class='total'>0</tspan></text>
           </svg>
        </div>
+-->
+       <div class='rta_progressbar_view rta_panel_off' >
+         <div class='rta_progressbar'><span class='right'>0%</span><span class='centre'>
+            <span class='text'>0/100</span>
+
+            (<span class="images_regenerated add-title">0 <?php _e('regenerated', 'regenerate-thumbnails-advanced') ?></span>
+              <span class="images_removed rta_hidden add-title">0 <?php _e('removed', 'regenerate-thumbnails-advanced') ?></span>)
+         </span>
+         </div>
+       </div>
     </div>
 
     <div class="rta_status_box">
-      <button class='button pause-process' type="button" disabled>
-        <span class='pause'><span class="dashicons dashicons-controls-pause">&nbsp;</span> <?php _e('Pause Process', 'regenerate-thumbnails-advanced') ?></span>
-        <span class='resume'><span class="dashicons dashicons-controls-play">&nbsp;</span> <?php _e('Resume Process', 'regenerate-thumbnails-advanced') ?></span>
+      <button class='button pause-process process-button' id="pauseProcess" type="button" disabled>
+      <span class="dashicons dashicons-controls-pause">&nbsp;</span> <?php _e('Pause Process', 'regenerate-thumbnails-advanced') ?>
       </button>
 
-      <button class='button stop-process' type="button" disabled>
+      <button class='button resume-process process-button' id="resumeProcess" type="button" disabled>
+        <span class="dashicons dashicons-controls-play">&nbsp;</span> <?php _e('Resume Process', 'regenerate-thumbnails-advanced') ?>
+      </button>
+
+
+      <button class='button stop-process process-button' id="stopProcess" type="button" disabled>
           <span class="dashicons dashicons-no">&nbsp;</span>
           <?php _e('Stop Process', 'regenerate-thumbnails-advanced') ?>
       </button>
@@ -58,16 +81,16 @@ namespace ReThumbAdvanced;
         <div class="rta_wait_paused rta_panel_off" >
           <span class='dashicons dashicons-controls-pause'>&nbsp;</span>
           <div class='resume'>
-            <h4 ><?php _e('Process is paused', 'regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></h4>
-            <p><?php _e('Click Resume Process to continue','regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></p>
+            <h4 ><?php _e('The process is paused', 'regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></h4>
+            <p><?php _e('Click on Resume Process to continue','regenerate-thumbnails-advanced', 'regenerate-thumbnails-advanced'); ?></p>
           </div>
         </div>
 
         <div class="rta_wait_pausing rta_panel_off" >
           <span class='dashicons dashicons-update'>&nbsp;</span>
           <div class='pausing'>
-                <h4><?php _e('Process is pausing, please wait', 'regenerate-thumbnails-advanced'); ?></h4>
-                <p><?php _e('This can take a few seconds', 'regenerate-thumbnails-advanced') ?></p>
+                <h4><?php _e('The process is pausing, please wait...', 'regenerate-thumbnails-advanced'); ?></h4>
+                <p><?php _e('This may take a few seconds...', 'regenerate-thumbnails-advanced') ?></p>
           </div>
         </div>
 
@@ -80,9 +103,13 @@ namespace ReThumbAdvanced;
   	?>
 
     <div class='rta_success_box rta_hidden'>
-        <div class='modal-close'><span class='dashicons dashicons-no'>&nbsp;</span></div>
-        <h3 class='header'><?php _e('Done!', 'regenerate-thumbnails-advanced'); ?></h3>
-        <p><?php _e('Regenerate Thumbnails Advanced is done with your task', 'regenerate-thumbnails-advanced'); ?></p>
+        <div class='modal-close'><span class='dashicons dashicons-no ' >&nbsp;</span></div>
+        <h3 class='header'>
+          <?php printf(__('%s images regenerated!', 'regenerate-thumbnails-advanced'), '<span class="images_regenerated">0</span>');
+          ?>
+                  </h3>
+        <p><?php printf(__('Regenerate Thumbnails Advanced is finished with your task. %s images regenerated and %s removed', 'regenerate-thumbnails-advanced'), '<span class="images_regenerated">0</span>', '<span class="images_removed">0</span>'); ?></p>
+
 
         <div class='shortpixel'>
           <?php if (! $spInstalled): ?>
@@ -97,7 +124,7 @@ namespace ReThumbAdvanced;
     				</a>
     			</div>
     			<p>
-    				<?php echo esc_html__("Get more Google love by compressing your site's images! Check out how much ShortPixel can save your site and get +50% credits when signing up as an Regenerate Thumbnails Advanced user! Forever!", 'regenerate-thumbnails-advanced'); ?>
+    				<?php echo esc_html__("Get more Google love by compressing your website's images! Test how much ShortPixel can save your website and get +50% credits when you sign up as a Regenerate Thumbnails Advanced user! Forever!", 'regenerate-thumbnails-advanced'); ?>
     			</p>
     			<div><div>
     					<a class="button button-primary" id="shortpixel-image-optimiser-info" href="https://shortpixel.com/otp/af/TFXUHHC28044" target="_blank">
@@ -107,7 +134,7 @@ namespace ReThumbAdvanced;
     			</div>
           <?php endif; ?>
           <?php if ($spInstalled && $spActive): ?>
-           <p class='gotobulk'><?php printf(__('Thumbnails successfully regenerated. <strong>Go to %s ShortPixel Bulk page %s to optimize the updated thumbnails.</strong>', 'regenerate-thumbnails-advanced'), '<a href="' . admin_url('upload.php?page=wp-short-pixel-bulk') . '">', '</a>'); ?></p>
+           <p class='gotobulk'><?php printf(__('The thumbnails have been successfully regenerated. <strong>Go to the%s ShortPixel Bulk Processing page %s to optimize the updated thumbnails.</strong>', 'regenerate-thumbnails-advanced'), '<a href="' . admin_url('upload.php?page=wp-short-pixel-bulk') . '">', '</a>'); ?></p>
          <?php elseif($spInstalled):
            $path = 'shortpixel-image-optimiser/wp-shortpixel.php';
            $activate_url = wp_nonce_url(admin_url('plugins.php?action=activate&plugin='.$path), 'activate-plugin_'.$path);
@@ -118,4 +145,5 @@ namespace ReThumbAdvanced;
     </div>
 
   </div>  <!-- container -->
+
 </section>

@@ -12,7 +12,8 @@ class WPQ implements Queue
   protected $pSlug; // plugin slug
   protected $DataProvider;
 
-  protected $status;
+  protected $status; // the status, the whole status and nothing but.
+	protected $currentStatus; // working status, current queue name.
   protected $items = array();
 
   protected $options;
@@ -49,7 +50,6 @@ class WPQ implements Queue
     $this->options->timeout_recount = 20000; // Time to recount and check stuff from datasource in MS
     $this->options->is_debug = false;
 
-    $this->inProcessTimeout();
   }
 
   public function setOptions($options)
@@ -75,10 +75,11 @@ class WPQ implements Queue
   /** Prepare items for enqueue, if you want to deliver items in batch, but not flush to storage directly
   *    Every Item needs to have an (item)_id and (item)_value. That's the only thing remote app should be aware of.
   *    @param Array Item Array with fields: id, value [order]
+	* 	 @param bool If status should be updated due to adding items.
   *
   *
   */
-  public function addItems($items)
+  public function addItems($items, $updateStatus = true)
   {
       foreach($items as $item)
       {
@@ -91,13 +92,17 @@ class WPQ implements Queue
         $itemObj->item_id = $item['id'];
         $itemObj->value = $value;
 
+        if (isset($item['item_count']))
+          $itemObj->item_count = intval($item['item_count']);
+
+
         if (isset($item['order']))
             $itemObj->list_order = $item['order'];
 
         $this->items[] = $itemObj;
 
       }
-      if (count($items) > 0)
+      if (count($items) > 0 && true === $updateStatus)
       {
         $this->setStatus('preparing', true, false);
         $this->setStatus('finished', false, false); // can't be finished when adding items.
@@ -116,6 +121,7 @@ class WPQ implements Queue
 
       $chunks = array_chunk($this->items, $this->options->enqueue_limit );
       $numitems = $this->getStatus('items');
+
 
       foreach($chunks as $chunknum => $objItems)
       {
@@ -177,6 +183,14 @@ class WPQ implements Queue
      return $this;
   }
 
+	// Remove Items directly from queue. Expand this function when required (but use dequeue if possible). For now only support for item_id.
+	public function removeItems($args)
+	{
+			 if (isset($args['item_id']))
+			 {
+						$this->DataProvider->removeRecords(array('item_id' => $args['item_id'] ));
+			 }
+	}
 
   // Dequeue a record, put it on done in queue.
   public function dequeue($args = array())
@@ -184,7 +198,7 @@ class WPQ implements Queue
     // Check if anything has a timeout, do that first.
     $this->inProcessTimeout();
 
-    if ($this->currentStatus()->get('items') <= 0)
+    if ($this->currentStatus->get('items') <= 0)
     {
       $still_here = $this->checkQueue();
        // @todo if there is queue todo, update items, and go.
@@ -205,7 +219,7 @@ class WPQ implements Queue
     if ($args['onlypriority'])
     {
        $args['priority'] = array('operator' => '<', 'value' => 10);
-       unset($args['onlypriority']);
+      // unset($args['onlypriority']);
     }
 
     $items = $this->DataProvider->dequeue($args);
@@ -216,7 +230,7 @@ class WPQ implements Queue
     // Update item count, average ask, last_run for this process
     // When Q is empty, reask for item count for DataProvider and check if it the same, if not, update number, continue.
     if ($itemcount == 0 && $args['onlypriority'] == false)
-    { // This pieces prevents stalling. If the cached count is wrong, reset it, and if empty already will go to items_left / end queue system. Oterhwise resume. 
+    { // This pieces prevents stalling. If the cached count is wrong, reset it, and if empty already will go to items_left / end queue system. Oterhwise resume.
         $this->resetInternalCounts();
         $items = $this->DataProvider->dequeue($args);
         $itemcount = count($items);
@@ -225,9 +239,9 @@ class WPQ implements Queue
      $items_left =  $this->getStatus('items') - $itemcount;
      $this->setStatus('items', $items_left , false);
 
-     if ($newstatus == self::QSTATUS_DONE)
+     if ($newstatus == ShortQ::QSTATUS_DONE)
         $this->setStatusCount('done', $itemcount, false);
-     elseif($newstatus == self::QSTATUS_INPROCESS)
+     elseif($newstatus == ShortQ::QSTATUS_INPROCESS)
         $this->setStatusCount('in_process', $itemcount, false);
 
      $this->current_ask += $itemcount;
@@ -236,7 +250,10 @@ class WPQ implements Queue
      //$this->updateQueue($queue);
      $this->setStatus('last_run', time(), false);
      if (! isset($args['priority']))
+		 {
       $this->setStatus('running', true, false);
+		 }
+
      $this->saveStatus();
 
      if ($items_left == 0)
@@ -259,12 +276,6 @@ class WPQ implements Queue
      if (! $this->options->mode == 'wait')
       return;
 
-  /*  $fields = array('status' => ShortQ::QSTATUS_WAITING, 'tries' => 'tries + 1');
-    $where = array('updated' => time() - $this->options->process_timeout,
-                  'status' => ShortQ::QSTATUS_INPROCESS);
-
-    $operators = array('updated' => '<=');
-*/
     $args = array('status' => ShortQ::QSTATUS_INPROCESS, 'updated' => array('value' => time() - ($this->options->process_timeout/1000), 'operator' => '<='));
 
     $items = $this->DataProvider->getItems($args);
@@ -273,15 +284,28 @@ class WPQ implements Queue
     foreach($items as $item)
     {
        $item->tries++;
-       $updated += $this->DataProvider->itemUpdate($item, array('status' => ShortQ::QSTATUS_WAITING, 'tries' => $item->tries));
+			 if ($item->tries > $this->getOption('retry_limit'))
+			 {
+				 do_action('rta/modules/wpq/item/timeout', $item);
+				 $this->itemFailed($item, true); // fatal fail
+			 }
+			 else
+			 {
+			 	$updated += $this->DataProvider->itemUpdate($item, array('status' => ShortQ::QSTATUS_WAITING, 'tries' => $item->tries));
+			 }
     }
 
+		if ($updated > 0)
+		{
+			if ($this->options->mode == 'wait')
+			{
+				$this->setStatusCount('in_process',- $updated, false);
+			}
+
+			$this->setStatusCount('items', $updated, true);
+		}
 
     return $updated;
-  /*  if ($result >= 0)
-    {
-      $this->resetInternalCounts();
-    } */
 
   }
 
@@ -294,10 +318,6 @@ class WPQ implements Queue
       elseif ($this->options->mode == 'wait')
       {
         $this->setStatusCount('in_process',-1, false);
-      }
-      else // no mode, no count, no nothing, mumble.
-      {
-        return false;
       }
 
       $this->setStatusCount('done', 1, false);
@@ -313,14 +333,23 @@ class WPQ implements Queue
     if ($fatal)
     {
         $status = ShortQ::QSTATUS_FATAL;
-        $this->setStatusCount('fatal_errors', 1 );
+        $this->setStatusCount('fatal_errors', 1, false );
+				if ($this->options->mode == 'direct')
+				{
+					$this->setStatusCount('items', -1, false);
+				}
+				elseif ($this->options->mode == 'wait')
+				{
+					$this->setStatusCount('in_process',-1, false);
+				}
     }
     else
-      $this->setStatusCount('errors', 1 );
+      $this->setStatusCount('errors', 1, false );
 
     $item->tries++;
     $this->DataProvider->itemUpdate($item, array('status' => $status, 'tries' => $item->tries));
 
+		$this->saveStatus();
   }
 
   public function updateItemValue(Item $item)
@@ -360,7 +389,26 @@ class WPQ implements Queue
         $num = $this->DataProvider->itemCount();
         $this->setStatus('items', $num);
       }
-      return $num;
+      return (int) $num;
+  }
+
+  public function itemSum($status = ShortQ::QSTATUS_ALL)
+  {
+      $row = $this->DataProvider->itemSum($status);
+
+      if ($status === 'countbystatus')
+      {
+        // check if all status are there. If they are unused, they are not in result.
+        $status_ar = array(ShortQ::QSTATUS_WAITING, ShortQ::QSTATUS_DONE, ShortQ::QSTATUS_INPROCESS,   ShortQ::QSTATUS_ERROR, ShortQ::QSTATUS_FATAL);
+
+        foreach($status_ar as $stat)
+        {
+            if (! isset($row[$stat]))
+              $row[$stat] = 0;
+        }
+      }
+
+      return $row;
   }
 
   /** Function to call when ending a queue process. The purpose is to purge all records and statistics.
@@ -369,29 +417,39 @@ class WPQ implements Queue
   public function resetQueue()
   {
      $this->DataProvider->removeRecords(array('all' => true));
-     $this->status['queues'][$this->qName] = new Status();
+     $this->currentStatus = new Status();
      $this->saveStatus();
+  }
+
+  public function cleanQueue()
+  {
+
+     $this->DataProvider->removeRecords(array('status' => ShortQ::QSTATUS_DONE));
+     $this->DataProvider->removeRecords(array('status' => ShortQ::QSTATUS_FATAL));
+     $this->resetInternalCounts();
   }
 
   /** @todo Users must be able to control preparing / running status controls for resume / play the queue, but possibly not the counts.  */
   public function setStatus($name, $value, $savenow = true)
   {
-    $r = $this->currentStatus()->set($name, $value);
-    $this->currentStatus()->set('last_update', time());
+    $r = $this->currentStatus->set($name, $value);
+    $this->currentStatus->set('last_update', time());
+		$bool = true;
 
     if (! $r)
-      return false;
+      $bool = false;
 
     if ($savenow)
       $this->saveStatus(); // for now.
 
-    return true;
+
+    return $bool;
   }
 
   /** Addition of substraction for the counters */
   public function setStatusCount($name, $change, $savenow = true)
   {
-      if (! $this->currentStatus()->isCounter($name))
+      if (! $this->currentStatus->isCounter($name))
       {
         return false;
       }
@@ -400,68 +458,71 @@ class WPQ implements Queue
       return $this->setStatus($name, $count + $change, $savenow);
   }
 
-
-  /** Creates a Queue Data Array to keep
-  *  This is intended as a run-once affair. Last Run, Average Ask should be kept.
-  *
-  */
-  private function createStatus()
-  {
-      $queue_status = new Status(); // this is a per-q status
-
-      if (! isset($this->status))
-        $this->status = array('queues');
-
-      $this->createQueue();
-
-      $this->DataProvider->install();
-  }
-
-  /** Get the current status of this slug / queue */
-  protected function currentStatus()
-  {
-     return $this->status['queues'][$this->qName];
-  }
-
   private function createQueue()
   {
-      if (! isset($this->status['queues'][$this->qName]))
-      {
-        $this->status['queues'][$this->qName] = new Status();
-      //  $this->currentStatus = $this->status[$this->pSlug]['queues'][$this->qName];
+			if (is_null($this->status))
+			{
+				$this->status = array();
+				$this->status['queues']  = array();
+				$this->DataProvider->install(true);
+			}
 
-        $this->saveStatus();
-      }
+			$this->currentStatus = new Status();
+      $this->saveStatus();
+
   }
+
 
   private function loadStatus()
   {
-    $this->status = get_option($this->statusName);
+    $this->status = get_option($this->statusName, null);
 
-    if (! $this->status || ! is_object($this->status))
-      $this->createStatus();
-
-
-    if (! isset($this->status['queues'][$this->qName]))
+    if (false === $this->status || is_null($this->status) || (! is_object($this->status) && ! is_array($this->status) ))
+		{
       $this->createQueue();
-
-    // $this->currentStatus = $this->status[$this->pSlug]['queues'][$this->qName];
+		}
+    elseif (! isset($this->status['queues'][$this->qName]))
+		{
+      $this->createQueue();
+		}
+		else {
+			// ONLY status this reference.
+			$this->currentStatus = $this->status['queues'][$this->qName];
+		}
   }
 
   public function getStatus($item = false)
   {
-      if (! $item)
-        return $this->currentStatus();
-      else
-        return $this->currentStatus()->get($item);
+			if (is_null($this->currentStatus))
+				return false;
+      elseif (! $item)
+        return $this->currentStatus;
+      elseif (is_object($this->currentStatus))
+        return $this->currentStatus->get($item);
+			else {
+				return false;
+			}
   }
 
   protected function saveStatus()
   {
-    // $this->status[$this->pSlug]['queues'][$this->qName] = $this->currentStatus;
      $status = get_option($this->statusName);  // two different Q's can run simulanously.
-     $status['queues'][$this->qName] = $this->currentStatus();
-     update_option($this->statusName, $status);
+
+
+		 $currentStatus =  $this->currentStatus;
+		 if( $currentStatus === false && isset($status['queues'][$this->qName]) ) // Don't save status which has been removed.
+		 {
+			  unset($status['queues'][$this->qName]);
+		 }
+		 else {
+			 if (false === $status)
+			 {
+				  $status = array();
+					$status['queues'] = array();
+			 }
+			 $status['queues'][$this->qName]  = $currentStatus;
+		 }
+     $res = update_option($this->statusName, $status);
   }
 
   /** Check Queue. This function intends to keep internal counts consistent with dataprovider without doing queries every run .
@@ -470,7 +531,6 @@ class WPQ implements Queue
   private function checkQueue()
   {
     $this->resetInternalCounts(); // retrieve accurate count from dataSource.
-  //  var_dump($this->currentStatus);
 
     $tasks_done = $this->getStatus('done');
     $tasks_open = $this->getStatus('items');
@@ -501,13 +561,8 @@ class WPQ implements Queue
           $this->DataProvider->itemUpdate($errItem, array('status' => ShortQ::QSTATUS_WAITING));
         }
         else {
-          //$item = Item::import($erroritem->value);
-          //if ($item)
-        //  {
-          //  $item->errorCode = self::QSTATUS_FATAL;
-          //  $item->errorMessage = 'WPQ - Number of retries surpassed settings';
-            $this->DataProvider->itemUpdate($errItem, array('status' => ShortQ::QSTATUS_FATAL));
-        //  }
+           $this->DataProvider->itemUpdate($errItem, array('status' => ShortQ::QSTATUS_FATAL));
+
         }
       }
     } // tasks_errors
@@ -515,12 +570,9 @@ class WPQ implements Queue
     if($update_at_end)
     {
       $this->resetInternalCounts(); // retrieve accurate count from dataSource.
-      //$status = $this->getQueueStatus();
-      $tasks_open = $this->currentStatus()->get('items');
-      $tasks_inprocess = $this->currentStatus()->get('in_process');
+      $tasks_open = $this->currentStatus->get('items');
+      $tasks_inprocess = $this->currentStatus->get('in_process');
     }
-
-  //  $this->saveStatus(); // save result to DB.
 
     if ($tasks_open > 0 || $tasks_inprocess > 0)
       return true;
@@ -537,29 +589,30 @@ class WPQ implements Queue
     $dataQ = $this->DataProvider->itemCount('countbystatus');
     $num_items = $num_done = $num_in_process = $num_errors = $num_fatal = 0;
 
-       foreach($dataQ as $qstatus => $count)
-       {
-
-         switch($qstatus)
-         {
-           case ShortQ::QSTATUS_WAITING:
-             $num_items = $count;
-           break;
-           case ShortQ::QSTATUS_DONE:
-             $num_done = $count;
-           break;
-           case ShortQ::QSTATUS_INPROCESS:
-             $num_in_process = $count;
-           break;
-           case ShortQ::QSTATUS_ERROR:
-             $num_errors = $count;
-           break;
-           case ShortQ::QSTATUS_FATAL;
-              $num_fatal = $count;
-           break;
-         }
-       }
-
+		if (is_array($dataQ))
+		{
+	    foreach($dataQ as $qstatus => $count)
+	    {
+	         switch($qstatus)
+	         {
+	           case ShortQ::QSTATUS_WAITING:
+	             $num_items = $count;
+	           break;
+	           case ShortQ::QSTATUS_DONE:
+	             $num_done = $count;
+	           break;
+	           case ShortQ::QSTATUS_INPROCESS:
+	             $num_in_process = $count;
+	           break;
+	           case ShortQ::QSTATUS_ERROR:
+	             $num_errors = $count;
+	           break;
+	           case ShortQ::QSTATUS_FATAL;
+	              $num_fatal = $count;
+	           break;
+	         }
+	     }
+		 }
 
      $this->setStatus('items', $num_items, false);
      $this->setStatus('done', $num_done, false);
@@ -586,27 +639,20 @@ class WPQ implements Queue
      $this->setStatusCount('times_ran', 1, false );
      $this->saveStatus();
 
-    //@todo find some function to remove records, maybe check if all are either DONE OR FATAL
-  /*
-   Not true, if done are removed on queue finish it might impede getting stats from them. Since CheckQueue invokes both finishQueue and resetInternalCounter, removing from DB can end up with a 0 count, because the boss script is aware the queue is already empty.
-    if ($this->options->mode == 'direct') // only direct should be removed straight.
-    {
-       $args = array('status' => QSTATUS_DONE);
-       $this->DataProvider->removeRecords($args);
-    } */
-
-    //@todo find some way to report back what happened recently.
   }
 
+  public function install()
+  {
+			$this->DataProvider->install(true);
+  }
 
   /** Function to call when uninstalling the plugin. This will remove only this current queue
   */
   public function unInstall()
   {
       // Remove the Queued Items
-
-      // @todo this will only remove the records of current queue, probably not good for uninstall
-      $this->DataProvider->removeRecords(array('all' => true));
+    
+      $this->DataProvider->removeRecords(array('all' => true, 'check_safe' => true));
 
       // Unset the WP Option queue
       //unset($this->status

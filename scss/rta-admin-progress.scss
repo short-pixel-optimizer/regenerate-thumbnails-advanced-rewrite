@@ -18,7 +18,6 @@ section.regenerate
     width: 65%;
     justify-content: flex-start;
 
-
     .rta_progress_view
     {
       margin: 0 auto;
@@ -55,11 +54,18 @@ section.regenerate
 
     .images {
       padding: 15px;
-      width: 60%;
+      width: 80%;
+    //  height: 80%;
+      margin-bottom: 25px;
+      box-sizing: border-box;
+    //
       h5 {
         text-align: right;
       }
       h4.thumb-label {
+        text-align: center;
+      }
+      .thumb-message {
         text-align: center;
       }
       .thumbnail
@@ -97,6 +103,7 @@ section.regenerate
 
       }
     }
+
 
   } // rta-progress (left)
 
@@ -240,7 +247,7 @@ section.regenerate
   }
 
 
-  button.stop-process, button.pause-process
+  button.stop-process, button.pause-process, button.resume-process
   {
     position: absolute;
     bottom: 10px;
@@ -249,15 +256,55 @@ section.regenerate
     text-transform: none;
     padding: 4px 20px;
     font-size: 14px;
+    max-width: 45%;
+
     .dashicons {
       vertical-align: middle;
     }
   }
-  button.pause-process
+  button.pause-process, button.resume-process
   {
     left: 15px;
     right: auto;
-    .resume { display: none }
+
+  }
+
+  .rta_progressbar_view
+  {
+     /*position: absolute;
+     bottom: 0;
+     left: 0;
+     right: 5px; */
+     position: relative;
+     bottom: 10px;
+  }
+
+  .rta_progressbar
+  {
+     width: calc(100% - 5px);
+     position: relative;
+     height: 40px;
+     border: 1px solid rgba(200,200,200,0.5);
+     box-sizing: border-box;
+
+     .left, .right, .centre
+     {
+      // color:
+      position: absolute;
+      padding-top: 8px;
+
+     }
+     .left { left: 10px; color: #fff; }
+     .right { right: 10px; color: #000 }
+     .centre { left: 45%; font-size: 1.2em; }
+
+     .thebar
+     {
+       background: rgb(0,188,212);
+       //background: linear-gradient(90deg, rgba(0,188,212,1) 59%, rgba(255,255,255,1) 100%);
+       width: 1%;
+       position: relative;
+     }
   }
 
 
