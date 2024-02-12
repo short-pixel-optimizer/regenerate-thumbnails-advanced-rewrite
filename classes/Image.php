@@ -164,7 +164,6 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
         $new_metadata = $this->generateImages();
         Log::addDebug('New Attachment metadata generated', $new_metadata);
 
-
         //restore the optimized main image
         if($backup && $backup !== $this->getFullPath()) {
             $targetObj->copy($this);
@@ -230,13 +229,16 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
             }
             elseif (false === $this->is_writable())
             {
-
               Log::addDebug('File not writable -', array($this->getFullPath(), $this->id) );
               RTA()->ajax()->add_status('not_writable', array('name' => basename($debug_filename)) );
             }
             else {
-              Log::addDebug('File missing - Current Image reported as not an image', array($this->getFullPath(), $this->id) );
-              RTA()->ajax()->add_status('file_missing', array('name' => basename($debug_filename)) );
+
+            // This one fail silently, as this is the result of isProcessable check and item is probably not an image.
+            //  Log::addDebug('File missing - Current Image reported as not an image', array($this->getFullPath(), $this->id) );
+
+            //  RTA()->ajax()->add_status('file_missing', array('name' => basename($debug_filename)) );
+
             }
           }
 
@@ -305,7 +307,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
         }
       }
       */
-    //  $result['update'] = wp_update_attachment_metadata($this->id, $updated_meta);
+      $result['update'] = wp_update_attachment_metadata($this->id, $updated_meta);
       $this->metadata = wp_get_attachment_metadata($this->id);
       return $result;
   }
@@ -348,11 +350,13 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
            {
               $prevent_regen[] = $rsize;
               // Add to current Image the metaSize since it will be dropped by the metadata redoing.
-              Log::addDebug('File exists on ' . $rsize . ' ' . $thumbFile . '  - skipping regen - prevent overwrite');
+              //Log::addDebug('File exists on ' . $rsize . ' ' . $thumbFile . '  - skipping regen - prevent overwrite');
               $this->addPersistentMeta($rsize, $metaSize);
            }
          }
       }
+
+      Log::addDebug('Preventing overwrite - ', $prevent_regen);
 
       // 5. Drop the 'not to be' regen. images from the sizes so it will not process.
       // If image is small bigger sizes will be requested but not created because of image size
