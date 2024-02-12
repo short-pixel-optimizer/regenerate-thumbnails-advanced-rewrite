@@ -9,7 +9,7 @@ if (! defined('ABSPATH')) {
 
 <section class='rta-ad'>
   <span class="image">
-    <a href="https://fastpixel.io/?utm_source=SPIO" target="_blank">
+    <a href="https://fastpixel.io/?utm_source=RTA" target="_blank">
     <img src="<?php echo plugins_url('images/fastpixel-logo.svg', RTA_PLUGIN_FILE); ?>" />
   </a>
   </span>
@@ -19,6 +19,6 @@ if (! defined('ABSPATH')) {
   </span>
 
 <span class="button-wrap">
-    <a href="https://fastpixel.io/?utm_source=SPIO" target="_blank" class='button' ><?php _e('TRY NOW!', 'regenerate-thumbnails-advanced'); ?></a>
+    <a href="https://fastpixel.io/?utm_source=RTA" target="_blank" class='button' ><?php _e('TRY NOW!', 'regenerate-thumbnails-advanced'); ?></a>
 </span>
 </section>

@@ -457,22 +457,22 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
     switch($status)
     {
        case self::P_PROCESSABLE:
-          $message = __('Image Ok', 'regenerate-thumbnails-advanced');
+          $message = __('Image OK.', 'regenerate-thumbnails-advanced');
        break;
        case self::P_FILE_NOT_EXIST:
-          $message = __('File does not exist', 'regenerate-thumbnails-advanced');
+          $message = __('The file does not exist.', 'regenerate-thumbnails-advanced');
        break;
        case self::P_FILE_NOTWRITABLE:
-          $message = sprintf(__('Image %s is not writable in %s', 'regenerate-thumbnails-advanced'), $this->getFileName(), (string) $this->getFileDir());
+          $message = sprintf(__('The file %s is not writable in %s.', 'regenerate-thumbnails-advanced'), $this->getFileName(), (string) $this->getFileDir());
        break;
        case self::P_DIRECTORY_NOTWRITABLE:
-          $message = sprintf(__('Image directory %s is not writable', 'regenerate-thumbnails-advanced'), (string) $this->getFileDir());
+          $message = sprintf(__('The file directory %s is not writable.', 'regenerate-thumbnails-advanced'), (string) $this->getFileDir());
        break;
        case self::P_NOTDISPLAYABLE:
-          $message = sprintf(__('Image  %s is not displayable', 'regenerate-thumbnails-advanced'), (string) $this->getFileName());
+          $message = sprintf(__('The file %s is either not an image or cannot be displayed.', 'regenerate-thumbnails-advanced'), (string) $this->getFileName());
        break;
        case self::P_ISVIRTUAL:
-       $message = sprintf(__('Image  %s is virtual', 'regenerate-thumbnails-advanced'), (string) $this->getFileName());
+       $message = sprintf(__('The file %s is virtual/offloaded.', 'regenerate-thumbnails-advanced'), (string) $this->getFileName());
        break;
        // Restorable Reasons
        default:
