@@ -55,6 +55,10 @@ class ShortPixel
         $mediaItem = $fs->getMediaImage($id);
         if (is_object($mediaItem))
         {
+           if ($mediaItem->isScaled())
+           {
+               $mediaItem = $mediaItem->getOriginalFile();
+           }
            if ($mediaItem->hasBackup())
            {
               $backupFile = $mediaItem->getBackupFile();

@@ -359,7 +359,7 @@
   display: none;
 }
 .rta-admin .checkbox-list .item span {
-  display: inline-block;
+  display: inline;
   margin-right: 14px;
 }
 .rta-admin .checkbox-list .item span.hidden {

@@ -1125,29 +1125,7 @@ class RtaJS
 
      if (! response.error)
      {
-       /*
-       if (response.new_image_sizes)
-       {
-         var list = document.querySelector('.thumbnail_select .checkbox-list');
-         list.innerHTML = response.new_image_sizes;
 
-         var items = list.querySelectorAll('input, select'); // rebind events to input / select of this list
-         for (var i = 0; i < items.length; i++)
-         {
-             var item = items[i];
-             item.addEventListener('change', this.ShowSaveIndicatorEvent.bind(this))
-             item.addEventListener('change', this.UpdateSettingsEvent.bind(this));
-             if (item.name.indexOf('regenerate_sizes') !== -1)
-             {
-                item.addEventListener('change', this.ToggleCheckboxEvent.bind(this));
-//                item.addEventListener('change', this.CheckOptionsVisible.bind(this));
-             }
-         }
-//         this.CheckOptionsVisible();
-         var sh = new ShiftSelect('input[name^="regenerate_sizes"]');
-         var shkeep = new ShiftSelect('input[name^="overwrite"]');
-       }
-       */
      }
      this.is_saved = true;
      this.settings_doingsave_indicator(false);
@@ -1362,6 +1340,6 @@ class RtaJS
 } // Class
 
 
-// @todo Different initiator for JS / PRO 
+// @todo Different initiator for JS / PRO
 var r = new RtaJS();
 r.Init();

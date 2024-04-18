@@ -35,7 +35,7 @@ class Admin
     {
        if (! isset(self::$instance))
        {
-          self::$instance = new Admin();
+          self::$instance = new static();
        }
 
        return self::$instance;

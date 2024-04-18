@@ -87,7 +87,7 @@ if (! defined('ABSPATH')) {
        </div>
         <label><?php _e('Regenerate these thumbnails:', 'regenerate-thumbnails-advanced') ?></label>
         <div class='checkbox-list'>
-            <?php echo $this->generateImageSizeOptions($view->process_image_sizes); ?>
+           <?php echo $this->generateImageSizeOptions($view->process_image_sizes); ?>
         </div>
         <div class='select-options'><span class='select' data-action='select' data-target='regenerate_sizes'><?php _e('Select All', 'regenerate-thumbnails-advanced'); ?></span>
           <span class='deselect' data-action='deselect' data-target='regenerate_sizes'><?php _e('Deselect All', 'regenerate-thumbnails-advanced'); ?></span>
@@ -103,6 +103,8 @@ if (! defined('ABSPATH')) {
     </div>
 </div> <!-- container -->
 </section>
+
+
 
 <?php do_action('rta/ui/end-settings'); ?>
 

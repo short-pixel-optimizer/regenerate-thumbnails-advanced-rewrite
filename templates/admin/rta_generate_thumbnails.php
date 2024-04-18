@@ -22,6 +22,7 @@ if (! defined('ABSPATH')) {
       <div class='rta-settings-wrap'>
         <h2><?php _e('Settings', 'regenerate-thumbnails-advanced'); ?></h2>
         <?php $this->loadChildTemplate('view_rta_settings'); ?>
+      <?php  //$this->loadChildTemplate('view_rta_license'); ?>
       </div>
     </div>
     <?php $this->loadChildTemplate('view_ad');  ?>

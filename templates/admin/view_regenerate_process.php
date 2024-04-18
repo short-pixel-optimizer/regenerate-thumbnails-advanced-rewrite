@@ -142,6 +142,11 @@ if (! defined('ABSPATH')) {
            <p class='gotobulk'><strong><?php printf(__('%s Activate ShortPixel %s to optimize your newly generated thumbnails.', 'regenerate-thumbnails-advanced'), '<a href="' . $activate_url . '">', '</a>'); ?></strong></p>
          <?php endif; ?>
         </div>
+
+        <div class='review'>
+        <h3 class='review-line'><a href='https://wordpress.org/support/plugin/regenerate-thumbnails-advanced/reviews/#new-post' target='_blank'><?php _e('Please support us! Leave a review','regenerate-thumbnails-advanced') ?> ★★★★★</a></h3>
+      </div>
+
     </div>
 
   </div>  <!-- container -->

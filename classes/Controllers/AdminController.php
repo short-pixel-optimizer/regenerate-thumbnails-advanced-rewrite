@@ -4,6 +4,7 @@ namespace ReThumbAdvanced\Controllers;
 use function ReThumbAdvanced\RTA;
 use \ReThumbAdvanced\ShortPixelLogger\ShortPixelLogger as Log;
 use \ReThumbAdvanced\Periods as Periods;
+use ReThumbAdvanced\Updater\Updater as Updater;
 
 if (! defined('ABSPATH')) {
     exit; // Exit if accessed directly.
@@ -16,6 +17,8 @@ class AdminController extends Controller
 
   protected $pageTitle;
   protected $proLink;
+
+  private $plugin_updater;
 
   public function __construct()
   {
@@ -41,6 +44,13 @@ class AdminController extends Controller
         $this->pageTitle = __('Regenerate Thumbnails Advanced','regenerate-thumbnails-advanced');
         $this->proLink = 'https://shortpixel.com/products/regenerate-thumbnails-advanced-pro';
 
+        $plugin_updater = new Updater([
+            'plugin' => 'rta',
+            'root_file' => RTA_PLUGIN_FILE,
+            'features' => ['installer' => true],
+            'install_slug' => 'regenerate-thumbnails-advanced-pro%/regenerate-thumbnails-advanced-pro.php',
+        ]);
+        $this->plugin_updater = $plugin_updater;
   }
 
   public function show()
@@ -66,6 +76,10 @@ class AdminController extends Controller
     {
         $periodsClass = $this->getPeriodsClass(); // compat for 5.6  :(
         $view->periods = $periodsClass::getAll();
+    }
+    elseif ($name === 'view_rta_license')
+    {
+        $view->updater = $this->plugin_updater;
     }
 
     $html = $this->load_template($name, 'admin', array('view' => $view ));
@@ -169,8 +183,7 @@ class AdminController extends Controller
       update_option( 'rta_image_sizes', $option );
       RTA()->admin()->resetOptionData();
 
-      $newsizes = $this->generateImageSizeOptions($sizes);
-      $jsonResponse = array( 'error' => $error, 'message' => '', 'new_image_sizes' => $newsizes );
+      $jsonResponse = array( 'error' => $error, 'message' => '' );
 
       return $jsonResponse;
   }
@@ -199,19 +212,11 @@ class AdminController extends Controller
       $width = isset($item['width']) ? $item['width'] : '*';
       $height = isset($item['height']) ? $item['height'] : '*';
       $name = isset($item['nice-name']) ? $item['nice-name'] : ucfirst($size);
-    //  $size = $item['name']
 
-      //if ($check_all)
-        //$checked = 'checked';
       $checked = ($check_all || in_array($size, $checked_ar)) ? 'checked' : '';
       $hidden = ($checked == 'checked') ? '' : 'hidden'; // hide add. option if not checked.
 
-    //  $option_in_db = (isset($process_options[$size])) ? true : false;
       $checked_overwrite = (isset($process_options[$size]) && isset($process_options[$size]['overwrite_files']) &&  $process_options[$size]['overwrite_files'] )  ? 'checked' : '';
-
-    //  if ($option_in_db)
-      //  $checked .= ' data-setbyuser=true'; // if value was ever saved in DB, don't change it in the JS.
-
 
       $stub = $this->getHTMLStub();
 

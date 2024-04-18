@@ -257,6 +257,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
     // RTA should never touch source files. This happens when redoing scaling. This would also be problematic in combination with optimisers. Disable scaling when doing thumbs.
     add_filter('big_image_size_threshold', array($this, 'disable_scaling'));
 
+Log::addTemp('Attachment metadata fullpath', $this->getFullPath());
     $new_metadata = wp_generate_attachment_metadata($this->id, $this->getFullPath());
 
     remove_filter('intermediate_image_sizes_advanced', array($this, 'capture_generate_sizes'));
@@ -312,8 +313,9 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
       return $result;
   }
 
-  public function disable_scaling()
+  public function disable_scaling($threshold)
   {
+
      return false;
   }
 
