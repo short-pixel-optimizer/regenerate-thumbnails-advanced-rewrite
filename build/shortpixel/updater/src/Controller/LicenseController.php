@@ -15,6 +15,11 @@ class LicenseController
 
   protected $licenseModel;
 
+  public function __construct()
+  {
+      $this->findLicense();
+  }
+
   public static function getInstance()
   {
     if (is_null(self::$instance))
@@ -30,7 +35,7 @@ class LicenseController
       $this->plugin = $plugin;
   }
 
-  public function findLicense()
+  protected function findLicense()
   {
       $license_option = get_option($plugin . '_license');
       if (is_array($license_option))
@@ -39,7 +44,18 @@ class LicenseController
           $license->setData($license_option);
       }
 
-      // @todo Add here other ways to obtain a key, i.e. other of this module, or spio. 
+      // @todo Add here other ways to obtain a key, i.e. other of this module, or spio.
+  }
+
+  public function hasLicense()
+  {
+       if (! is_null($this->licenseModel))
+       {
+          return true;
+       }
+       else {
+           return false;
+       }
   }
 
 
