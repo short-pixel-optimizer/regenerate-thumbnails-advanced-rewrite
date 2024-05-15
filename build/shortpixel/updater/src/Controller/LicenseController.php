@@ -37,14 +37,35 @@ class LicenseController
 
   protected function findLicense()
   {
-      $license_option = get_option($plugin . '_license');
+      $license_option = get_option($this->plugin . '_license');
       if (is_array($license_option))
       {
           $license = new LicenseModel();
           $license->setData($license_option);
+          $this->licenseModel = $license;
       }
 
+
       // @todo Add here other ways to obtain a key, i.e. other of this module, or spio.
+  }
+
+  public function addLicense($api_key)
+  {
+       $license = $this->licenseModel();
+       $license->setData([
+          'key' => $api_key,
+       ]);
+
+       $this->save();
+  }
+
+
+
+  protected function save($licenseModel)
+  {
+      $data = $licenseModel->getData();
+      $res = update_option($this->plugin . '_license');
+      return $res;
   }
 
   public function hasLicense()
@@ -56,6 +77,16 @@ class LicenseController
        else {
            return false;
        }
+  }
+
+  public function getLicenseForAPI()
+  {
+    return $this->licenseModel()->get('key');
+  }
+
+  public function getLicenseForDisplay()
+  {
+    return $this->licenseModel()->get('key');
   }
 
 

@@ -455,6 +455,12 @@ class WPQ implements Queue
       }
 
       $count = $this->getStatus($name);
+      if ($count + $change < 0)
+      {
+       // Weird problem that would trigger sometimes with background active.
+       $this->resetInternalCounts();
+       $count = $this->getStatus($name);
+      }
       return $this->setStatus($name, $count + $change, $savenow);
   }
 

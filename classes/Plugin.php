@@ -6,6 +6,8 @@ use \ReThumbAdvanced\Controllers\AdminController as AdminController;
 use \ReThumbAdvanced\FileSystem\Controller\FileSystemController as FileSystemController;
 
 use \ReThumbAdvanced\Integrations\ShortPixel as ShortPixel;
+use ReThumbAdvanced\Updater\Updater as Updater;
+
 
 if (! defined('ABSPATH')) {
     exit; // Exit if accessed directly.
@@ -75,6 +77,8 @@ class Plugin
     $ajax = $this->ajax(); //init
     $ajax->init();
 
+    Log::addTemp('AJax ' . get_class($ajax));
+
     add_filter('media_row_actions', array($this,'add_media_action'), 10, 2);
     add_action( 'add_meta_boxes', function () { add_meta_box('rta-link', __('Regenerate Thumbnails', 'enable-media-replace'), array($this, 'regenerate_meta_box'), 'attachment', 'side', 'low'); }  );
     add_filter('attachment_fields_to_edit', array($this, 'attachment_editor'), 10, 2);
@@ -95,6 +99,21 @@ class Plugin
     add_action('admin_notices', array($notices, 'admin_notices')); // previous page / init time
     add_action('admin_footer', array($notices, 'admin_notices')); // fresh notices between init - end
 
+
+    $this->loadPluginUpdater();
+  }
+
+  protected function loadPluginUpdater()
+  {
+    Log::addTemp('Main installer' . get_class($this));
+    $plugin_updater = Updater::getInstance();
+    $plugin_updater->initSettings([
+        'plugin' => 'regenerate-thumbnails-advanced-pro',
+        'root_file' => RTA_PLUGIN_FILE,
+        'features' => ['installer' => true, 'updater' => false],
+        'install_slug' => 'regenerate-thumbnails-advanced-pro/regenerate-thumbnails-advanced-pro.php',
+        'version' => RTA_PLUGIN_VERSION,
+    ]);
   }
 
   public function ajax()

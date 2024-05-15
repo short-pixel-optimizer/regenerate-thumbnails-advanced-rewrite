@@ -44,13 +44,7 @@ class AdminController extends Controller
         $this->pageTitle = __('Regenerate Thumbnails Advanced','regenerate-thumbnails-advanced');
         $this->proLink = 'https://shortpixel.com/products/regenerate-thumbnails-advanced-pro';
 
-        /*$plugin_updater = new Updater([
-            'plugin' => 'rta',
-            'root_file' => RTA_PLUGIN_FILE,
-            'features' => ['installer' => true],
-            'install_slug' => 'regenerate-thumbnails-advanced-pro%/regenerate-thumbnails-advanced-pro.php',
-        ]);
-        $this->plugin_updater = $plugin_updater; */
+    //    $this->plugin_updater = $plugin_updater;
   }
 
   public function show()
@@ -79,7 +73,7 @@ class AdminController extends Controller
     }
     elseif ($name === 'view_rta_license')
     {
-        $view->updater = $this->plugin_updater;
+        $view->updater = Updater::getInstance();
     }
 
     $html = $this->load_template($name, 'admin', array('view' => $view ));

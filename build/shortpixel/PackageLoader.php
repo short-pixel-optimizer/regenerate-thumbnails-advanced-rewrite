@@ -19,16 +19,17 @@ class PackageLoader
   public function getComposerFile($filePath = false )
   {
     if (! $this->composerFile)
+    {
       $this->composerFile = json_decode(file_get_contents($this->dir."/composer.json"), 1);
-
+    }
       return $this->composerFile;
   }
 
     public function load($dir, $prepend = false)
     {
         $this->dir = $dir;
-        $composer = $this->getComposerFile();
 
+        $composer = $this->getComposerFile();
 
         if(isset($composer["autoload"]["psr-4"])){
             $this->loadPSR4($composer['autoload']['psr-4'], $prepend);
@@ -82,7 +83,10 @@ class PackageLoader
                     $filename = str_replace('\\','/', $filename);
 
                     foreach ($classpaths as $classpath) {
+
+
                       $fullpath = trailingslashit($dir) . trailingslashit($classpath) .$filename;
+
                         if (file_exists($fullpath)) {
                             include_once $fullpath;
                         }

@@ -5,6 +5,6 @@ if (! defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
-?>
 
-VIEW LICENSE
+  $view->updater->loadView();
+?>
