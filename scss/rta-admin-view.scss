@@ -17,47 +17,61 @@
 
 .rta-admin
 {
+  margin-top: 0;
+
+  .menu {
+
+      a {
+         color: #000;
+         background-color: #fff;
+         padding: 12px;
+         font-size: 14px;
+         text-decoration: none;
+      }
+
+      margin-bottom: 20px;
+  }
   .two-panel-wrap
   {
     display: flex;
     justify-content: space-between;
     margin-bottom: 20px;
 
-    &.settings-panels {
-      @include breakpoint(0,1200px)
-      {
-        flex-direction: column-reverse;
-        .rta-settings-wrap, .rta-regenerate-wrap
+      &.settings-panels {
+        @include breakpoint(0,1200px)
         {
-          width: 100%;
-          max-width: none;
-          margin: 14px 0;
+          flex-direction: column-reverse;
+          .rta-settings-wrap, .rta-regenerate-wrap
+          {
+            width: 100%;
+            max-width: none;
+            margin: 14px 0;
+          }
+
         }
 
       }
-
-    }
-    &.process-wrap
-    {
-      @include breakpoint(0,1200px)
+      &.process-wrap
       {
-         button.resume-process, button.stop-process, button.pause-process
-         {
-            max-width: none;
-            width: 80%;
-            left: 5%;
-            right: 5px;
+        @include breakpoint(0,1200px)
+        {
+           button.resume-process, button.stop-process, button.pause-process
+           {
+              max-width: none;
+              width: 80%;
+              left: 5%;
+              right: 5px;
 
-         }
-         button.resume-process, button.pause-process
-         {
-            bottom: 15%;
-         }
+           }
+           button.resume-process, button.pause-process
+           {
+              bottom: 15%;
+           }
 
+        }
       }
-    }
 
-  }
+  } // two-panel-wrap
 
   h2 {
     font-size: 26px;
@@ -136,7 +150,7 @@
     }
   }
 
-  .rta-regenerate-wrap, .rta-settings-wrap
+  .rta-regenerate-wrap, .rta-settings-wrap, .rta-license-wrap
   {
     flex: 1;
     position: relative;

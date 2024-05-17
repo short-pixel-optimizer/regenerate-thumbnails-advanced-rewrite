@@ -122,6 +122,14 @@ class RtaJS
           this.TogglePanel('success', false);
      }.bind(this));
 
+
+     // @todo Add panel swtich for settings
+     var menuItems = document.querySelectorAll('.rta-admin-wrap .menu a');
+     for (var i = 0; i < menuItems.length; i++)
+     {
+         menuItems[i].addEventListener('click', this.SwitchMenuPanelEvent.bind(this));
+     }
+
    }
 
    CheckSubmitReady()
@@ -1047,12 +1055,6 @@ class RtaJS
                }
            }
 
-        /*   var old_name = $("#"+rowid+" .image_sizes_name").val();
-           var name = "rta_thumb";
-           var width = $("#"+rowid+" .image_sizes_width").val();
-           var height = $("#"+rowid+" .image_sizes_height").val();
-           var cropping = $("#"+rowid+" .image_sizes_cropping").val();
-           var pname = $("#"+rowid+" .image_sizes_pname").val(); */
 
            if (width <= 0) width = '';  // don't include zero values here.
            if (height <= 0) height = '';
@@ -1096,6 +1098,34 @@ class RtaJS
            }
 
            nameInput.value = slug;
+
+   }
+
+   SwitchMenuPanelEvent(event)
+   {
+      event.preventDefault();
+      var target = event.target;
+      console.log(target);
+
+      var id = target.getAttribute('href');//blabla
+      id = id.replace('#', '');
+
+      var panels = document.querySelectorAll('.is_panel');
+
+      for (var i = 0; i < panels.length; i++)
+      {
+         var panel = panels[i];
+         if (panel.classList.contains('is_active')  && panel.id !== id)
+         {
+            console.log('remove' + panel.id);
+             panel.classList.remove('is_active');
+         }
+         if (panel.id == id)
+         {
+            panel.classList.add('is_active');
+         }
+      }
+
 
    }
 

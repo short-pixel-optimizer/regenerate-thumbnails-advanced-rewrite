@@ -60,6 +60,7 @@
 }
 
 .rta-admin {
+  margin-top: 0;
   /*  .rta-ad
     {
       background: #fff;
@@ -81,6 +82,16 @@
       }
 
     } */
+}
+.rta-admin .menu {
+  margin-bottom: 20px;
+}
+.rta-admin .menu a {
+  color: #000;
+  background-color: #fff;
+  padding: 12px;
+  font-size: 14px;
+  text-decoration: none;
 }
 .rta-admin .two-panel-wrap {
   display: flex;
@@ -168,7 +179,7 @@
 .rta-admin .rta-notice.error {
   border-color: #ff0000;
 }
-.rta-admin .rta-regenerate-wrap, .rta-admin .rta-settings-wrap {
+.rta-admin .rta-regenerate-wrap, .rta-admin .rta-settings-wrap, .rta-admin .rta-license-wrap {
   flex: 1;
   position: relative;
   padding: 0 0 0 15px;
