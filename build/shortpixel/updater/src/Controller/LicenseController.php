@@ -59,8 +59,6 @@ class LicenseController
        $this->save();
   }
 
-
-
   protected function save($licenseModel)
   {
       $data = $licenseModel->getData();

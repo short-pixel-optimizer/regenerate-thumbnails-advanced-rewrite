@@ -6,7 +6,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  exit; // Exit if accessed directly.
 }
 
-
 class License
 {
 
@@ -14,7 +13,6 @@ class License
     protected $tried;
     protected $lastKeyVerified;
     protected $updated;
-
 
     public function __construct()
     {

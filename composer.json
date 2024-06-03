@@ -18,8 +18,7 @@
     },
     "require-dev": {
 	"phpunit/phpunit": "^9",
-	"mikey179/vfsstream": "^1",
-        "iqomp/watcher": "^1.1"
+	"mikey179/vfsstream": "^1"
     },
     "scripts": {
         "post-update-cmd" : "\\ShortPixel\\Build\\Build::BuildIt",
@@ -31,11 +30,11 @@
          "targetNamespace" : "ReThumbAdvanced",
          "targetFilter" : "rta",
          "targetTextDomain": "regenerate-thumbnails-advanced",
-         "modules" : {"updater":{"installer":true,"updater":false}}
+         "modules" : {"updater":{"installer":false,"updater":false}}
     },
     "config": {
         "allow-plugins": {
-            "iqomp/watcher": true
+            "iqomp/watcher": false
         }
     }
 }

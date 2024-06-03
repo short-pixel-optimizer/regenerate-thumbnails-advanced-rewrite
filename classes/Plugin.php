@@ -110,7 +110,7 @@ class Plugin
     $plugin_updater->initSettings([
         'plugin' => 'regenerate-thumbnails-advanced-pro',
         'root_file' => RTA_PLUGIN_FILE,
-        'features' => ['installer' => true, 'updater' => false],
+        'features' => ['installer' => false, 'updater' => false],
         'install_slug' => 'regenerate-thumbnails-advanced-pro/regenerate-thumbnails-advanced-pro.php',
         'version' => RTA_PLUGIN_VERSION,
     ]);

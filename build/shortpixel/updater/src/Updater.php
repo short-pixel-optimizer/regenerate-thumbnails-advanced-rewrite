@@ -83,8 +83,8 @@ class Updater
       {
           $this->loadLibrary('updater');
           $control = $this->updater();
-          $control->setSlug($this->args['install_slug']);
-          $control->buildChecker($this->api_url, $this->root_file, $plugin);
+    //      $control->setSlug($this->args['install_slug']);
+          $control->buildChecker($this->api_url, $this->root_file, $this->args['install_slug'], $this->module_path, $this->plugin);
       }
 
       $requestController = RequestController::getInstance();
@@ -102,14 +102,6 @@ class Updater
     {
         if ('updater' === $name)
         {
-        /*  $updateChecker = PucFactory::buildUpdateChecker(
-    	           $this->api_url,
-    	           $this->root_file, //Full path to the main plugin file or functions.php.
-    	           $this->plugin
-           ); */
-           Log::addTemp('Adding update checker');
-
-
          }
     }
 
@@ -121,7 +113,7 @@ class Updater
          }
          elseif ($this->is_updater)
          {
-            $this->update()->loadView($this->module_path);
+            $this->updater()->loadView($this->module_path);
          }
 
     }
