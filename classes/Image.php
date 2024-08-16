@@ -50,7 +50,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
         if ($filePath === false)
         {
           $filePath = get_attached_file($image_id);
-					if ($filePath === false)
+					if ($filePath === false || strlen($filePath) === 0 || empty($filePath))
 					{
 						RTA()->ajax()->add_status('file_missing', array('name' => basename($image_id), 'image_id' => $image_id) );
             $this->processable_status = self::P_FILE_NOT_EXIST;
