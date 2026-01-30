@@ -56,8 +56,7 @@ class Image extends \ReThumbAdvanced\FileSystem\Model\File\FileModel
             $this->processable_status = self::P_FILE_NOT_EXIST;
 						return false;
 					}
-
-          if (file_is_displayable_image($filePath))
+          elseif (file_is_displayable_image($filePath))
           {
             $this->fixMimeType($image_id);
             $filePath = wp_get_original_image_path($image_id);
