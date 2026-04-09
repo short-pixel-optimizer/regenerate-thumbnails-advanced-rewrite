@@ -101,9 +101,15 @@ class Environment
           break;
       }
 
+      if ('shortpixel' === $name)
+      {
+           return (function_exists('wpSPIO'));
+      }
+
       if (!function_exists('is_plugin_active')) {
        include_once(ABSPATH . 'wp-admin/includes/plugin.php');
       }
+ 
 
       $bool = \is_plugin_active($plugin);
       if (false === $bool && isset($class))
@@ -112,7 +118,7 @@ class Environment
       }
 
       return $bool;
-
+    
     }
 
 } // class
