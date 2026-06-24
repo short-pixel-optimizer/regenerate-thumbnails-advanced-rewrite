@@ -140,6 +140,12 @@ class Plugin
         if (isset($_GET['regen_action']) && $_GET['regen_action'] == 'regenerate_image_thumbnail')
         {
           $attach_id = intval($_GET['attachment_id']);
+
+          if (false == \current_user_can('edit_post', $attach_id)) {
+              Notice::addError(__('No image permissions','regenerate-thumbnails-advanced'));
+              return false;
+          }
+
           if (! wp_verify_nonce($_GET['_wpnonce'], 'regenerate_image_thumbnail'))
           {
             Notice::addError(__('Incorrect nonce','regenerate-thumbnails-advanced'));

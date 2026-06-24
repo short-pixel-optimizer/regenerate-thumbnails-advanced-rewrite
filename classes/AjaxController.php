@@ -193,9 +193,6 @@ class AjaxController
        exit(0);
      }
 
-
-
-     //wp_send_json($this->get_json_process());
    }
 
    /** Collect form data, make a storable process array out of it */
